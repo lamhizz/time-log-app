@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Work</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --work-log-primary: #3B82F6; /* Blue 500 */
+      --work-log-primary-hover: #2563EB; /* Blue 600 */
+      --work-log-secondary: #F3F4F6; /* Gray 100 */
+      --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
+      --work-log-text-dark: #1F2937; /* Gray 800 */
+      --work-log-text-light: #6B7280; /* Gray 500 */
+      --work-log-error: #EF4444; /* Red 500 */
+      --work-log-success: #10B981; /* Green 500 */
+      --work-log-border: #D1D5DB; /* Gray 300 */
+      --work-log-radius: 4px;
+      --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      font-family: var(--work-log-font);
+      font-size: 13px; /* More compact */
+      margin: 0;
+      padding: 12px; /* More compact */
+      width: 300px; /* More compact */
+      color: var(--work-log-text-dark);
+      background-color: #fff;
+    }
+    h3 {
+      margin: 0 0 12px 0;
+      text-align: center;
+      font-weight: 600;
+      font-size: 16px; /* More compact */
+    }
+    .form-group {
+      margin-bottom: 10px; /* More compact */
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+    textarea, select {
+      width: 100%;
+      border: 1px solid var(--work-log-border);
+      border-radius: var(--work-log-radius);
+      padding: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+    select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+    }
+    textarea {
+      height: 60px; /* More compact */
+      resize: vertical;
+    }
+    textarea:focus, select:focus {
+      border-color: var(--work-log-primary);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .checkbox-group label {
+      font-weight: 500;
+      margin: 0;
+      font-size: 13px;
+      user-select: none;
+    }
+    
+    button {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid var(--work-log-border);
+      border-radius: var(--work-log-radius);
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+      box-sizing: border-box;
+      color: var(--work-log-text-dark);
+    }
+    button#submit-log {
+      width: 100%;
+      background-color: var(--work-log-primary);
+      color: white;
+      font-weight: 600;
+      border: none;
+      padding: 9px;
+      font-size: 13px;
+    }
+    button#submit-log:hover {
+      background-color: var(--work-log-primary-hover);
+    }
+    button#submit-log:disabled {
+      background-color: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    .status {
+      font-size: 13px;
+      margin: 8px 0 0 0;
+      padding: 0;
+      text-align: center;
+      line-height: 1.3;
+      font-weight: 500;
+    }
+    .status.error {
+      color: var(--work-log-error);
+    }
+    .status.success {
+      color: var(--work-log-success);
+    }
+    .footer-links {
+      margin-top: 12px;
+      border-top: 1px solid #E5E7EB;
+      padding-top: 10px;
+      font-size: 11px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .footer-links a {
+      color: var(--work-log-primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    #debug-info {
+      margin-top: 8px;
+      background: var(--work-log-secondary);
+      border: 1px solid var(--work-log-secondary-hover);
+      padding: 6px;
+      border-radius: 4px;
+      display: none;
+    }
+    #debug-info p {
+      margin: 0 0 4px 0;
+      font-size: 11px;
+      word-wrap: break-word;
+    }
+  </style>
+</head>
+<body>
+  <h3>Log Your Work</h3>
+  
+  <div class="form-group">
+    <label for="tag-select">Tag:</label>
+    <select id="tag-select">
+      <!-- Tags will be injected here by popup.js -->
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="log-input">Log:</label>
+    <textarea id="log-input" placeholder="What are you working on?"></textarea>
+  </div>
+  
+  <div class="checkbox-group">
+    <input type="checkbox" id="drifted-check">
+    <label for="drifted-check">I drifted (was off-task)</label>
+  </div>
+  
+  <button id="submit-log">Log It (Ctrl+Enter)</button>
+  
+  <p class="status" id="status-message"></p>
+
+  <div class="footer-links">
+    <a id="open-settings">Settings</a>
+    <a id="toggle-debug">Show Debug</a>
+  </div>
+
+  <div id="debug-info">
+    <p><strong>URL:</strong> <span id="debug-url"></span></p>
+    <p><strong>Last Error:</strong> <span id="debug-error"></span></p>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
+

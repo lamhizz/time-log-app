@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+/*
+ * Styles for the Work Log Popup (v1.4)
+ * Modern, minimal, compact theme
+ */
+
+:root {
+  --work-log-primary: #3B82F6; /* Blue 500 */
+  --work-log-primary-hover: #2563EB; /* Blue 600 */
+  --work-log-secondary: #F3F4F6; /* Gray 100 */
+  --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
+  --work-log-text-dark: #1F2937; /* Gray 800 */
+  --work-log-text-light: #6B7280; /* Gray 500 */
+  --work-log-error: #EF4444; /* Red 500 */
+  --work-log-success: #10B981; /* Green 500 */
+  --work-log-border: #D1D5DB; /* Gray 300 */
+  --work-log-radius: 4px;
+  --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* The full-screen overlay */
+#work-log-popup-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: rgba(17, 24, 39, 0.6) !important; /* Gray 900 w/ alpha */
+  z-index: 2147483646 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  font-family: var(--work-log-font) !important;
+  line-height: 1.5 !important;
+  color: var(--work-log-text-dark) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* The modal dialog box */
+#work-log-popup-modal {
+  position: relative !important;
+  background-color: #ffffff !important;
+  padding: 20px !important; /* More compact */
+  border-radius: var(--work-log-radius) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  width: 90% !important;
+  max-width: 420px !important; /* Slightly more compact */
+  z-index: 2147483647 !important;
+  box-sizing: border-box !important;
+}
+
+/* The close button (X) */
+#work-log-popup-close {
+  position: absolute !important;
+  top: 8px !important; /* Closer */
+  right: 8px !important; /* Closer */
+  background: none !important;
+  border: none !important;
+  font-size: 24px !important;
+  font-weight: 300 !important;
+  line-height: 1 !important;
+  color: #9CA3AF !important; /* Gray 400 */
+  cursor: pointer !important;
+  padding: 4px !important;
+  margin: 0 !important;
+}
+#work-log-popup-close:hover {
+  color: var(--work-log-text-dark) !important;
+}
+
+/* Modal Title */
+#work-log-popup-title {
+  font-size: 20px !important; /* More compact */
+  font-weight: 600 !important;
+  margin: 0 0 16px 0 !important;
+  padding: 0 !important;
+  color: var(--work-log-text-dark) !important;
+  text-align: center;
+}
+
+/* Form Group Styles */
+.work-log-form-group {
+  margin-bottom: 12px !important; /* More compact */
+}
+.work-log-form-group label {
+  display: block !important;
+  margin-bottom: 5px !important;
+  font-weight: 500 !important;
+  font-size: 13px !important; /* More compact */
+  color: var(--work-log-text-light) !important;
+}
+
+/* Text Input Area */
+#work-log-popup-input {
+  width: 100% !important;
+  height: 70px !important; /* More compact */
+  border: 1px solid var(--work-log-border) !important;
+  border-radius: var(--work-log-radius) !important;
+  padding: 8px 10px !important; /* More compact */
+  font-size: 14px !important; /* More compact */
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+}
+#work-log-popup-input:focus {
+  border-color: var(--work-log-primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+#work-log-popup-input:disabled {
+  background-color: var(--work-log-secondary) !important;
+}
+
+/* Tag Select Dropdown */
+.work-log-popup-select {
+  width: 100% !important;
+  padding: 8px 10px !important; /* More compact */
+  font-size: 14px !important; /* More compact */
+  font-family: inherit !important;
+  border: 1px solid var(--work-log-border) !important;
+  border-radius: var(--work-log-radius) !important;
+  box-sizing: border-box !important;
+  background-color: #fff !important;
+  color: var(--work-log-text-dark) !important;
+  cursor: pointer !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 18px !important;
+}
+.work-log-popup-select:focus {
+  border-color: var(--work-log-primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+.work-log-popup-select:disabled {
+  background-color: var(--work-log-secondary) !important;
+  color: #9CA3AF !important;
+}
+
+/* Drifted Checkbox */
+.work-log-checkbox-group {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 16px !important; /* More compact */
+}
+.work-log-checkbox-group input[type="checkbox"] {
+  width: 16px !important; /* More compact */
+  height: 16px !important; /* More compact */
+  margin: 0 !important;
+  cursor: pointer !important;
+  flex-shrink: 0;
+  border-radius: var(--work-log-radius) !important;
+  border: 1px solid var(--work-log-border) !important;
+}
+.work-log-checkbox-group label {
+  margin: 0 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important; /* More compact */
+  color: var(--work-log-text-dark) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+/* Main Submit Button */
+#work-log-popup-submit {
+  width: 100% !important;
+  background-color: var(--work-log-primary) !important;
+  color: white !important;
+  font-size: 14px !important; /* More compact */
+  font-weight: 600 !important;
+  border: none !important;
+  border-radius: var(--work-log-radius) !important;
+  padding: 10px !important; /* More compact */
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  margin-bottom: 10px !important; /* More compact */
+  font-family: inherit !important;
+}
+#work-log-popup-submit:hover {
+  background-color: var(--work-log-primary-hover) !important;
+}
+#work-log-popup-submit:disabled {
+  background-color: #9CA3AF !important;
+  cursor: not-allowed !important;
+}
+
+/* Wrapper for secondary action buttons */
+.work-log-actions-wrapper {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  border-top: 1px solid #E5E7EB !important; /* Gray 200 */
+  padding-top: 10px !important; /* More compact */
+}
+
+/* Generic button class */
+.work-log-popup-button {
+  font-family: inherit !important;
+  font-size: 13px !important; /* More compact */
+  font-weight: 500 !important;
+  border: 1px solid var(--work-log-border) !important;
+  border-radius: var(--work-log-radius) !important;
+  padding: 6px 10px !important; /* More compact */
+  cursor: pointer !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease !important;
+  box-sizing: border-box !important;
+  color: var(--work-log-text-dark) !important;
+}
+.work-log-popup-button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Secondary buttons ("Postpone", "Doing Same") */
+.work-log-button-secondary {
+  flex-grow: 1 !important;
+  background-color: #fff !important;
+  border-color: var(--work-log-border) !important;
+  color: var(--work-log-text-light) !important;
+}
+.work-log-button-secondary:hover {
+  background-color: var(--work-log-secondary) !important;
+  border-color: var(--work-log-border) !important;
+  color: var(--work-log-text-dark) !important;
+}
+
+/* Status Message Area */
+#work-log-popup-status, .work-log-status {
+  font-size: 13px !important; /* More compact */
+  margin: 10px 0 0 0 !important;
+  padding: 0 !important;
+  text-align: center !important;
+  line-height: 1.3 !important;
+  font-weight: 500 !important;
+}
+.work-log-status-error {
+  color: var(--work-log-error) !important;
+}
+.work-log-status-success {
+  color: var(--work-log-success) !important;
+}
+
