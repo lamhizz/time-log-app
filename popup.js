@@ -3,8 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const logFormContainer = document.getElementById("log-form-container");
   const logInput = document.getElementById("log-input");
   const tagSelect = document.getElementById("tag-select");
-  const mruTagsContainer = document.getElementById("mru-tags-container"); // [UX-10]
+  const mruTagsContainer = document.getElementById("mru-tags-container");
   const driftedCheck = document.getElementById("drifted-check");
+  const reactiveCheck = document.getElementById("reactive-check"); // [NEW]
   const submitButton = document.getElementById("submit-log");
   const statusMessage = document.getElementById("status-message");
 
@@ -29,20 +30,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Event Listeners ---
 
-  // Submit button click
   submitButton.addEventListener("click", () => {
     submitLog();
   });
 
-  // Add keyboard shortcut
   logInput.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault(); // Prevent new line
+      e.preventDefault();
       submitLog();
     }
   });
   
-  // --- Timer Listeners [UX-12] ---
   startTaskButton.addEventListener("click", () => {
     const taskName = taskNameInput.value.trim();
     if (!taskName) {
@@ -67,28 +65,27 @@ document.addEventListener("DOMContentLoaded", () => {
           const durationMs = Date.now() - data.activeTask.startTime;
           const durationMins = Math.round(durationMs / 60000);
           
-          showLogUI(); // Show the log form
+          showLogUI();
           
-          // Pre-fill the log
           let logText = data.activeTask.name;
           if (durationMins > 0) {
             logText += ` (approx. ${durationMins} min)`;
           }
           logInput.value = logText;
+          driftedCheck.checked = false;
+          reactiveCheck.checked = false; // [NEW]
           logInput.focus();
         });
       } else {
-        showLogUI(); // Failsafe
+        showLogUI();
       }
     });
   });
 
-  // Settings link click
   settingsLink.addEventListener("click", () => {
     chrome.runtime.openOptionsPage();
   });
   
-  // Debug toggle click
   debugToggle.addEventListener("click", () => {
     const isVisible = debugInfo.style.display === "block";
     debugInfo.style.display = isVisible ? "none" : "block";
@@ -102,8 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function submitLog() {
     const logText = logInput.value.trim();
-    const tag = tagSelect.value || ""; // Allow empty tag
+    const tag = tagSelect.value || "";
     const drifted = driftedCheck.checked;
+    const reactive = reactiveCheck.checked; // [NEW]
 
     if (!logText) {
       showStatus("Please enter a log entry.", "error");
@@ -123,6 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
         logText, 
         tag, 
         drifted,
+        reactive, // [NEW]
         domain: domain
       };
       
@@ -141,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showStatus("Log saved successfully!", "success");
       logInput.value = "";
       driftedCheck.checked = false;
+      reactiveCheck.checked = false; // [NEW]
       setTimeout(() => {
         window.close(); // Close popup on success
       }, 1000);
@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     logInput.disabled = isLoading;
     tagSelect.disabled = isLoading;
     driftedCheck.disabled = isLoading;
+    reactiveCheck.disabled = isLoading; // [NEW]
     submitButton.textContent = isLoading ? "Logging..." : "Log It (Ctrl+Enter)";
     if (isLoading) {
       showStatus("", "");
@@ -166,11 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
     statusMessage.className = `status ${type}`;
   }
   
-  // [UX-10] Load tags and MRU tags
   function loadTagsAndMru() {
-    // 1. Load standard tags
     chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
-      tagSelect.innerHTML = ""; // Clear existing
+      tagSelect.innerHTML = "";
       const tags = data.logTags.split('\n').filter(Boolean);
       
       const promptOption = document.createElement("option");
@@ -179,9 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
       promptOption.selected = true;
       tagSelect.appendChild(promptOption);
       
-      if (tags.length === 0) {
-        tags.push("Default"); // Add a fallback
-      }
+      if (tags.length === 0) tags.push("Default");
       
       tags.forEach(tag => {
         const option = document.createElement("option");
@@ -191,9 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
     
-    // 2. Load MRU tags
     chrome.runtime.sendMessage({ action: "getMruTags" }, (mruTags) => {
-      mruTagsContainer.innerHTML = ""; // Clear
+      mruTagsContainer.innerHTML = "";
       if (mruTags && mruTags.length > 0) {
         mruTags.forEach(tag => {
           const button = document.createElement("button");
@@ -225,8 +221,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // --- [UX-12] Timer UI Functions ---
-  
   function checkActiveTimer() {
     chrome.storage.local.get({ activeTask: null }, (data) => {
       if (data.activeTask) {
@@ -247,7 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeTaskName.textContent = task.name;
     
     if (timerInterval) clearInterval(timerInterval);
-    updateTimerDisplay(task.startTime); // Run once immediately
+    updateTimerDisplay(task.startTime);
     timerInterval = setInterval(() => {
       updateTimerDisplay(task.startTime);
     }, 1000);
@@ -282,11 +276,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Initial Load ---
-  loadTagsAndMru(); // [UX-10]
+  loadTagsAndMru();
   checkDebugMode();
-  checkActiveTimer(); // [UX-12]
-  // logInput.focus(); // Only focus if log form is visible
+  checkActiveTimer();
   if (logFormContainer.style.display !== "none") {
     logInput.focus();
   }
 });
+

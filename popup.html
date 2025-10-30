@@ -73,11 +73,19 @@
       outline: none;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
     }
+    
+    /* [NEW] Checkbox layout */
+    .checkbox-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-bottom: 12px;
+      /* margin-bottom: 12px; */ /* Removed */
     }
     .checkbox-group input[type="checkbox"] {
       width: 15px;
@@ -111,7 +119,6 @@
     .mru-tag-btn:hover {
       background-color: var(--work-log-secondary-hover);
     }
-    /* --- End MRU --- */
 
     button {
       font-family: inherit;
@@ -186,13 +193,11 @@
       word-wrap: break-word;
     }
     
-    /* --- [UX-12] Timer Styles --- */
     .divider {
       border-top: 1px solid #E5E7EB;
       margin: 12px 0;
     }
     .timer-container {
-      /* styles for the container */
     }
     .start-task-form {
       display: flex;
@@ -234,7 +239,6 @@
       border: none;
       font-weight: 600;
     }
-    /* --- End Timer --- */
 
   </style>
 </head>
@@ -242,14 +246,11 @@
 
   <!-- [UX-12] Timer Section -->
   <div class="timer-container">
-    <!-- Active Timer View -->
     <div class="active-task-display" id="active-task-container" style="display: none;">
       <p>Active Task: <span id="active-task-name"></span></p>
       <span id="active-task-timer">00:00:00</span>
       <button id="stop-task-btn">Stop Task & Log</button>
     </div>
-
-    <!-- Start Timer View -->
     <div class="start-task-form" id="start-task-container">
       <input type="text" id="task-name-input" placeholder="Enter task name...">
       <button id="start-task-btn">Start</button>
@@ -262,7 +263,6 @@
   <div class="log-form-container" id="log-form-container">
     <h3>Log Your Work</h3>
     
-    <!-- Tag Dropdown -->
     <div class="form-group">
       <label for="tag-select">Tag:</label>
       <select id="tag-select">
@@ -270,31 +270,32 @@
       </select>
     </div>
     
-    <!-- [UX-10] MRU Tags -->
     <div class="mru-tags-container" id="mru-tags-container">
       <!-- MRU tags injected here -->
     </div>
 
-    <!-- Log Textarea -->
     <div class="form-group">
       <label for="log-input">Log:</label>
       <textarea id="log-input" placeholder="What are you working on?"></textarea>
     </div>
     
-    <!-- "Drifted" Checkbox -->
-    <div class="checkbox-group">
-      <input type="checkbox" id="drifted-check">
-      <label for="drifted-check">I drifted (was off-task)</label>
+    <!-- [NEW] Checkbox Container -->
+    <div class="checkbox-container">
+      <div class="checkbox-group">
+        <input type="checkbox" id="drifted-check">
+        <label for="drifted-check">I drifted</label>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="reactive-check">
+        <label for="reactive-check">I reacted</label>
+      </div>
     </div>
     
-    <!-- Submit Button -->
     <button id="submit-log">Log It (Ctrl+Enter)</button>
     
-    <!-- Status Message -->
     <p class="status" id="status-message"></p>
   </div>
   
-  <!-- Footer & Debug -->
   <div class="footer-links">
     <a id="open-settings">Settings</a>
     <a id="toggle-debug">Show Debug</a>
@@ -308,3 +309,4 @@
   <script src="popup.js"></script>
 </body>
 </html>
+

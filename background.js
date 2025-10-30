@@ -7,7 +7,7 @@ let alarmBadgeActive = false;
 // --- Alarm Management ---
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Work Log extension installed (v2.1). Creating 1-min alarm...");
+  console.log("Work Log extension installed (v2.2). Creating 1-min alarm...");
 
   chrome.storage.sync.get(null, (existingSettings) => {
     const defaults = {
@@ -20,7 +20,7 @@ chrome.runtime.onInstalled.addListener(() => {
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
       webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
       isDomainLogEnabled: false,
-      notificationSound: "ClickUp.wav" // [QOL-51]
+      notificationSound: "ClickUp.wav"
     };
     
     let newSettings = {};
@@ -158,7 +158,7 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
   chrome.storage.sync.get({ 
     blockedDomains: "",
     isDomainLogEnabled: false,
-    notificationSound: "ClickUp.wav" // [QOL-51]
+    notificationSound: "ClickUp.wav"
   }, (data) => {
     const domains = data.blockedDomains.split('\n').filter(Boolean);
     
@@ -191,11 +191,10 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
         
         const domainToLog = data.isDomainLogEnabled ? urlHostname : "";
         
-        // [QOL-51] Send message with sound info
         chrome.tabs.sendMessage(tab.id, { 
           action: "showLogPopup",
           domain: domainToLog,
-          sound: data.notificationSound // Pass the sound file name
+          sound: data.notificationSound
         }, (response) => {
           if (chrome.runtime.lastError) {
             console.warn(`Could not send message to tab ${tab.id}:`, chrome.runtime.lastError.message);
@@ -229,7 +228,6 @@ function updateMruTags(tag) {
   });
 }
 
-// --- [QOL-50] Test Web App Connection ---
 async function testWebAppConnection(url) {
   if (!url || (!url.startsWith("http:") && !url.startsWith("https://"))) {
     return { status: "error", message: "Invalid URL. Must start with http:// or https://" };
@@ -238,7 +236,7 @@ async function testWebAppConnection(url) {
   let testUrl;
   try {
     testUrl = new URL(url);
-    testUrl.searchParams.set("action", "test"); // Add ?action=test
+    testUrl.searchParams.set("action", "test");
   } catch (e) {
     return { status: "error", message: "Invalid URL format." };
   }
@@ -247,7 +245,7 @@ async function testWebAppConnection(url) {
     const response = await fetch(testUrl.toString(), {
       method: "GET",
       cache: "no-cache",
-      redirect: "follow" // CRITICAL for Apps Script
+      redirect: "follow"
     });
 
     if (!response.ok) {
@@ -260,7 +258,6 @@ async function testWebAppConnection(url) {
       throw new Error(`Google Script Error: ${json.message || 'Test failed'}`);
     }
     
-    // We expect { status: "success", message: "Connection successful!" }
     return json; 
 
   } catch (error) {
@@ -278,8 +275,11 @@ async function testWebAppConnection(url) {
 // --- Data Handling & Message Listeners ---
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
+  // Case 1: User submitted a log
   if (request.action === "logWork") {
+    // [NEW] request.data = { logText, tag, drifted, reactive, domain }
     console.log("Received log object:", request.data);
+    
     chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
       const WEB_APP_URL = data.webAppUrl;
       if (!WEB_APP_URL) {
@@ -289,6 +289,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ status: "error", message: errorMsg });
           return;
       }
+        
       logToGoogleSheet(request.data, WEB_APP_URL)
         .then((jsonResponse) => {
           console.log("Log successfully sent:", jsonResponse);
@@ -310,9 +311,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ status: "error", message: error.message });
         });
     });
+    
     return true; // Indicates async response
   }
   
+  // Case 2: User hit "Snooze" or "Skip"
   if (request.action === "snoozeLog") {
     const minutes = request.minutes;
     alarmBadgeActive = false;
@@ -333,9 +336,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates async response
   }
 
+  // Case 3: Log and Snooze
   if (request.action === "logAndSnooze") {
-    const { data: logData, minutes } = request;
+    const { data: logData, minutes } = request; // [NEW] logData includes .reactive
     console.log(`Received logAndSnooze for ${minutes} min:`, logData);
+    
     chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
       const WEB_APP_URL = data.webAppUrl;
       if (!WEB_APP_URL) {
@@ -343,6 +348,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ status: "error", message: errorMsg });
         return;
       }
+
       logToGoogleSheet(logData, WEB_APP_URL)
         .then((jsonResponse) => {
           console.log("Log (part 1) successful:", jsonResponse);
@@ -352,10 +358,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             lastError: "" 
           });
           updateMruTags(logData.tag);
+
           alarmBadgeActive = false;
           if (!timerBadgeActive) {
             chrome.action.setBadgeText({ text: '' });
           }
+          
           chrome.alarms.clear("workLogAlarm", (wasCleared) => {
             console.log(`Snoozing log for ${minutes} minutes.`);
             chrome.alarms.create("snoozeAlarm", { delayInMinutes: minutes });
@@ -371,6 +379,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates async response
   }
   
+  // Case 4: Settings updated
   if (request.action === "settingsUpdated") {
     console.log("Settings updated. Re-creating alarm (1-min delay).");
     createWorkLogAlarm(1);
@@ -378,6 +387,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 
+  // Case 5: Get Debug Info
   if (request.action === "getDebugInfo") {
     chrome.storage.sync.get({ webAppUrl: "(Not Set)" }, (syncData) => {
       chrome.storage.local.get({ lastError: "No errors yet." }, (localData) => {
@@ -390,6 +400,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates async response
   }
 
+  // Case 6: Get Active Tab Info
   if (request.action === "getActiveTabInfo") {
     chrome.storage.sync.get({ isDomainLogEnabled: false }, (data) => {
       if (!data.isDomainLogEnabled) {
@@ -411,6 +422,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates async response
   }
 
+  // Case 7: Get MRU Tags
   if (request.action === "getMruTags") {
     chrome.storage.local.get({ mruTags: [] }, (data) => {
       sendResponse(data.mruTags || []);
@@ -418,6 +430,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates async response
   }
   
+  // Case 8 & 9: Timer Badge Control
   if (request.action === "startTimer") {
     timerBadgeActive = true;
     chrome.action.setBadgeText({ text: 'ON' });
@@ -435,7 +448,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
   
-  // --- [QOL-50] New Case: Test Connection ---
+  // Case 10: Test Connection
   if (request.action === "testConnection") {
     testWebAppConnection(request.url)
       .then(response => {
@@ -450,12 +463,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // --- Google Sheet Fetch Logic ---
+
 async function logToGoogleSheet(logData, webAppUrl) {
-  // logData = { logText, tag, drifted, domain }
+  // [NEW] logData = { logText, tag, drifted, reactive, domain }
   const payload = {
     log: logData.logText,
     tag: logData.tag,
-    drifted: logData.drifted
+    drifted: logData.drifted,
+    reactive: logData.reactive // [NEW]
   };
   
   if (logData.domain !== undefined) {

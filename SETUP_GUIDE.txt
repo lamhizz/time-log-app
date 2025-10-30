@@ -1,9 +1,7 @@
 Work Log Timer - Setup Guide
-Last Updated: v2.1
+Last Updated: v2.2
 
 You MUST follow these 8 steps for the extension to work.
-
-The extension needs to send data to a Google Sheet. You will create this Sheet and a simple "bridge" (a Google Apps Script) that allows the extension to securely add rows to it.
 
 Step 1: Create Your Google Sheet
 
@@ -13,7 +11,7 @@ Name it whatever you want (e.g., "My Work Logs").
 
 Step 2: Add Headers to the Sheet
 
-This is a critical step. You must have 8 headers in the first row, in this exact order.
+This is a critical step. You must now have 9 headers in the first row, in this exact order.
 
 In cell A1, type: Date
 In cell B1, type: Time
@@ -23,10 +21,11 @@ In cell E1, type: Drifted
 In cell F1, type: Mins Since Last
 In cell G1, type: FullTimestamp
 In cell H1, type: Domain
+In cell I1, type: Reactive
 
 Your sheet should look like this:
-| Date | Time | Log Entry | Tag | Drifted | Mins Since Last | FullTimestamp | Domain |
-|---|---|---|---|---|---|---|---|
+| Date | Time | Log Entry | Tag | Drifted | Mins Since Last | FullTimestamp | Domain | Reactive |
+|---|---|---|---|---|---|---|---|---|
 
 Step 3: Create the Google Apps Script
 
@@ -40,9 +39,9 @@ Delete any placeholder code in the Code.gs file (e.g., function myFunction() { .
 Copy and paste the entire script below into the empty Code.gs editor:
 
 /*
- * Google Apps Script for Work Log Chrome Extension (v2.1)
- * - Handles 8-column layout.
- * - [QOL-50] Adds a doGet() function to handle connection tests.
+ * Google Apps Script for Work Log Chrome Extension (v2.2)
+ * - Handles 9-column layout (with "Reactive" column).
+ * - Handles doGet() for connection tests.
  */
 
 // Set your local time zone (e.g., "America/New_York", "Europe/London", "Asia/Tokyo")
@@ -91,8 +90,9 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const logEntry = data.log || "";
     const tag = data.tag || "";
-    const drifted = data.drifted ? "Yes" : "No"; // Convert boolean to "Yes"/"No"
+    const drifted = data.drifted ? "Yes" : "No";
     const domain = data.domain || "";
+    const reactive = data.reactive ? "Yes" : "No"; // [NEW] Get reactive status
     
     // --- 2. Get Sheet & Time ---
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
@@ -120,7 +120,7 @@ function doPost(e) {
     }
 
     // --- 4. Append New Row ---
-    // Order MUST match your 8-column header setup
+    // Order MUST match your 9-column header setup
     const newRow = [
       dateFormatted,    // A
       timeFormatted,    // B
@@ -129,7 +129,8 @@ function doPost(e) {
       drifted,          // E
       minsSinceLast,    // F
       fullTimestamp,    // G
-      domain            // H
+      domain,           // H
+      reactive          // I
     ];
     
     sheet.appendRow(newRow);
@@ -159,16 +160,14 @@ This creates the secret URL the extension will use.
 
 In the Apps Script editor, click the blue Deploy button in the top-right.
 
-Select New deployment. (This is critical. Do not "Manage" an old one.)
+Select New deployment.
 
 Click the "Select type" gear icon (⚙️) and choose Web app.
 
 In the "New deployment" dialog:
 
-Description: (Optional) "Work Log Receiver v2.1"
-
+Description: (Optional) "Work Log Receiver".
 Execute as: Select Me. (This runs the script as you).
-
 Who has access: Select Anyone.
 (Note: This does NOT make your sheet public. It only allows anyone with the secret, complex URL to send data. It is very secure.)
 
@@ -191,30 +190,14 @@ COPY THIS URL. You need it for the final step.
 
 Step 8: Configure the Extension
 
-Go to your extensions list: chrome://extensions
+In Chrome, go to your extensions list (chrome://extensions).
+Find the "Work Log Timer" extension.
+Right-click the extension icon and click Options.
 
-Find the "Work Log Timer" extension and click the Reload icon (the circular arrow). This is essential to load the new manifest.json file.
+You will see a settings page.
 
-Right-click the extension icon in your toolbar and click Options.
-
-In the first field, "Google Apps Script URL", paste the new URL you just copied.
-
-Click the "Test" button next to it.
-
-Troubleshooting
-
-If the "Test" button fails (especially if it shows a "Fetch failed," "CORS," or "Did not return valid JSON" error):
-
-Did you use a New deployment?
-When you add the doGet function, you must make a New deployment. Updating an old deployment (via "Manage deployments") will not make the doGet function public, and the test will fail.
-
-Is "Who has access" set to "Anyone"?
-It must be "Anyone". If it is set to "Anyone with Google account," the test will fail.
-
-Did you copy the correct URL?
-After deploying, you get a new URL. Make sure this new URL is pasted into the options page.
-
-Once the "Test" button shows a green "Success!" message:
+In the first field, "Google Apps Script URL", paste the URL you copied in Step 7.
+Click the "Test" button next to it. You should see a green "Success!" message. If not, double-check your Apps Script deployment.
 
 Configure your other settings (like Notification Sound, Log Interval, etc.).
 
