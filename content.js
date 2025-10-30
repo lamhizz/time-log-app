@@ -82,6 +82,50 @@ function createPopup() {
   
   driftedGroup.appendChild(driftedCheck);
   driftedGroup.appendChild(driftedLabel);
+
+  // --- [UX-02] New Snooze/Postpone UI ---
+  const actionsWrapper = document.createElement("div");
+  actionsWrapper.className = "work-log-actions-wrapper";
+
+  const snoozeGroup = document.createElement("div");
+  snoozeGroup.className = "work-log-snooze-group";
+
+  // Create the select dropdown
+  const snoozeSelect = document.createElement("select");
+  snoozeSelect.id = "work-log-snooze-select";
+  snoozeSelect.className = "work-log-popup-select work-log-snooze-select";
+  
+  // Create options
+  const snoozeOptions = [
+    { text: "Snooze 10 min", value: 10 },
+    { text: "Snooze 30 min", value: 30 },
+    { text: "Snooze 1 hour", value: 60 },
+    { text: "Skip this log", value: -1 } // -1 indicates "skip"
+  ];
+  
+  // Add a "Postpone 5 min" as the default, first option
+  const defaultSnooze = document.createElement("option");
+  defaultSnooze.value = "5";
+  defaultSnooze.textContent = "Postpone 5 min";
+  defaultSnooze.selected = true;
+  snoozeSelect.appendChild(defaultSnooze);
+
+  snoozeOptions.forEach(opt => {
+    const option = document.createElement("option");
+    option.value = opt.value;
+    option.textContent = opt.text;
+    snoozeSelect.appendChild(option);
+  });
+  snoozeGroup.appendChild(snoozeSelect);
+
+  // Create the "Snooze" button
+  const snoozeButton = document.createElement("button");
+  snoozeButton.id = "work-log-snooze-button";
+  snoozeButton.className = "work-log-popup-button work-log-button-secondary";
+  snoozeButton.textContent = "Snooze";
+  snoozeGroup.appendChild(snoozeButton);
+  
+  // --- End Snooze UI ---
   
   // --- Buttons ---
   const submitButton = document.createElement("button");
@@ -90,13 +134,6 @@ function createPopup() {
   
   const statusMessage = document.createElement("p");
   statusMessage.id = "work-log-popup-status";
-  
-  const actionsWrapper = document.createElement("div");
-  actionsWrapper.className = "work-log-actions-wrapper";
-
-  const postponeButton = document.createElement("button");
-  postponeButton.className = "work-log-popup-button work-log-button-secondary";
-  postponeButton.textContent = "Postpone 5 min";
   
   const sameAsLastButton = document.createElement("button");
   sameAsLastButton.className = "work-log-popup-button work-log-button-secondary";
@@ -130,14 +167,17 @@ function createPopup() {
   
   submitButton.addEventListener("click", submitLog);
   
-  // Postpone
-  postponeButton.addEventListener("click", () => {
-    setLoading(true, "Postponing...");
-    chrome.runtime.sendMessage({ action: "postponeLog" }, (response) => {
-      if (response && response.status === "postponed") {
+  // [UX-02] Snooze Logic
+  snoozeButton.addEventListener("click", () => {
+    const minutes = parseInt(snoozeSelect.value, 10);
+    const actionText = minutes > 0 ? "Snoozing..." : "Skipping...";
+    
+    setLoading(true, actionText); // Use loading state
+    chrome.runtime.sendMessage({ action: "snoozeLog", minutes: minutes }, (response) => {
+      if (response && (response.status === "snoozed" || response.status === "skipped")) {
         closePopup();
       } else {
-        showStatus("Could not postpone.", "error");
+        showStatus("Could not snooze.", "error");
         setLoading(false);
       }
     });
@@ -147,7 +187,7 @@ function createPopup() {
   sameAsLastButton.addEventListener("click", () => {
     setLoading(true, "Logging last task...");
     chrome.storage.local.get({ lastLog: null, lastTag: null }, (data) => {
-      if (data.lastLog && data.lastTag) {
+      if (data.lastLog && data.lastTag !== null) { // Allow empty string tag
         // --- ADDED "↑ " prefix ---
         const logData = { 
           logText: "↑ " + data.lastLog, 
@@ -181,7 +221,8 @@ function createPopup() {
   // Helper to set loading state
   function setLoading(isLoading, message = "Log It (Ctrl+Enter)") {
     submitButton.disabled = isLoading;
-    postponeButton.disabled = isLoading;
+    snoozeButton.disabled = isLoading; // [UX-02]
+    snoozeSelect.disabled = isLoading; // [UX-02]
     sameAsLastButton.disabled = isLoading;
     tagSelect.disabled = isLoading;
     textarea.disabled = isLoading;
@@ -208,7 +249,8 @@ function createPopup() {
   modal.appendChild(textGroup);
   modal.appendChild(driftedGroup);
   modal.appendChild(submitButton);
-  actionsWrapper.appendChild(postponeButton);
+  // [UX-02] Add new snooze group
+  actionsWrapper.appendChild(snoozeGroup);
   actionsWrapper.appendChild(sameAsLastButton);
   modal.appendChild(actionsWrapper);
   modal.appendChild(statusMessage);
@@ -234,4 +276,3 @@ function showStatus(message, type) {
     statusMessage.style.display = "block";
   }
 }
-

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
 
 /*
- * Styles for the Work Log Popup (v1.4)
+ * Styles for the Work Log Popup (v1.6)
  * Modern, minimal, compact theme
  */
 
@@ -218,7 +218,7 @@
   cursor: not-allowed !important;
 }
 
-/* Secondary buttons ("Postpone", "Doing Same") */
+/* Secondary buttons ("Doing Same") */
 .work-log-button-secondary {
   flex-grow: 1 !important;
   background-color: #fff !important;
@@ -230,6 +230,25 @@
   border-color: var(--work-log-border) !important;
   color: var(--work-log-text-dark) !important;
 }
+
+/* --- [UX-02] Snooze Group --- */
+.work-log-snooze-group {
+  display: flex !important;
+  flex-grow: 2 !important; /* Make it take up more space */
+  gap: 6px !important;
+}
+.work-log-snooze-select {
+  flex-grow: 1 !important;
+  padding: 6px 10px !important; /* Match button padding */
+  font-size: 13px !important;
+  width: auto !important;
+  max-width: 150px;
+}
+#work-log-snooze-button {
+  flex-grow: 0 !important;
+  flex-shrink: 0 !important;
+}
+
 
 /* Status Message Area */
 #work-log-popup-status, .work-log-status {
@@ -246,4 +265,3 @@
 .work-log-status-success {
   color: var(--work-log-success) !important;
 }
-
