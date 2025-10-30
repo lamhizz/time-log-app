@@ -2,15 +2,35 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "showLogPopup") {
     if (!document.getElementById("work-log-popup-overlay")) {
-      createPopup(request.domain); // Pass domain
+      // [QOL-51] Pass domain and sound to createPopup
+      createPopup(request.domain, request.sound); 
     }
     sendResponse({ status: "popup shown" });
   }
   return true;
 });
 
-// Function to create and inject the popup modal
-function createPopup(domainToLog) { // [FEAT-03]
+// [QOL-51] Updated function signature
+function createPopup(domainToLog, soundToPlay) {
+  
+  // --- [QOL-51] Play sound ---
+  if (soundToPlay && soundToPlay !== "none") {
+    try {
+      // Construct the URL to the sound file in the extension package
+      const soundUrl = chrome.runtime.getURL(`sounds/${soundToPlay}`);
+      const audio = new Audio(soundUrl);
+      
+      // Play the audio. Handle potential browser restrictions on autoplay.
+      audio.play().catch(e => {
+        // Log a warning if autoplay was blocked, but don't break the popup
+        console.warn(`Work Log: Could not play notification sound (${soundToPlay}): ${e.message}`);
+      });
+    } catch (e) {
+      console.error("Work Log: Error trying to play sound.", e);
+    }
+  }
+  // --- End [QOL-51] ---
+
   const overlay = document.createElement("div");
   overlay.id = "work-log-popup-overlay";
   
@@ -33,7 +53,6 @@ function createPopup(domainToLog) { // [FEAT-03]
   tagSelect.id = "work-log-tag-select";
   tagSelect.className = "work-log-popup-select";
   
-  // Load tags from storage
   chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
     const tags = data.logTags.split('\n').filter(Boolean);
     
@@ -60,7 +79,6 @@ function createPopup(domainToLog) { // [FEAT-03]
   const mruTagsContainer = document.createElement("div");
   mruTagsContainer.className = "work-log-mru-tags-container";
   
-  // Load MRU tags
   chrome.runtime.sendMessage({ action: "getMruTags" }, (mruTags) => {
     if (mruTags && mruTags.length > 0) {
       mruTags.forEach(tag => {
@@ -76,7 +94,6 @@ function createPopup(domainToLog) { // [FEAT-03]
       });
     }
   });
-  // --- End [UX-10] ---
 
   // --- Log Text Area ---
   const textGroup = document.createElement("div");
@@ -102,7 +119,7 @@ function createPopup(domainToLog) { // [FEAT-03]
   driftedGroup.appendChild(driftedCheck);
   driftedGroup.appendChild(driftedLabel);
 
-  // --- [UX-02] New Snooze/Postpone UI ---
+  // --- Actions Wrapper ---
   const actionsWrapper = document.createElement("div");
   actionsWrapper.className = "work-log-actions-wrapper";
 
@@ -140,14 +157,11 @@ function createPopup(domainToLog) { // [FEAT-03]
   snoozeButton.textContent = "Snooze";
   snoozeGroup.appendChild(snoozeButton);
   
-  // --- End Snooze UI ---
-  
   // --- Buttons ---
   const submitButton = document.createElement("button");
   submitButton.id = "work-log-popup-submit";
   submitButton.textContent = "Log It (Ctrl+Enter)";
   
-  // --- [UX-13] Log and Snooze Button ---
   const logAndSnoozeButton = document.createElement("button");
   logAndSnoozeButton.id = "work-log-log-and-snooze-btn";
   logAndSnoozeButton.className = "work-log-popup-button work-log-button-secondary";
@@ -162,10 +176,9 @@ function createPopup(domainToLog) { // [FEAT-03]
   
   // --- Logic ---
 
-  // Main Submit Logic
   function submitLog(isLogAndSnooze = false) {
     const logText = textarea.value.trim();
-    const tag = tagSelect.value || ""; // Allow empty tag
+    const tag = tagSelect.value || "";
     const drifted = driftedCheck.checked;
 
     if (!logText) {
@@ -173,7 +186,6 @@ function createPopup(domainToLog) { // [FEAT-03]
       return;
     }
     
-    // [FEAT-03] Use the domain passed when creating the popup
     const logData = { logText, tag, drifted, domain: domainToLog || "" }; 
     
     if (isLogAndSnooze) {
@@ -191,25 +203,22 @@ function createPopup(domainToLog) { // [FEAT-03]
     }
   }
   
-  // Add keyboard shortcut
   textarea.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-      e.preventDefault(); // Prevent new line
-      submitLog(false); // Call the existing submit function
+      e.preventDefault();
+      submitLog(false);
     }
   });
   
   submitButton.addEventListener("click", () => submitLog(false));
   
-  // [UX-13]
   logAndSnoozeButton.addEventListener("click", () => submitLog(true));
   
-  // [UX-02] Snooze Logic
   snoozeButton.addEventListener("click", () => {
     const minutes = parseInt(snoozeSelect.value, 10);
     const actionText = minutes > 0 ? "Snoozing..." : "Skipping...";
     
-    setLoading(true, actionText); // Use loading state
+    setLoading(true, actionText);
     chrome.runtime.sendMessage({ action: "snoozeLog", minutes: minutes }, (response) => {
       if (response && (response.status === "snoozed" || response.status === "skipped")) {
         closePopup();
@@ -220,7 +229,6 @@ function createPopup(domainToLog) { // [FEAT-03]
     });
   });
   
-  // "Doing Same"
   sameAsLastButton.addEventListener("click", () => {
     setLoading(true, "Logging last task...");
     chrome.storage.local.get({ lastLog: null, lastTag: null }, (data) => {
@@ -229,7 +237,7 @@ function createPopup(domainToLog) { // [FEAT-03]
           logText: "↑ " + data.lastLog, 
           tag: data.lastTag, 
           drifted: false,
-          domain: domainToLog || "" // [FEAT-03]
+          domain: domainToLog || ""
         };
         chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
       } else {
@@ -239,14 +247,12 @@ function createPopup(domainToLog) { // [FEAT-03]
     });
   });
 
-  // Handle response from background.js
   function handleResponse(response) {
     if (chrome.runtime.lastError) {
         showStatus(`Error: ${chrome.runtime.lastError.message}`, "error");
         setLoading(false);
         return;
     }
-
     if (response && (response.status === "success" || response.status === "success_and_snoozed")) {
       closePopup();
     } else {
@@ -255,10 +261,9 @@ function createPopup(domainToLog) { // [FEAT-03]
     }
   }
 
-  // Helper to set loading state
   function setLoading(isLoading, message = "Log It (Ctrl+Enter)") {
     submitButton.disabled = isLoading;
-    logAndSnoozeButton.disabled = isLoading; // [UX-13]
+    logAndSnoozeButton.disabled = isLoading;
     snoozeButton.disabled = isLoading;
     snoozeSelect.disabled = isLoading;
     sameAsLastButton.disabled = isLoading;
@@ -284,12 +289,11 @@ function createPopup(domainToLog) { // [FEAT-03]
   modal.appendChild(closeButton);
   modal.appendChild(title);
   modal.appendChild(tagGroup);
-  modal.appendChild(mruTagsContainer); // [UX-10]
+  modal.appendChild(mruTagsContainer);
   modal.appendChild(textGroup);
   modal.appendChild(driftedGroup);
   modal.appendChild(submitButton);
-  modal.appendChild(logAndSnoozeButton); // [UX-13]
-  
+  modal.appendChild(logAndSnoozeButton);
   actionsWrapper.appendChild(snoozeGroup);
   actionsWrapper.appendChild(sameAsLastButton);
   modal.appendChild(actionsWrapper);
@@ -298,7 +302,7 @@ function createPopup(domainToLog) { // [FEAT-03]
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
   
-  textarea.focus(); // Focus text area
+  textarea.focus();
 }
 
 function closePopup() {
@@ -316,3 +320,4 @@ function showStatus(message, type) {
     statusMessage.style.display = "block";
   }
 }
+

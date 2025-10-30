@@ -11,19 +11,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const blockedDomainsInput = document.getElementById("blocked-domains");
   const webAppUrlInput = document.getElementById("web-app-url");
   const logDomainInput = document.getElementById("log-domain");
+  const testConnectionButton = document.getElementById("test-connection"); // [QOL-50]
+  const testStatusEl = document.getElementById("test-status"); // [QOL-50]
+  const notificationSoundInput = document.getElementById("notification-sound"); // [QOL-51]
 
   // Save options to chrome.storage.sync
   function saveOptions() {
     
-    // --- FIX: Add safety checks to all inputs before reading .value/.checked ---
     const logInterval = intervalInput ? intervalInput.value : 15;
     const logTags = tagsInput ? tagsInput.value : "";
     const isDebugMode = debugInput ? debugInput.checked : false;
     const blockedDomains = blockedDomainsInput ? blockedDomainsInput.value : "";
     const webAppUrl = webAppUrlInput ? webAppUrlInput.value.trim() : "";
     const isDomainLogEnabled = logDomainInput ? logDomainInput.checked : false;
+    const notificationSound = notificationSoundInput ? notificationSoundInput.value : "ClickUp.wav"; // [QOL-51]
 
-    // --- New: Get working days ---
     const workingDays = [];
     if (daysInputs) {
       daysInputs.forEach(input => {
@@ -33,11 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
-    // --- New: Get working hours ---
     const startHourVal = startHourInput ? startHourInput.value : "09:00";
     const endHourVal = endHourInput ? endHourInput.value : "18:00";
     
-    // Default to 9-18 if not set or if input is cleared
     const workStartHour = startHourVal ? parseInt(startHourVal.split(':')[0], 10) : 9;
     const workEndHour = endHourVal ? parseInt(endHourVal.split(':')[0], 10) : 18;
 
@@ -51,25 +51,22 @@ document.addEventListener("DOMContentLoaded", () => {
         workEndHour: workEndHour,
         blockedDomains: blockedDomains,
         webAppUrl: webAppUrl,
-        isDomainLogEnabled: isDomainLogEnabled
+        isDomainLogEnabled: isDomainLogEnabled,
+        notificationSound: notificationSound // [QOL-51]
       },
       () => {
-        // Update status to let user know options were saved.
         statusEl.textContent = "Settings saved!";
         setTimeout(() => {
           statusEl.textContent = "";
         }, 1500);
         
-        // Send a message to background.js to update the alarm
         chrome.runtime.sendMessage({ action: "settingsUpdated" });
       }
     );
   }
 
-  // Restores options using the preferences
-  // stored in chrome.storage.sync.
+  // Restores options
   function restoreOptions() {
-    // Provide defaults
     chrome.storage.sync.get(
       { 
         logInterval: 15, 
@@ -80,21 +77,18 @@ document.addEventListener("DOMContentLoaded", () => {
         workEndHour: 18,
         blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
         webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
-        isDomainLogEnabled: false
+        isDomainLogEnabled: false,
+        notificationSound: "ClickUp.wav" // [QOL-51]
       },
       (items) => {
-        // --- Safety checks for all elements ---
         if (intervalInput) intervalInput.value = items.logInterval;
         if (tagsInput) tagsInput.value = items.logTags;
         if (debugInput) debugInput.checked = items.isDebugMode;
         if (blockedDomainsInput) blockedDomainsInput.value = items.blockedDomains;
         if (webAppUrlInput) webAppUrlInput.value = items.webAppUrl;
+        if (logDomainInput) logDomainInput.checked = items.isDomainLogEnabled;
+        if (notificationSoundInput) notificationSoundInput.value = items.notificationSound; // [QOL-51]
         
-        if (logDomainInput) {
-          logDomainInput.checked = items.isDomainLogEnabled;
-        }
-        
-        // --- New: Restore working days ---
         if (daysInputs) {
           daysInputs.forEach(input => {
             if (items.workingDays.includes(input.dataset.day)) {
@@ -105,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
         
-        // --- New: Restore working hours ---
         const startHour = items.workStartHour || 9;
         const endHour = items.workEndHour || 18;
         
@@ -114,9 +107,37 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
   }
+  
+  // --- [QOL-50] Test Connection ---
+  function testConnection() {
+    const url = webAppUrlInput.value;
+    if (!url) {
+      testStatusEl.textContent = "Please enter a URL first.";
+      testStatusEl.className = "error";
+      return;
+    }
+    
+    testStatusEl.textContent = "Testing...";
+    testStatusEl.className = "";
+    testConnectionButton.disabled = true;
+    
+    chrome.runtime.sendMessage({ action: "testConnection", url: url }, (response) => {
+      if (chrome.runtime.lastError) {
+        testStatusEl.textContent = `Error: ${chrome.runtime.lastError.message}`;
+        testStatusEl.className = "error";
+      } else if (response.status === "success") {
+        testStatusEl.textContent = `Success! ${response.message}`;
+        testStatusEl.className = "success";
+      } else {
+        testStatusEl.textContent = `Failed: ${response.message || "Unknown error"}`;
+        testStatusEl.className = "error";
+      }
+      testConnectionButton.disabled = false;
+    });
+  }
 
   // --- Event Listeners ---
   restoreOptions();
   saveButton.addEventListener("click", saveOptions);
+  testConnectionButton.addEventListener("click", testConnection); // [QOL-50]
 });
-

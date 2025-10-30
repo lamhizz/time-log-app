@@ -1,5 +1,5 @@
 Work Log Timer - Setup Guide
-Last Updated: v1.9
+Last Updated: v2.1
 
 You MUST follow these 8 steps for the extension to work.
 
@@ -8,9 +8,7 @@ The extension needs to send data to a Google Sheet. You will create this Sheet a
 Step 1: Create Your Google Sheet
 
 Go to sheets.google.com
-
 Create a new Blank spreadsheet.
-
 Name it whatever you want (e.g., "My Work Logs").
 
 Step 2: Add Headers to the Sheet
@@ -18,27 +16,21 @@ Step 2: Add Headers to the Sheet
 This is a critical step. You must have 8 headers in the first row, in this exact order.
 
 In cell A1, type: Date
-
 In cell B1, type: Time
-
 In cell C1, type: Log Entry
-
 In cell D1, type: Tag
-
 In cell E1, type: Drifted
-
 In cell F1, type: Mins Since Last
-
 In cell G1, type: FullTimestamp
-
 In cell H1, type: Domain
 
 Your sheet should look like this:
+| Date | Time | Log Entry | Tag | Drifted | Mins Since Last | FullTimestamp | Domain |
+|---|---|---|---|---|---|---|---|
 
 Step 3: Create the Google Apps Script
 
 In your new Google Sheet, click Extensions > Apps Script.
-
 A new browser tab will open with the Apps Script editor.
 
 Step 4: Paste the Script Code
@@ -48,8 +40,9 @@ Delete any placeholder code in the Code.gs file (e.g., function myFunction() { .
 Copy and paste the entire script below into the empty Code.gs editor:
 
 /*
- * Google Apps Script for Work Log Chrome Extension (v1.9)
- * This script handles the 8-column layout.
+ * Google Apps Script for Work Log Chrome Extension (v2.1)
+ * - Handles 8-column layout.
+ * - [QOL-50] Adds a doGet() function to handle connection tests.
  */
 
 // Set your local time zone (e.g., "America/New_York", "Europe/London", "Asia/Tokyo")
@@ -60,6 +53,34 @@ const TIME_ZONE = "America/New_York";
 const SHEET_NAME = "Sheet1";
 
 /**
+ * [QOL-50] Handles GET requests for testing the connection.
+ */
+function doGet(e) {
+  try {
+    if (e.parameter.action === "test") {
+      // Test passed
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          message: "Connection successful!",
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+  } catch (err) {
+    // Test failed
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: err.message })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // Default GET response
+  return ContentService.createTextOutput(
+    JSON.stringify({ status: "error", message: "Invalid request. Use POST to log data or GET with ?action=test to test." })
+  ).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/**
  * This function runs when the web app receives a POST request
  * from the Chrome extension.
  */
@@ -67,12 +88,11 @@ function doPost(e) {
   let sheet;
   try {
     // --- 1. Parse Data ---
-    // Get the data sent from the extension
     const data = JSON.parse(e.postData.contents);
     const logEntry = data.log || "";
     const tag = data.tag || "";
     const drifted = data.drifted ? "Yes" : "No"; // Convert boolean to "Yes"/"No"
-    const domain = data.domain || ""; // [FEAT-03] Get the domain
+    const domain = data.domain || "";
     
     // --- 2. Get Sheet & Time ---
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
@@ -83,7 +103,6 @@ function doPost(e) {
     const now = new Date();
     const fullTimestamp = now.toISOString();
     
-    // Format Date and Time for the new columns
     const dateFormatted = Utilities.formatDate(now, TIME_ZONE, "yyyy-MM-dd");
     const timeFormatted = Utilities.formatDate(now, TIME_ZONE, "HH:mm:ss");
 
@@ -92,8 +111,7 @@ function doPost(e) {
     const lastRow = sheet.getLastRow();
     
     if (lastRow >= 1) {
-      // Get the timestamp from the *previous* entry (Column G)
-      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue();
+      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); // Column G
       if (lastTimestampStr) {
         const lastTimestamp = new Date(lastTimestampStr);
         const diffMs = now.getTime() - lastTimestamp.getTime();
@@ -102,7 +120,7 @@ function doPost(e) {
     }
 
     // --- 4. Append New Row ---
-    // This order MUST match your 8-column header setup
+    // Order MUST match your 8-column header setup
     const newRow = [
       dateFormatted,    // A
       timeFormatted,    // B
@@ -123,10 +141,7 @@ function doPost(e) {
 
   } catch (err) {
     // --- 6. Return Error ---
-    // Log the error for debugging
     Logger.log(err);
-    
-    // Return a JSON error message to the extension
     return ContentService.createTextOutput(
       JSON.stringify({ status: "error", message: err.message, sheetName: SHEET_NAME })
     ).setMimeType(ContentService.MimeType.JSON);
@@ -144,18 +159,17 @@ This creates the secret URL the extension will use.
 
 In the Apps Script editor, click the blue Deploy button in the top-right.
 
-Select New deployment.
+Select New deployment. (This is critical. Do not "Manage" an old one.)
 
 Click the "Select type" gear icon (⚙️) and choose Web app.
 
 In the "New deployment" dialog:
 
-Description: (Optional) "Work Log Receiver".
+Description: (Optional) "Work Log Receiver v2.1"
 
 Execute as: Select Me. (This runs the script as you).
 
 Who has access: Select Anyone.
-
 (Note: This does NOT make your sheet public. It only allows anyone with the secret, complex URL to send data. It is very secure.)
 
 Click Deploy.
@@ -163,13 +177,9 @@ Click Deploy.
 Step 6: Authorize the Script
 
 Google will ask you to authorize the script. Click Authorize access.
-
 Choose your Google account.
-
 You will see a "Google hasn't verified this app" warning. This is normal.
-
 Click Advanced, then click "Go to [Your Script Name] (unsafe)".
-
 Click Allow to give the script permission to edit your spreadsheets.
 
 Step 7: Copy the Web App URL
@@ -181,16 +191,33 @@ COPY THIS URL. You need it for the final step.
 
 Step 8: Configure the Extension
 
-In Chrome, go to your extensions list (chrome://extensions).
+Go to your extensions list: chrome://extensions
 
-Find the "Work Log Timer" extension.
+Find the "Work Log Timer" extension and click the Reload icon (the circular arrow). This is essential to load the new manifest.json file.
 
-Right-click the extension icon and click Options.
+Right-click the extension icon in your toolbar and click Options.
 
-You will see a settings page.
+In the first field, "Google Apps Script URL", paste the new URL you just copied.
 
-In the first field, "Google Apps Script URL", paste the URL you copied in Step 7.
+Click the "Test" button next to it.
+
+Troubleshooting
+
+If the "Test" button fails (especially if it shows a "Fetch failed," "CORS," or "Did not return valid JSON" error):
+
+Did you use a New deployment?
+When you add the doGet function, you must make a New deployment. Updating an old deployment (via "Manage deployments") will not make the doGet function public, and the test will fail.
+
+Is "Who has access" set to "Anyone"?
+It must be "Anyone". If it is set to "Anyone with Google account," the test will fail.
+
+Did you copy the correct URL?
+After deploying, you get a new URL. Make sure this new URL is pasted into the options page.
+
+Once the "Test" button shows a green "Success!" message:
+
+Configure your other settings (like Notification Sound, Log Interval, etc.).
 
 Scroll to the bottom and click Save Settings.
 
-You are all set! The extension is now configured. The first popup should appear based on your settings.
+You are all set! The extension is now configured.

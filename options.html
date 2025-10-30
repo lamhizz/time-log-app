@@ -15,6 +15,8 @@
       --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
       --work-log-text-dark: #1F2937; /* Gray 800 */
       --work-log-text-light: #6B7280; /* Gray 500 */
+      --work-log-error: #EF4444; /* Red 500 */
+      --work-log-success: #10B981; /* Green 500 */
       --work-log-border: #D1D5DB; /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -54,7 +56,8 @@
     }
     .form-group input[type="number"],
     .form-group textarea,
-    .form-group input[type="text"] { /* Added text input */
+    .form-group input[type="text"],
+    .form-group select { /* Added select */
       width: 100%;
       padding: 9px 12px;
       font-size: 14px;
@@ -71,7 +74,8 @@
       max-width: 100px;
     }
     .form-group input:focus,
-    .form-group textarea:focus {
+    .form-group textarea:focus,
+    .form-group select:focus { /* Added select */
       border-color: var(--work-log-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
@@ -143,11 +147,43 @@
       color: var(--work-log-text-light);
     }
     
-    /* Style for the URL input */
-    .form-group input[type="text"] {
-      font-size: 13px;
-      color: var(--work-log-text-dark);
+    /* --- [QOL-50] Test Button Styles --- */
+    .form-group-flex {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
     }
+    .form-group-flex input[type="text"] {
+      flex-grow: 1;
+    }
+    .form-group-flex button {
+      flex-shrink: 0;
+      background-color: var(--work-log-secondary);
+      border: 1px solid var(--work-log-border);
+      color: var(--work-log-text-dark);
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--work-log-radius);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .form-group-flex button:hover {
+      background-color: var(--work-log-secondary-hover);
+    }
+    #test-status {
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 6px;
+      padding-left: 2px;
+    }
+    #test-status.success {
+      color: var(--work-log-success);
+    }
+    #test-status.error {
+      color: var(--work-log-error);
+    }
+    /* --- End [QOL-50] --- */
     
     button#save {
       background-color: var(--work-log-primary);
@@ -180,34 +216,47 @@
   <div class="container">
     <h1>Work Log Settings</h1>
 
-    <!-- --- [SEC-01] Web App URL --- -->
+    <!-- --- [QOL-50] Web App URL --- -->
     <div class="form-group">
       <label for="web-app-url">Google Apps Script URL</label>
-      <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/...">
-      <p class="description">Paste your deployed "Web app" URL here. This is required for logging.</p>
+      <div class="form-group-flex">
+        <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/...">
+        <button id="test-connection">Test</button>
+      </div>
+      <div id="test-status"></div>
+      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must update your Apps Script (from SETUP_GUIDE.txt) for logging and testing to work.</p>
     </div>
 
-    <!-- --- [FIX] Re-added Log Interval --- -->
     <div class="form-group">
       <label for="log-interval">Log Interval (in minutes)</label>
       <input type="number" id="log-interval" min="1">
       <p class="description">How often the popup should appear. Default is 15.</p>
     </div>
 
+    <!-- --- [QOL-51] Notification Sound --- -->
+    <div class="form-group">
+      <label for="notification-sound">Notification Sound</label>
+      <select id="notification-sound">
+        <option value="none">None</option>
+        <option value="ClickUp.wav" selected>ClickUp (Default)</option>
+        <option value="Chime.wav">Chime</option>
+        <option value="Notify.wav">Notify</option>
+      </select>
+      <p class="description">Plays a sound when the log popup appears. Requires a <code>sounds</code> folder with the .wav files in the extension directory.</p>
+    </div>
+    
     <div class="form-group">
       <label for="log-tags">Log Tags</label>
       <textarea id="log-tags" rows="5"></textarea>
       <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
     </div>
     
-    <!-- --- [UX-01] Blocked Domains --- -->
     <div class="form-group">
       <label for="blocked-domains">"Do Not Disturb" Domains</label>
       <textarea id="blocked-domains" rows="4"></textarea>
       <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
     </div>
     
-    <!-- --- Working Days --- -->
     <div class="form-group">
       <label>Active Working Days</label>
       <div class="working-days-group">
@@ -242,7 +291,6 @@
       </div>
     </div>
     
-    <!-- --- Working Hours --- -->
     <div class="form-group">
       <label>Active Working Hours</label>
       <div class="working-hours-group">
@@ -253,7 +301,6 @@
       <p class="description">Popup will only appear between these hours (24h format).</p>
     </div>
     
-    <!-- --- [FEAT-03] Log Domain Checkbox --- -->
     <div class="form-group form-group-checkbox">
       <input type="checkbox" id="log-domain">
       <label for="log-domain">Log active website domain</label>
@@ -273,4 +320,3 @@
   <script src="options.js"></script>
 </body>
 </html>
-

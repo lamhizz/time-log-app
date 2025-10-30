@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Work Log Timer",
-  "version": "1.7",
+  "version": "2.1",
   "description": "Pops up at an interval to log your work to a Google Sheet.",
   "permissions": [
     "storage",
@@ -36,6 +36,12 @@
       },
       "description": "Open the work log popup"
     }
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [ "sounds/*.wav" ],
+      "matches": [ "<all_urls>" ]
+    }
+  ]
 }
 
