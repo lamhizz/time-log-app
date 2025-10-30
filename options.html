@@ -54,7 +54,7 @@
     }
     .form-group input[type="number"],
     .form-group textarea,
-    .form-group input[type="text"] { /* --- MODIFIED: Added input[type="text"] --- */
+    .form-group input[type="text"] { /* Added text input */
       width: 100%;
       padding: 9px 12px;
       font-size: 14px;
@@ -96,7 +96,6 @@
       height: 16px;
     }
     
-    /* --- New: Working Days --- */
     .working-days-group {
       display: flex;
       gap: 12px;
@@ -121,7 +120,6 @@
        cursor: pointer;
     }
     
-    /* --- New: Working Hours --- */
     .working-hours-group {
       display: flex;
       align-items: center;
@@ -145,12 +143,12 @@
       color: var(--work-log-text-light);
     }
     
-    /* --- NEW: Style for the URL input --- */
+    /* Style for the URL input */
     .form-group input[type="text"] {
       font-size: 13px;
       color: var(--work-log-text-dark);
     }
-
+    
     button#save {
       background-color: var(--work-log-primary);
       color: white;
@@ -182,27 +180,34 @@
   <div class="container">
     <h1>Work Log Settings</h1>
 
-    <!-- --- New: [SEC-01] Web App URL --- -->
+    <!-- --- [SEC-01] Web App URL --- -->
     <div class="form-group">
       <label for="web-app-url">Google Apps Script URL</label>
       <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/...">
       <p class="description">Paste your deployed "Web app" URL here. This is required for logging.</p>
     </div>
 
+    <!-- --- [FIX] Re-added Log Interval --- -->
     <div class="form-group">
-      <label for="log-tags">Log Tags</label>
-      <textarea id="log-tags"></textarea>
-      <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
+      <label for="log-interval">Log Interval (in minutes)</label>
+      <input type="number" id="log-interval" min="1">
+      <p class="description">How often the popup should appear. Default is 15.</p>
     </div>
 
-    <!-- --- New: [UX-01] Blocked Domains --- -->
+    <div class="form-group">
+      <label for="log-tags">Log Tags</label>
+      <textarea id="log-tags" rows="5"></textarea>
+      <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
+    </div>
+    
+    <!-- --- [UX-01] Blocked Domains --- -->
     <div class="form-group">
       <label for="blocked-domains">"Do Not Disturb" Domains</label>
       <textarea id="blocked-domains" rows="4"></textarea>
       <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
     </div>
     
-    <!-- --- New: Working Days --- -->
+    <!-- --- Working Days --- -->
     <div class="form-group">
       <label>Active Working Days</label>
       <div class="working-days-group">
@@ -237,7 +242,7 @@
       </div>
     </div>
     
-    <!-- --- New: Working Hours --- -->
+    <!-- --- Working Hours --- -->
     <div class="form-group">
       <label>Active Working Hours</label>
       <div class="working-hours-group">
@@ -248,7 +253,7 @@
       <p class="description">Popup will only appear between these hours (24h format).</p>
     </div>
     
-    <!-- --- New: [FEAT-03] Log Domain Checkbox --- -->
+    <!-- --- [FEAT-03] Log Domain Checkbox --- -->
     <div class="form-group form-group-checkbox">
       <input type="checkbox" id="log-domain">
       <label for="log-domain">Log active website domain</label>
@@ -268,5 +273,4 @@
   <script src="options.js"></script>
 </body>
 </html>
-
 

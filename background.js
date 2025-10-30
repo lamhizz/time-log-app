@@ -17,7 +17,6 @@ chrome.runtime.onInstalled.addListener(() => {
       workStartHour: 9,
       workEndHour: 18,
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
-      // --- UPDATED with your new default link ---
       webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
       isDomainLogEnabled: false // --- New: [FEAT-03] ---
     };
@@ -338,6 +337,34 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true; // Indicates async response
   }
+
+  // --- FIX: [FEAT-03] ---
+  // Case 5: The popup.js is asking for the active tab's domain
+  if (request.action === "getActiveTabInfo") {
+    // Get settings first to see if domain logging is enabled
+    chrome.storage.sync.get({ isDomainLogEnabled: false }, (data) => {
+      if (!data.isDomainLogEnabled) {
+        sendResponse({ domain: "" }); // Send empty domain if disabled
+        return;
+      }
+      
+      // If enabled, query for the active tab
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0 && tabs[0].url) {
+          let urlHostname = "";
+          try {
+            urlHostname = new URL(tabs[0].url).hostname;
+          } catch (e) {
+            // Invalid URL (e.g., "chrome://", "about:blank")
+          }
+          sendResponse({ domain: urlHostname });
+        } else {
+          sendResponse({ domain: "" }); // No active tab found or no URL
+        }
+      });
+    });
+    return true; // Indicates async response
+  }
   
 });
 
@@ -351,8 +378,9 @@ async function logToGoogleSheet(logData, webAppUrl) {
     drifted: logData.drifted
   };
   
-  // --- New: [FEAT-03] Conditionally add domain to payload ---
-  if (logData.domain) {
+  // --- New: [FEAT-03] *** FIX ***
+  // Check if .domain exists (even if it's "")
+  if (logData.domain !== undefined) {
     payload.domain = logData.domain;
   }
   

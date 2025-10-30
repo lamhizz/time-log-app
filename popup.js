@@ -53,8 +53,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     setLoading(true);
-    const logData = { logText, tag, drifted };
-    chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
+
+    // --- FIX: [FEAT-03] ---
+    // Ask background.js for the active tab's domain *before* logging
+    chrome.runtime.sendMessage({ action: "getActiveTabInfo" }, (tabInfo) => {
+      if (chrome.runtime.lastError) {
+        // Handle error (e.g., no active tab)
+        console.warn("Could not get active tab info:", chrome.runtime.lastError.message);
+      }
+
+      // 'tabInfo.domain' will be the domain string if logging is enabled,
+      // or an empty string "" if it's disabled or tab is invalid.
+      const domain = tabInfo ? tabInfo.domain : "";
+      
+      const logData = { 
+        logText, 
+        tag, 
+        drifted,
+        domain: domain // Add the domain
+      };
+      
+      // Now send the complete log
+      chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
+    });
   }
 
   function handleResponse(response) {
@@ -139,4 +160,3 @@ document.addEventListener("DOMContentLoaded", () => {
   checkDebugMode();
   logInput.focus();
 });
-
