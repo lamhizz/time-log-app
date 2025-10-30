@@ -59,7 +59,7 @@
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2D%2Dwidth%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
       background-repeat: no-repeat;
       background-position: right 8px center;
       background-size: 16px;
@@ -169,6 +169,7 @@
 <body>
   <h3>Log Your Work</h3>
   
+  <!-- Tag Dropdown -->
   <div class="form-group">
     <label for="tag-select">Tag:</label>
     <select id="tag-select">
@@ -176,20 +177,25 @@
     </select>
   </div>
 
+  <!-- Log Textarea -->
   <div class="form-group">
     <label for="log-input">Log:</label>
     <textarea id="log-input" placeholder="What are you working on?"></textarea>
   </div>
   
+  <!-- "Drifted" Checkbox -->
   <div class="checkbox-group">
     <input type="checkbox" id="drifted-check">
     <label for="drifted-check">I drifted (was off-task)</label>
   </div>
   
+  <!-- Submit Button -->
   <button id="submit-log">Log It (Ctrl+Enter)</button>
   
+  <!-- Status Message -->
   <p class="status" id="status-message"></p>
 
+  <!-- Footer & Debug -->
   <div class="footer-links">
     <a id="open-settings">Settings</a>
     <a id="toggle-debug">Show Debug</a>
@@ -203,4 +209,3 @@
   <script src="popup.js"></script>
 </body>
 </html>
-
