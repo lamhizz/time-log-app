@@ -1,185 +1,71 @@
-Work Log Timer - Chrome Extension
-
-This extension helps you log your work every 15 minutes on weekdays (Monday-Friday) by showing a pop-up. Your logs are saved directly to a Google Sheet for later analysis.
-
-You MUST follow these setup instructions for the extension to work.
-
-1. Create Your Google Sheet
-
-Go to sheets.google.com and create a New blank spreadsheet.
-
-Name it something clear, like "My Work Logs".
-
-In the first row (Row 1), create your headers. The extension (v1.5) sends four pieces of data: Timestamp, Log Entry, Tag, and Drifted.
-
-In cell A1, type: Timestamp
-
-In cell B1, type: Log Entry
-
-In cell C1, type: Tag
-
-In cell D1, type: Drifted
-
-Your sheet should look like this:
-
-
-
-A
-
-B
-
-C
-
-D
-
-1
-
-Timestamp
-
-Log Entry
-
-Tag
-
-Drifted
-
-2
-
-
-
-
-
-
-
-
-
-2. Create the Google Apps Script
-
-This script will act as the "bridge" between the Chrome extension and your Google Sheet. It creates a secret web URL that the extension can send data to.
-
-In your new Google Sheet, click Extensions > Apps Script.
-
-A new browser tab will open with the Apps Script editor.
-
-Delete any placeholder code in the Code.gs file (e.g., function myFunction() { ... }).
-
-Copy and paste the entire script below into the Code.gs editor:
-
-/*
- * Google Apps Script for Work Log Chrome Extension (v1.5)
- *
- * This script is updated to match the data structure sent by
- * background.js (v1.5), which includes `log`, `tag`, and `drifted`.
- *
- * Your Google Sheet Headers (Row 1) should be:
- * A1: Timestamp
- * B1: Log Entry
- * C1: Tag
- * D1: Drifted
- */
-
-// This function runs when the web app receives a POST request.
-function doPost(e) {
-  try {
-    // Get the active spreadsheet and the sheet named "Sheet1".
-    // !!! IMPORTANT: If your sheet has a different name, change "Sheet1" below.
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
-    
-    if (!sheet) {
-      // Handle case where sheet name is wrong
-      throw new Error("Could not find a sheet named 'Sheet1'. Please check your sheet name.");
-    }
-
-    // Parse the data object sent from the extension
-    var data = JSON.parse(e.postData.contents);
-    
-    // Extract data from the payload
-    var logEntry = data.log || "";       // Get the log text
-    var tag = data.tag || "";           // Get the tag
-    var drifted = data.drifted || false;  // Get the drifted boolean
-
-    // Get the current date and time
-    var timestamp = new Date();
-
-    // Add the new log as a new row, matching the headers
-    // [Timestamp, Log Entry, Tag, Drifted]
-    sheet.appendRow([timestamp, logEntry, tag, drifted]);
-
-    // Return a success message (JSON format)
-    return ContentService.createTextOutput(JSON.stringify({ "status": "success", "row": sheet.getLastRow() }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (err) {
-    // Log any errors (visible in Apps Script -> Executions)
-    Logger.log(err);
-    
-    // Return an error message to the extension
-    return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-
-Save the script (click the floppy disk icon or Ctrl+S). Give it a name if prompted (e.g., "Work Log Script").
-
-3. Deploy the Apps Script as a Web App
-
-This is the most critical step.
-
-In the Apps Script editor, click the blue Deploy button in the top-right corner.
-
-Select New deployment.
-
-Click the "Select type" gear icon (⚙️) and choose Web app.
-
-In the "New deployment" dialog:
-
-Description: (Optional) "Work Log Receiver".
-
-Execute as: Select Me. (This runs the script as you, with your permission to edit the sheet).
-
-Who has access: Select Anyone.
-
-Note: This does not make your sheet public. It only allows anyone who has the secret, complex URL to send data to the script. It is very secure.
-
-Click Deploy.
-
-Authorize access: Google will ask you to authorize the script.
-
-Click Authorize access.
-
-Choose your Google account.
-
-You may see a "Google hasn't verified this app" warning. This is normal for your own scripts. Click Advanced, then click "Go to [Your Script Name] (unsafe)".
-
-Click Allow to give the script permission to manage your spreadsheets.
-
-Copy the Web App URL: After deploying, you will see a dialog box with a Web app URL. It will look something like https://script.google.com/macros/s/.../exec.
-
-COPY THIS URL. You need it for the next step.
-
-4. Configure the Chrome Extension
-
-Go back to the extension files you downloaded.
-
-Open the background.js file in a text editor.
-
-Find this line at the top:
-const WEB_APP_URL = "YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE";
-
-Replace the text "YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE" with the Web app URL you just copied.
-
-Save the background.js file.
-
-5. Load the Extension in Chrome
-
-Open Chrome and go to the extensions page: chrome://extensions
-
-In the top-right corner, turn on Developer mode.
-
-Click the Load unpacked button.
-
-Select the folder that contains all the extension files (manifest.json, background.js, etc.).
-
-The "Work Log Timer" extension should now appear in your list.
-
-That's it! The extension is installed. The alarm will create itself and should fire in 1-15 minutes for the first time, and then every 15 minutes after that (on weekdays).
+# Work Log Timer - Chrome Extension
+
+Work Log Timer is a Chrome extension designed to help you maintain a consistent and detailed log of your work activities. At a customizable interval, it presents a simple popup, prompting you to jot down what you're working on. These logs are sent directly to a private Google Sheet, creating a valuable dataset for personal productivity analysis, timesheet completion, or project tracking.
+
+## How it Works
+
+The extension operates as a service worker (`background.js`) that runs in the background, managing a timer. When the timer fires, it injects a content script (`content.js`) into your active tab, which then displays the logging popup. User input is securely sent to a Google Apps Script, which acts as a bridge to your Google Sheet. All configuration is handled through a dedicated options page.
+
+## Features
+
+- **Automated Logging Prompts**: A popup appears at a configurable interval (e.g., every 15 minutes) to remind you to log your work.
+- **Direct to Google Sheets**: Your logs are sent instantly and securely to a Google Sheet you own.
+- **Task Timer**: A built-in timer in the popup allows you to track the duration of a specific task. When you stop the timer, the task name and duration are pre-filled into the log input.
+- **Customizable Tags**: Define a list of common tags (e.g., "Meeting," "Focus Time," "Email") for quick categorization of your logs. The three most recently used tags are always just a click away.
+- **"Do Not Disturb" Mode**: Specify domains (e.g., `youtube.com`, `meet.google.com`) where you don't want the logging popup to appear.
+- **Configurable Work Hours**: Set your working days and hours to ensure the extension only prompts you when you're actually working.
+- **Manual Logging**: Manually trigger the popup at any time using a keyboard shortcut (Ctrl+Shift+L by default) or the right-click context menu.
+- **Quick Actions**: Buttons for common tasks like "Log 'Doing Same'" or "Log a 'Break'" streamline the logging process.
+- **Snooze & Skip**: Easily postpone or skip a log prompt if you're in the middle of something important.
+
+## Setup Instructions
+
+For the extension to work, you must connect it to a Google Sheet via a Google Apps Script. Please follow these steps carefully.
+
+**For the most detailed, up-to-date instructions, please refer to the `SETUP_GUIDE.txt` file included in this repository.**
+
+1.  **Create Your Google Sheet**:
+    *   Go to [sheets.google.com](https://sheets.google.com) and create a new blank spreadsheet.
+    *   Name it something memorable, like "My Work Logs."
+    *   In the first row, create the following nine headers exactly as written:
+        | A             | B    | C         | D   | E       | F               | G             | H      | I        |
+        | ------------- | ---- | --------- | --- | ------- | --------------- | ------------- | ------ | -------- |
+        | `Date`        | `Time` | `Log Entry` | `Tag` | `Drifted` | `Mins Since Last` | `FullTimestamp` | `Domain` | `Reactive` |
+
+2.  **Create the Google Apps Script**:
+    *   In your Google Sheet, click `Extensions` > `Apps Script`.
+    *   Delete any placeholder code in the `Code.gs` file.
+    *   Open the `SETUP_GUIDE.txt` file from this repository and copy the entire Apps Script code provided.
+    *   Paste the code into the Apps Script editor.
+    *   **Important**: Find the line `const TIME_ZONE = "America/New_York";` and change the time zone to your own.
+    *   Save the script.
+
+3.  **Deploy the Script as a Web App**:
+    *   Click the blue `Deploy` button and select `New deployment`.
+    *   For "Select type," choose `Web app`.
+    *   Configure the deployment:
+        *   **Execute as**: `Me`
+        *   **Who has access**: `Anyone` (This is secure; only someone with the secret URL can send data).
+    *   Click `Deploy`. You will need to authorize the script's permissions.
+    *   After deployment, **copy the Web app URL**.
+
+4.  **Configure the Extension**:
+    *   Go to `chrome://extensions` and find the "Work Log Timer" extension.
+    *   Right-click its icon and select `Options`.
+    *   Paste the **Web app URL** you copied into the "Google Apps Script URL" field.
+    *   Click the "Test" button to verify the connection. You should see a success message.
+    *   Customize other settings as needed and click `Save Settings`.
+
+## Configuration Options
+
+All settings are managed through the extension's options page.
+
+- **Google Apps Script URL**: The URL for your deployed web app. (Required)
+- **Log Interval**: The time in minutes between logging prompts.
+- **Log Tags**: A list of tags to be available in the dropdown, with each tag on a new line.
+- **Working Week**: Checkboxes to select the days you want the logging prompts to be active.
+- **Working Hours**: The start and end time for logging prompts.
+- **"Do Not Disturb" Domains**: A list of domains where the popup should not automatically appear, with each domain on a new line.
+- **Notification Sound**: Choose a sound to play when the popup appears.
+- **Log Active Domain**: If checked, the domain of the active tab will be included in the log data.
+- **Debug Mode**: If checked, a "Show Debug" link will appear in the popup, providing troubleshooting information.
