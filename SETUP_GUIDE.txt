@@ -1,0 +1,196 @@
+Work Log Timer - Setup Guide
+Last Updated: v1.9
+
+You MUST follow these 8 steps for the extension to work.
+
+The extension needs to send data to a Google Sheet. You will create this Sheet and a simple "bridge" (a Google Apps Script) that allows the extension to securely add rows to it.
+
+Step 1: Create Your Google Sheet
+
+Go to sheets.google.com
+
+Create a new Blank spreadsheet.
+
+Name it whatever you want (e.g., "My Work Logs").
+
+Step 2: Add Headers to the Sheet
+
+This is a critical step. You must have 8 headers in the first row, in this exact order.
+
+In cell A1, type: Date
+
+In cell B1, type: Time
+
+In cell C1, type: Log Entry
+
+In cell D1, type: Tag
+
+In cell E1, type: Drifted
+
+In cell F1, type: Mins Since Last
+
+In cell G1, type: FullTimestamp
+
+In cell H1, type: Domain
+
+Your sheet should look like this:
+
+Step 3: Create the Google Apps Script
+
+In your new Google Sheet, click Extensions > Apps Script.
+
+A new browser tab will open with the Apps Script editor.
+
+Step 4: Paste the Script Code
+
+Delete any placeholder code in the Code.gs file (e.g., function myFunction() { ... }).
+
+Copy and paste the entire script below into the empty Code.gs editor:
+
+/*
+ * Google Apps Script for Work Log Chrome Extension (v1.9)
+ * This script handles the 8-column layout.
+ */
+
+// Set your local time zone (e.g., "America/New_York", "Europe/London", "Asia/Tokyo")
+// Find your time zone here: [https://en.wikipedia.org/wiki/List_of_tz_database_time_zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+const TIME_ZONE = "America/New_York";
+
+// The name of the sheet (tab) where logs will be added.
+const SHEET_NAME = "Sheet1";
+
+/**
+ * This function runs when the web app receives a POST request
+ * from the Chrome extension.
+ */
+function doPost(e) {
+  let sheet;
+  try {
+    // --- 1. Parse Data ---
+    // Get the data sent from the extension
+    const data = JSON.parse(e.postData.contents);
+    const logEntry = data.log || "";
+    const tag = data.tag || "";
+    const drifted = data.drifted ? "Yes" : "No"; // Convert boolean to "Yes"/"No"
+    const domain = data.domain || ""; // [FEAT-03] Get the domain
+    
+    // --- 2. Get Sheet & Time ---
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      throw new Error("Sheet not found. Check SHEET_NAME variable.");
+    }
+    
+    const now = new Date();
+    const fullTimestamp = now.toISOString();
+    
+    // Format Date and Time for the new columns
+    const dateFormatted = Utilities.formatDate(now, TIME_ZONE, "yyyy-MM-dd");
+    const timeFormatted = Utilities.formatDate(now, TIME_ZONE, "HH:mm:ss");
+
+    // --- 3. Calculate Mins Since Last ---
+    let minsSinceLast = "N/A";
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow >= 1) {
+      // Get the timestamp from the *previous* entry (Column G)
+      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue();
+      if (lastTimestampStr) {
+        const lastTimestamp = new Date(lastTimestampStr);
+        const diffMs = now.getTime() - lastTimestamp.getTime();
+        minsSinceLast = Math.round(diffMs / 60000); // Convert ms to minutes
+      }
+    }
+
+    // --- 4. Append New Row ---
+    // This order MUST match your 8-column header setup
+    const newRow = [
+      dateFormatted,    // A
+      timeFormatted,    // B
+      logEntry,         // C
+      tag,              // D
+      drifted,          // E
+      minsSinceLast,    // F
+      fullTimestamp,    // G
+      domain            // H
+    ];
+    
+    sheet.appendRow(newRow);
+
+    // --- 5. Return Success ---
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "success", row: sheet.getLastRow() })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    // --- 6. Return Error ---
+    // Log the error for debugging
+    Logger.log(err);
+    
+    // Return a JSON error message to the extension
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: err.message, sheetName: SHEET_NAME })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+IMPORTANT: Find the line const TIME_ZONE = "America/New_York"; and change it to your own time zone (like "Europe/Vilnius").
+
+Save the script (click the floppy disk icon or Ctrl+S).
+
+Step 5: Deploy the Script as a Web App
+
+This creates the secret URL the extension will use.
+
+In the Apps Script editor, click the blue Deploy button in the top-right.
+
+Select New deployment.
+
+Click the "Select type" gear icon (⚙️) and choose Web app.
+
+In the "New deployment" dialog:
+
+Description: (Optional) "Work Log Receiver".
+
+Execute as: Select Me. (This runs the script as you).
+
+Who has access: Select Anyone.
+
+(Note: This does NOT make your sheet public. It only allows anyone with the secret, complex URL to send data. It is very secure.)
+
+Click Deploy.
+
+Step 6: Authorize the Script
+
+Google will ask you to authorize the script. Click Authorize access.
+
+Choose your Google account.
+
+You will see a "Google hasn't verified this app" warning. This is normal.
+
+Click Advanced, then click "Go to [Your Script Name] (unsafe)".
+
+Click Allow to give the script permission to edit your spreadsheets.
+
+Step 7: Copy the Web App URL
+
+After deploying, you will see a dialog box with a Web app URL.
+It will look like: https://script.google.com/macros/s/.../exec
+
+COPY THIS URL. You need it for the final step.
+
+Step 8: Configure the Extension
+
+In Chrome, go to your extensions list (chrome://extensions).
+
+Find the "Work Log Timer" extension.
+
+Right-click the extension icon and click Options.
+
+You will see a settings page.
+
+In the first field, "Google Apps Script URL", paste the URL you copied in Step 7.
+
+Scroll to the bottom and click Save Settings.
+
+You are all set! The extension is now configured. The first popup should appear based on your settings.
