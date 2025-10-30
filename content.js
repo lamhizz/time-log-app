@@ -2,7 +2,7 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "showLogPopup") {
     if (!document.getElementById("work-log-popup-overlay")) {
-      createPopup();
+      createPopup(request.domain); // Pass domain
     }
     sendResponse({ status: "popup shown" });
   }
@@ -10,7 +10,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Function to create and inject the popup modal
-function createPopup() {
+function createPopup(domainToLog) { // [FEAT-03]
   const overlay = document.createElement("div");
   overlay.id = "work-log-popup-overlay";
   
@@ -37,16 +37,13 @@ function createPopup() {
   chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
     const tags = data.logTags.split('\n').filter(Boolean);
     
-    // Add a "no tag" prompt
     const promptOption = document.createElement("option");
     promptOption.value = "";
     promptOption.textContent = "-- No Tag --";
     promptOption.selected = true;
     tagSelect.appendChild(promptOption);
     
-    if (tags.length === 0) {
-      tags.push("Default"); // Fallback
-    }
+    if (tags.length === 0) tags.push("Default");
 
     tags.forEach(tag => {
       const option = document.createElement("option");
@@ -58,6 +55,28 @@ function createPopup() {
   
   tagGroup.appendChild(tagLabel);
   tagGroup.appendChild(tagSelect);
+  
+  // --- [UX-10] MRU Tags Container ---
+  const mruTagsContainer = document.createElement("div");
+  mruTagsContainer.className = "work-log-mru-tags-container";
+  
+  // Load MRU tags
+  chrome.runtime.sendMessage({ action: "getMruTags" }, (mruTags) => {
+    if (mruTags && mruTags.length > 0) {
+      mruTags.forEach(tag => {
+        const button = document.createElement("button");
+        button.className = "work-log-popup-button work-log-mru-tag-btn";
+        button.textContent = tag;
+        button.title = `Select tag: ${tag}`;
+        button.addEventListener("click", (e) => {
+          e.preventDefault();
+          tagSelect.value = tag;
+        });
+        mruTagsContainer.appendChild(button);
+      });
+    }
+  });
+  // --- End [UX-10] ---
 
   // --- Log Text Area ---
   const textGroup = document.createElement("div");
@@ -90,20 +109,17 @@ function createPopup() {
   const snoozeGroup = document.createElement("div");
   snoozeGroup.className = "work-log-snooze-group";
 
-  // Create the select dropdown
   const snoozeSelect = document.createElement("select");
   snoozeSelect.id = "work-log-snooze-select";
   snoozeSelect.className = "work-log-popup-select work-log-snooze-select";
   
-  // Create options
   const snoozeOptions = [
     { text: "Snooze 10 min", value: 10 },
     { text: "Snooze 30 min", value: 30 },
     { text: "Snooze 1 hour", value: 60 },
-    { text: "Skip this log", value: -1 } // -1 indicates "skip"
+    { text: "Skip this log", value: -1 }
   ];
   
-  // Add a "Postpone 5 min" as the default, first option
   const defaultSnooze = document.createElement("option");
   defaultSnooze.value = "5";
   defaultSnooze.textContent = "Postpone 5 min";
@@ -118,7 +134,6 @@ function createPopup() {
   });
   snoozeGroup.appendChild(snoozeSelect);
 
-  // Create the "Snooze" button
   const snoozeButton = document.createElement("button");
   snoozeButton.id = "work-log-snooze-button";
   snoozeButton.className = "work-log-popup-button work-log-button-secondary";
@@ -132,6 +147,12 @@ function createPopup() {
   submitButton.id = "work-log-popup-submit";
   submitButton.textContent = "Log It (Ctrl+Enter)";
   
+  // --- [UX-13] Log and Snooze Button ---
+  const logAndSnoozeButton = document.createElement("button");
+  logAndSnoozeButton.id = "work-log-log-and-snooze-btn";
+  logAndSnoozeButton.className = "work-log-popup-button work-log-button-secondary";
+  logAndSnoozeButton.textContent = "Log & Snooze 30 min";
+  
   const statusMessage = document.createElement("p");
   statusMessage.id = "work-log-popup-status";
   
@@ -142,7 +163,7 @@ function createPopup() {
   // --- Logic ---
 
   // Main Submit Logic
-  function submitLog() {
+  function submitLog(isLogAndSnooze = false) {
     const logText = textarea.value.trim();
     const tag = tagSelect.value || ""; // Allow empty tag
     const drifted = driftedCheck.checked;
@@ -152,20 +173,36 @@ function createPopup() {
       return;
     }
     
-    setLoading(true, "Logging...");
-    const logData = { logText, tag, drifted };
-    chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
+    // [FEAT-03] Use the domain passed when creating the popup
+    const logData = { logText, tag, drifted, domain: domainToLog || "" }; 
+    
+    if (isLogAndSnooze) {
+      setLoading(true, "Logging & Snoozing...");
+      chrome.runtime.sendMessage(
+        { action: "logAndSnooze", data: logData, minutes: 30 }, 
+        handleResponse
+      );
+    } else {
+      setLoading(true, "Logging...");
+      chrome.runtime.sendMessage(
+        { action: "logWork", data: logData }, 
+        handleResponse
+      );
+    }
   }
   
   // Add keyboard shortcut
   textarea.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault(); // Prevent new line
-      submitLog(); // Call the existing submit function
+      submitLog(false); // Call the existing submit function
     }
   });
   
-  submitButton.addEventListener("click", submitLog);
+  submitButton.addEventListener("click", () => submitLog(false));
+  
+  // [UX-13]
+  logAndSnoozeButton.addEventListener("click", () => submitLog(true));
   
   // [UX-02] Snooze Logic
   snoozeButton.addEventListener("click", () => {
@@ -187,12 +224,12 @@ function createPopup() {
   sameAsLastButton.addEventListener("click", () => {
     setLoading(true, "Logging last task...");
     chrome.storage.local.get({ lastLog: null, lastTag: null }, (data) => {
-      if (data.lastLog && data.lastTag !== null) { // Allow empty string tag
-        // --- ADDED "↑ " prefix ---
+      if (data.lastLog && data.lastTag !== null) {
         const logData = { 
           logText: "↑ " + data.lastLog, 
           tag: data.lastTag, 
-          drifted: false 
+          drifted: false,
+          domain: domainToLog || "" // [FEAT-03]
         };
         chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
       } else {
@@ -210,7 +247,7 @@ function createPopup() {
         return;
     }
 
-    if (response && response.status === "success") {
+    if (response && (response.status === "success" || response.status === "success_and_snoozed")) {
       closePopup();
     } else {
       showStatus(response.message || "An unknown error occurred.", "error");
@@ -221,8 +258,9 @@ function createPopup() {
   // Helper to set loading state
   function setLoading(isLoading, message = "Log It (Ctrl+Enter)") {
     submitButton.disabled = isLoading;
-    snoozeButton.disabled = isLoading; // [UX-02]
-    snoozeSelect.disabled = isLoading; // [UX-02]
+    logAndSnoozeButton.disabled = isLoading; // [UX-13]
+    snoozeButton.disabled = isLoading;
+    snoozeSelect.disabled = isLoading;
     sameAsLastButton.disabled = isLoading;
     tagSelect.disabled = isLoading;
     textarea.disabled = isLoading;
@@ -246,10 +284,12 @@ function createPopup() {
   modal.appendChild(closeButton);
   modal.appendChild(title);
   modal.appendChild(tagGroup);
+  modal.appendChild(mruTagsContainer); // [UX-10]
   modal.appendChild(textGroup);
   modal.appendChild(driftedGroup);
   modal.appendChild(submitButton);
-  // [UX-02] Add new snooze group
+  modal.appendChild(logAndSnoozeButton); // [UX-13]
+  
   actionsWrapper.appendChild(snoozeGroup);
   actionsWrapper.appendChild(sameAsLastButton);
   modal.appendChild(actionsWrapper);

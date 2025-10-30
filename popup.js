@@ -1,9 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Log Form Elements ---
+  const logFormContainer = document.getElementById("log-form-container");
   const logInput = document.getElementById("log-input");
   const tagSelect = document.getElementById("tag-select");
+  const mruTagsContainer = document.getElementById("mru-tags-container"); // [UX-10]
   const driftedCheck = document.getElementById("drifted-check");
   const submitButton = document.getElementById("submit-log");
   const statusMessage = document.getElementById("status-message");
+
+  // --- Timer Elements [UX-12] ---
+  const timerContainer = document.querySelector(".timer-container");
+  const startTaskContainer = document.getElementById("start-task-container");
+  const taskNameInput = document.getElementById("task-name-input");
+  const startTaskButton = document.getElementById("start-task-btn");
+  const activeTaskContainer = document.getElementById("active-task-container");
+  const activeTaskName = document.getElementById("active-task-name");
+  const activeTaskTimer = document.getElementById("active-task-timer");
+  const stopTaskButton = document.getElementById("stop-task-btn");
+  const formDivider = document.getElementById("form-divider");
+  let timerInterval = null;
+
+  // --- Footer Elements ---
   const settingsLink = document.getElementById("open-settings");
   const debugToggle = document.getElementById("toggle-debug");
   const debugInfo = document.getElementById("debug-info");
@@ -23,6 +40,47 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault(); // Prevent new line
       submitLog();
     }
+  });
+  
+  // --- Timer Listeners [UX-12] ---
+  startTaskButton.addEventListener("click", () => {
+    const taskName = taskNameInput.value.trim();
+    if (!taskName) {
+      showStatus("Please enter a task name.", "error");
+      return;
+    }
+    const task = { name: taskName, startTime: Date.now() };
+    chrome.storage.local.set({ activeTask: task }, () => {
+      chrome.runtime.sendMessage({ action: "startTimer" });
+      showTimerUI(task);
+    });
+  });
+  
+  stopTaskButton.addEventListener("click", () => {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    chrome.storage.local.get({ activeTask: null }, (data) => {
+      if (data.activeTask) {
+        chrome.storage.local.remove("activeTask", () => {
+          chrome.runtime.sendMessage({ action: "stopTimer" });
+          
+          const durationMs = Date.now() - data.activeTask.startTime;
+          const durationMins = Math.round(durationMs / 60000);
+          
+          showLogUI(); // Show the log form
+          
+          // Pre-fill the log
+          let logText = data.activeTask.name;
+          if (durationMins > 0) {
+            logText += ` (approx. ${durationMins} min)`;
+          }
+          logInput.value = logText;
+          logInput.focus();
+        });
+      } else {
+        showLogUI(); // Failsafe
+      }
+    });
   });
 
   // Settings link click
@@ -54,26 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setLoading(true);
 
-    // --- FIX: [FEAT-03] ---
-    // Ask background.js for the active tab's domain *before* logging
     chrome.runtime.sendMessage({ action: "getActiveTabInfo" }, (tabInfo) => {
       if (chrome.runtime.lastError) {
-        // Handle error (e.g., no active tab)
         console.warn("Could not get active tab info:", chrome.runtime.lastError.message);
       }
 
-      // 'tabInfo.domain' will be the domain string if logging is enabled,
-      // or an empty string "" if it's disabled or tab is invalid.
       const domain = tabInfo ? tabInfo.domain : "";
       
       const logData = { 
         logText, 
         tag, 
         drifted,
-        domain: domain // Add the domain
+        domain: domain
       };
       
-      // Now send the complete log
       chrome.runtime.sendMessage({ action: "logWork", data: logData }, handleResponse);
     });
   }
@@ -114,13 +166,13 @@ document.addEventListener("DOMContentLoaded", () => {
     statusMessage.className = `status ${type}`;
   }
   
-  // Load tags from storage
-  function loadTags() {
+  // [UX-10] Load tags and MRU tags
+  function loadTagsAndMru() {
+    // 1. Load standard tags
     chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
       tagSelect.innerHTML = ""; // Clear existing
       const tags = data.logTags.split('\n').filter(Boolean);
       
-      // Add a "no tag" prompt
       const promptOption = document.createElement("option");
       promptOption.value = "";
       promptOption.textContent = "-- No Tag --";
@@ -138,6 +190,24 @@ document.addEventListener("DOMContentLoaded", () => {
         tagSelect.appendChild(option);
       });
     });
+    
+    // 2. Load MRU tags
+    chrome.runtime.sendMessage({ action: "getMruTags" }, (mruTags) => {
+      mruTagsContainer.innerHTML = ""; // Clear
+      if (mruTags && mruTags.length > 0) {
+        mruTags.forEach(tag => {
+          const button = document.createElement("button");
+          button.className = "mru-tag-btn";
+          button.textContent = tag;
+          button.title = `Select tag: ${tag}`;
+          button.addEventListener("click", (e) => {
+            e.preventDefault();
+            tagSelect.value = tag;
+          });
+          mruTagsContainer.appendChild(button);
+        });
+      }
+    });
   }
   
   function loadDebugInfo() {
@@ -154,9 +224,69 @@ document.addEventListener("DOMContentLoaded", () => {
       debugToggle.style.display = data.isDebugMode ? "inline" : "none";
     });
   }
+  
+  // --- [UX-12] Timer UI Functions ---
+  
+  function checkActiveTimer() {
+    chrome.storage.local.get({ activeTask: null }, (data) => {
+      if (data.activeTask) {
+        showTimerUI(data.activeTask);
+      } else {
+        showLogUI();
+      }
+    });
+  }
+
+  function showTimerUI(task) {
+    logFormContainer.style.display = "none";
+    formDivider.style.display = "none";
+    
+    startTaskContainer.style.display = "none";
+    activeTaskContainer.style.display = "block";
+    
+    activeTaskName.textContent = task.name;
+    
+    if (timerInterval) clearInterval(timerInterval);
+    updateTimerDisplay(task.startTime); // Run once immediately
+    timerInterval = setInterval(() => {
+      updateTimerDisplay(task.startTime);
+    }, 1000);
+  }
+  
+  function showLogUI() {
+    logFormContainer.style.display = "block";
+    formDivider.style.display = "block";
+    
+    startTaskContainer.style.display = "flex";
+    activeTaskContainer.style.display = "none";
+    
+    taskNameInput.value = "";
+    
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function updateTimerDisplay(startTime) {
+    const elapsedMs = Date.now() - startTime;
+    const totalSeconds = Math.floor(elapsedMs / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    
+    activeTaskTimer.textContent = 
+      `${hours.toString().padStart(2, '0')}:` +
+      `${minutes.toString().padStart(2, '0')}:` +
+      `${seconds.toString().padStart(2, '0')}`;
+  }
 
   // --- Initial Load ---
-  loadTags();
+  loadTagsAndMru(); // [UX-10]
   checkDebugMode();
-  logInput.focus();
+  checkActiveTimer(); // [UX-12]
+  // logInput.focus(); // Only focus if log form is visible
+  if (logFormContainer.style.display !== "none") {
+    logInput.focus();
+  }
 });

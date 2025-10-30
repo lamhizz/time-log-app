@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
 
 /*
- * Styles for the Work Log Popup (v1.6)
+ * Styles for the Work Log Popup (v2.0)
  * Modern, minimal, compact theme
  */
 
@@ -42,11 +42,11 @@
 #work-log-popup-modal {
   position: relative !important;
   background-color: #ffffff !important;
-  padding: 20px !important; /* More compact */
+  padding: 20px !important;
   border-radius: var(--work-log-radius) !important;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
   width: 90% !important;
-  max-width: 420px !important; /* Slightly more compact */
+  max-width: 420px !important;
   z-index: 2147483647 !important;
   box-sizing: border-box !important;
 }
@@ -54,8 +54,8 @@
 /* The close button (X) */
 #work-log-popup-close {
   position: absolute !important;
-  top: 8px !important; /* Closer */
-  right: 8px !important; /* Closer */
+  top: 8px !important;
+  right: 8px !important;
   background: none !important;
   border: none !important;
   font-size: 24px !important;
@@ -72,7 +72,7 @@
 
 /* Modal Title */
 #work-log-popup-title {
-  font-size: 20px !important; /* More compact */
+  font-size: 20px !important;
   font-weight: 600 !important;
   margin: 0 0 16px 0 !important;
   padding: 0 !important;
@@ -82,24 +82,24 @@
 
 /* Form Group Styles */
 .work-log-form-group {
-  margin-bottom: 12px !important; /* More compact */
+  margin-bottom: 12px !important;
 }
 .work-log-form-group label {
   display: block !important;
   margin-bottom: 5px !important;
   font-weight: 500 !important;
-  font-size: 13px !important; /* More compact */
+  font-size: 13px !important;
   color: var(--work-log-text-light) !important;
 }
 
 /* Text Input Area */
 #work-log-popup-input {
   width: 100% !important;
-  height: 70px !important; /* More compact */
+  height: 70px !important;
   border: 1px solid var(--work-log-border) !important;
   border-radius: var(--work-log-radius) !important;
-  padding: 8px 10px !important; /* More compact */
-  font-size: 14px !important; /* More compact */
+  padding: 8px 10px !important;
+  font-size: 14px !important;
   font-family: inherit !important;
   box-sizing: border-box !important;
   resize: vertical !important;
@@ -116,8 +116,8 @@
 /* Tag Select Dropdown */
 .work-log-popup-select {
   width: 100% !important;
-  padding: 8px 10px !important; /* More compact */
-  font-size: 14px !important; /* More compact */
+  padding: 8px 10px !important;
+  font-size: 14px !important;
   font-family: inherit !important;
   border: 1px solid var(--work-log-border) !important;
   border-radius: var(--work-log-radius) !important;
@@ -143,16 +143,38 @@
   color: #9CA3AF !important;
 }
 
+/* --- [UX-10] MRU Tags --- */
+.work-log-mru-tags-container {
+  display: flex !important;
+  gap: 6px !important;
+  margin-top: -6px !important; /* Pulls up under the dropdown */
+  margin-bottom: 12px !important;
+}
+.work-log-mru-tag-btn {
+  flex: 1 !important;
+  font-size: 11px !important;
+  background-color: var(--work-log-secondary) !important;
+  color: var(--work-log-text-dark) !important;
+  border: 1px solid var(--work-log-border) !important;
+  padding: 4px 6px !important;
+  font-weight: 500 !important;
+}
+.work-log-mru-tag-btn:hover {
+  background-color: var(--work-log-secondary-hover) !important;
+}
+/* --- End [UX-10] --- */
+
+
 /* Drifted Checkbox */
 .work-log-checkbox-group {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  margin-bottom: 16px !important; /* More compact */
+  margin-bottom: 16px !important;
 }
 .work-log-checkbox-group input[type="checkbox"] {
-  width: 16px !important; /* More compact */
-  height: 16px !important; /* More compact */
+  width: 16px !important;
+  height: 16px !important;
   margin: 0 !important;
   cursor: pointer !important;
   flex-shrink: 0;
@@ -162,7 +184,7 @@
 .work-log-checkbox-group label {
   margin: 0 !important;
   font-weight: 500 !important;
-  font-size: 14px !important; /* More compact */
+  font-size: 14px !important;
   color: var(--work-log-text-dark) !important;
   cursor: pointer !important;
   user-select: none !important;
@@ -173,14 +195,14 @@
   width: 100% !important;
   background-color: var(--work-log-primary) !important;
   color: white !important;
-  font-size: 14px !important; /* More compact */
+  font-size: 14px !important;
   font-weight: 600 !important;
   border: none !important;
   border-radius: var(--work-log-radius) !important;
-  padding: 10px !important; /* More compact */
+  padding: 10px !important;
   cursor: pointer !important;
   transition: background-color 0.2s ease !important;
-  margin-bottom: 10px !important; /* More compact */
+  margin-bottom: 10px !important;
   font-family: inherit !important;
 }
 #work-log-popup-submit:hover {
@@ -197,17 +219,17 @@
   justify-content: space-between !important;
   gap: 8px !important;
   border-top: 1px solid #E5E7EB !important; /* Gray 200 */
-  padding-top: 10px !important; /* More compact */
+  padding-top: 10px !important;
 }
 
 /* Generic button class */
 .work-log-popup-button {
   font-family: inherit !important;
-  font-size: 13px !important; /* More compact */
+  font-size: 13px !important;
   font-weight: 500 !important;
   border: 1px solid var(--work-log-border) !important;
   border-radius: var(--work-log-radius) !important;
-  padding: 6px 10px !important; /* More compact */
+  padding: 6px 10px !important;
   cursor: pointer !important;
   transition: background-color 0.2s ease, border-color 0.2s ease !important;
   box-sizing: border-box !important;
@@ -231,6 +253,28 @@
   color: var(--work-log-text-dark) !important;
 }
 
+/* --- [UX-13] Log & Snooze Button --- */
+#work-log-log-and-snooze-btn {
+  width: 100% !important;
+  background-color: #fff !important;
+  border: 1px solid var(--work-log-border) !important;
+  color: var(--work-log-text-light) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 9px !important;
+  margin-bottom: 10px !important;
+}
+#work-log-log-and-snooze-btn:hover {
+  background-color: var(--work-log-secondary) !important;
+  color: var(--work-log-text-dark) !important;
+}
+#work-log-log-and-snooze-btn:disabled {
+  background-color: #9CA3AF !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+
 /* --- [UX-02] Snooze Group --- */
 .work-log-snooze-group {
   display: flex !important;
@@ -252,7 +296,7 @@
 
 /* Status Message Area */
 #work-log-popup-status, .work-log-status {
-  font-size: 13px !important; /* More compact */
+  font-size: 13px !important;
   margin: 10px 0 0 0 !important;
   padding: 0 !important;
   text-align: center !important;

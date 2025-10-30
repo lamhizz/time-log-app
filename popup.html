@@ -23,10 +23,10 @@
     }
     body {
       font-family: var(--work-log-font);
-      font-size: 13px; /* More compact */
+      font-size: 13px;
       margin: 0;
-      padding: 12px; /* More compact */
-      width: 300px; /* More compact */
+      padding: 12px;
+      width: 300px;
       color: var(--work-log-text-dark);
       background-color: #fff;
     }
@@ -34,10 +34,10 @@
       margin: 0 0 12px 0;
       text-align: center;
       font-weight: 600;
-      font-size: 16px; /* More compact */
+      font-size: 16px;
     }
     .form-group {
-      margin-bottom: 10px; /* More compact */
+      margin-bottom: 10px;
     }
     .form-group label {
       display: block;
@@ -45,7 +45,7 @@
       font-weight: 500;
       font-size: 13px;
     }
-    textarea, select {
+    textarea, select, input[type="text"] {
       width: 100%;
       border: 1px solid var(--work-log-border);
       border-radius: var(--work-log-radius);
@@ -65,10 +65,10 @@
       background-size: 16px;
     }
     textarea {
-      height: 60px; /* More compact */
+      height: 60px;
       resize: vertical;
     }
-    textarea:focus, select:focus {
+    textarea:focus, select:focus, input[type="text"]:focus {
       border-color: var(--work-log-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
@@ -92,6 +92,27 @@
       user-select: none;
     }
     
+    /* --- [UX-10] MRU Tags --- */
+    .mru-tags-container {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      margin-bottom: 10px;
+    }
+    .mru-tag-btn {
+      flex: 1;
+      font-size: 11px;
+      background-color: var(--work-log-secondary);
+      color: var(--work-log-text-dark);
+      border: 1px solid var(--work-log-border);
+      padding: 4px 6px;
+      font-weight: 500;
+    }
+    .mru-tag-btn:hover {
+      background-color: var(--work-log-secondary-hover);
+    }
+    /* --- End MRU --- */
+
     button {
       font-family: inherit;
       font-size: 13px;
@@ -164,37 +185,115 @@
       font-size: 11px;
       word-wrap: break-word;
     }
+    
+    /* --- [UX-12] Timer Styles --- */
+    .divider {
+      border-top: 1px solid #E5E7EB;
+      margin: 12px 0;
+    }
+    .timer-container {
+      /* styles for the container */
+    }
+    .start-task-form {
+      display: flex;
+      gap: 8px;
+    }
+    #task-name-input {
+      flex-grow: 1;
+    }
+    #start-task-btn {
+      flex-shrink: 0;
+      background-color: var(--work-log-success);
+      color: white;
+      border: none;
+    }
+    .active-task-display {
+      background-color: var(--work-log-secondary);
+      padding: 10px;
+      border-radius: var(--work-log-radius);
+      text-align: center;
+    }
+    .active-task-display p {
+      margin: 0 0 8px 0;
+      font-weight: 500;
+    }
+    #active-task-name {
+      font-weight: 600;
+      color: var(--work-log-primary);
+    }
+    #active-task-timer {
+      font-size: 16px;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 10px;
+    }
+    #stop-task-btn {
+      width: 100%;
+      background-color: var(--work-log-error);
+      color: white;
+      border: none;
+      font-weight: 600;
+    }
+    /* --- End Timer --- */
+
   </style>
 </head>
 <body>
-  <h3>Log Your Work</h3>
-  
-  <!-- Tag Dropdown -->
-  <div class="form-group">
-    <label for="tag-select">Tag:</label>
-    <select id="tag-select">
-      <!-- Tags will be injected here by popup.js -->
-    </select>
+
+  <!-- [UX-12] Timer Section -->
+  <div class="timer-container">
+    <!-- Active Timer View -->
+    <div class="active-task-display" id="active-task-container" style="display: none;">
+      <p>Active Task: <span id="active-task-name"></span></p>
+      <span id="active-task-timer">00:00:00</span>
+      <button id="stop-task-btn">Stop Task & Log</button>
+    </div>
+
+    <!-- Start Timer View -->
+    <div class="start-task-form" id="start-task-container">
+      <input type="text" id="task-name-input" placeholder="Enter task name...">
+      <button id="start-task-btn">Start</button>
+    </div>
   </div>
 
-  <!-- Log Textarea -->
-  <div class="form-group">
-    <label for="log-input">Log:</label>
-    <textarea id="log-input" placeholder="What are you working on?"></textarea>
-  </div>
-  
-  <!-- "Drifted" Checkbox -->
-  <div class="checkbox-group">
-    <input type="checkbox" id="drifted-check">
-    <label for="drifted-check">I drifted (was off-task)</label>
-  </div>
-  
-  <!-- Submit Button -->
-  <button id="submit-log">Log It (Ctrl+Enter)</button>
-  
-  <!-- Status Message -->
-  <p class="status" id="status-message"></p>
+  <div class="divider" id="form-divider"></div>
 
+  <!-- Main Log Form -->
+  <div class="log-form-container" id="log-form-container">
+    <h3>Log Your Work</h3>
+    
+    <!-- Tag Dropdown -->
+    <div class="form-group">
+      <label for="tag-select">Tag:</label>
+      <select id="tag-select">
+        <!-- Tags will be injected here by popup.js -->
+      </select>
+    </div>
+    
+    <!-- [UX-10] MRU Tags -->
+    <div class="mru-tags-container" id="mru-tags-container">
+      <!-- MRU tags injected here -->
+    </div>
+
+    <!-- Log Textarea -->
+    <div class="form-group">
+      <label for="log-input">Log:</label>
+      <textarea id="log-input" placeholder="What are you working on?"></textarea>
+    </div>
+    
+    <!-- "Drifted" Checkbox -->
+    <div class="checkbox-group">
+      <input type="checkbox" id="drifted-check">
+      <label for="drifted-check">I drifted (was off-task)</label>
+    </div>
+    
+    <!-- Submit Button -->
+    <button id="submit-log">Log It (Ctrl+Enter)</button>
+    
+    <!-- Status Message -->
+    <p class="status" id="status-message"></p>
+  </div>
+  
   <!-- Footer & Debug -->
   <div class="footer-links">
     <a id="open-settings">Settings</a>
