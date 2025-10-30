@@ -1,14 +1,36 @@
-// [SEC-01] IMPORTANT: The WEB_APP_URL is now stored in chrome.storage.sync
+// The URL for the Google Apps Script web app is stored in chrome.storage.sync for security.
 
-// --- [UX-12] Badge State ---
+/**
+ * @file background.js
+ * @description This is the service worker for the Work Log Timer Chrome extension.
+ * It manages alarms, handles context menus, listens for keyboard shortcuts,
+ * and processes all communication with the content scripts and the Google Apps Script backend.
+ */
+
+// --- Global Badge State ---
+
+/**
+ * @type {boolean}
+ * @description Tracks if the timer badge ('ON') is currently active.
+ */
 let timerBadgeActive = false;
+
+/**
+ * @type {boolean}
+ * @description Tracks if the alarm badge ('!') is currently active.
+ */
 let alarmBadgeActive = false;
 
-// --- Alarm Management ---
+// --- Extension Lifecycle & Alarm Management ---
 
+/**
+ * @description Initializes the extension on installation. Sets default settings,
+ * creates a context menu item, and sets up an initial alarm.
+ */
 chrome.runtime.onInstalled.addListener(() => {
   console.log("Work Log extension installed (v2.2). Creating 1-min alarm...");
 
+  // Set default values in storage if they don't exist
   chrome.storage.sync.get(null, (existingSettings) => {
     const defaults = {
       logInterval: 15,
@@ -37,11 +59,12 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
   
-  chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
+  chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red for alarm state
   
   checkTimerStateOnStartup();
-  createWorkLogAlarm(1); 
+  createWorkLogAlarm(1); // Create a short-delay alarm on install
 
+  // Add a context menu item for manual logging
   chrome.contextMenus.create({
     id: "logWorkContextMenu",
     title: "Log Work",
@@ -49,23 +72,35 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+/**
+ * @description Re-initializes alarms when the browser starts up.
+ */
 chrome.runtime.onStartup.addListener(() => {
   console.log("Browser starting up. Creating 1-min alarm...");
   checkTimerStateOnStartup();
   createWorkLogAlarm(1);
 });
 
+/**
+ * @description Checks if a task was active when the browser was last closed
+ * and updates the badge accordingly.
+ */
 function checkTimerStateOnStartup() {
   chrome.storage.local.get({ activeTask: null }, (data) => {
     if (data.activeTask) {
       console.log("Active task found on startup. Setting badge.");
       timerBadgeActive = true;
       chrome.action.setBadgeText({ text: 'ON' });
-      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green
+      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green for timer state
     }
   });
 }
 
+/**
+ * @description Clears any existing alarms and creates a new periodic "workLogAlarm".
+ * @param {number|null} initialDelayInMinutes - The delay for the first alarm trigger.
+ * If null, defaults to the user's configured log interval.
+ */
 function createWorkLogAlarm(initialDelayInMinutes = null) {
   chrome.alarms.clearAll((wasCleared) => {
     if (wasCleared) console.log("Cleared all previous alarms.");
@@ -84,6 +119,11 @@ function createWorkLogAlarm(initialDelayInMinutes = null) {
   });
 }
 
+/**
+ * @description Listens for alarms and triggers the appropriate actions.
+ * 'workLogAlarm' and 'snoozeAlarm' will trigger the popup.
+ * After a snooze, the main alarm is recreated.
+ */
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "workLogAlarm") {
     console.log("Work Log Alarm triggered.");
@@ -93,35 +133,47 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "snoozeAlarm") {
     console.log("Snooze Alarm triggered.");
     checkDayAndTriggerPopup();
-    createWorkLogAlarm(); 
+    createWorkLogAlarm(); // Re-create the main alarm after a snooze
   }
 });
 
+// --- User Interaction Handlers ---
+
+/**
+ * @description Handles clicks on the context menu item to manually trigger the log popup.
+ */
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "logWorkContextMenu") {
     console.log("Manual log popup triggered by context menu.");
-    triggerPopupOnTab(tab, true); 
+    triggerPopupOnTab(tab, true); // Bypass Do Not Disturb for manual triggers
   }
 });
 
+/**
+ * @description Handles the keyboard shortcut (e.g., Ctrl+Shift+L) to manually trigger the log popup.
+ */
 chrome.commands.onCommand.addListener((command) => {
   if (command === "trigger-log-popup") {
     console.log("Manual log popup triggered by keyboard shortcut.");
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length > 0 && tabs[0].id) {
-        triggerPopupOnTab(tabs[0], true);
+        triggerPopupOnTab(tabs[0], true); // Bypass DND
       }
     });
   }
 });
 
+/**
+ * @description Checks if the current day and time fall within the user's defined
+ * working hours before triggering the popup.
+ */
 function checkDayAndTriggerPopup() {
   const today = new Date();
-  const dayOfWeek = today.getDay();
+  const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, etc.
   const currentHour = today.getHours();
   
   chrome.storage.sync.get({
-    workingDays: ["1", "2", "3", "4", "5"],
+    workingDays: ["1", "2", "3", "4", "5"], // Default Mon-Fri
     workStartHour: 9,
     workEndHour: 18 
   }, (data) => {
@@ -138,22 +190,23 @@ function checkDayAndTriggerPopup() {
           console.warn("No active tab found.");
         }
       });
-    } else if (!isWorkingDay) {
-      console.log("It's not a working day. No log needed.");
-    } else if (!isWorkingHour) {
-      console.log(`It's not a working hour (${currentHour}h is outside ${data.workStartHour}-${data.workEndHour}). No log needed.`);
+    } else {
+      console.log("Not a working time. No log needed.");
     }
   });
 }
 
+/**
+ * @description Injects the content script and CSS into the active tab to show the log popup.
+ * It respects the "Do Not Disturb" (DND) domain list unless bypassed.
+ * @param {chrome.tabs.Tab} tab - The target tab object.
+ * @param {boolean} [bypassDnd=false] - If true, the popup will show even on a blocked domain.
+ */
 async function triggerPopupOnTab(tab, bypassDnd = false) {
   if (!tab || !tab.id || !tab.url) {
     console.warn("Invalid tab object.", tab);
     return;
   }
-  
-  const tabId = tab.id;
-  const tabUrl = tab.url;
   
   chrome.storage.sync.get({ 
     blockedDomains: "",
@@ -164,15 +217,15 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
     
     let urlHostname = "";
     try {
-      urlHostname = new URL(tabUrl).hostname;
+      urlHostname = new URL(tab.url).hostname;
     } catch (e) {
-      // Invalid URL
+      // Handles cases like chrome:// URLs that are not valid URLs
     }
     
     const isBlocked = domains.some(domain => urlHostname.includes(domain.trim()));
 
     if (isBlocked && !bypassDnd) {
-      console.log(`Popup skipped: Active tab (${tabUrl}) is on a "Do Not Disturb" domain.`);
+      console.log(`Popup skipped: Active tab (${tab.url}) is on a "Do Not Disturb" domain.`);
       return;
     }
     
@@ -191,19 +244,14 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
         
         const domainToLog = data.isDomainLogEnabled ? urlHostname : "";
         
+        // Send a message to the content script to show the popup
         chrome.tabs.sendMessage(tab.id, { 
           action: "showLogPopup",
           domain: domainToLog,
           sound: data.notificationSound
-        }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.warn(`Could not send message to tab ${tab.id}:`, chrome.runtime.lastError.message);
-          } else {
-            console.log("Popup message sent, response:", response);
-          }
         });
 
-        console.log("Setting badge text.");
+        // Set the alarm badge
         alarmBadgeActive = true;
         chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
         chrome.action.setBadgeText({ text: '!' });
@@ -215,19 +263,33 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
   });
 }
 
+// --- Data & Utility Functions ---
+
+/**
+ * @description Updates the list of Most Recently Used (MRU) tags in local storage.
+ * Keeps the list to a maximum of 3 unique tags.
+ * @param {string} tag - The tag that was just used.
+ */
 function updateMruTags(tag) {
-  if (!tag) {
-    return;
-  }
+  if (!tag) return;
+
   chrome.storage.local.get({ mruTags: [] }, (data) => {
     let mruTags = data.mruTags || [];
+    // Remove the tag if it already exists to avoid duplicates
     mruTags = mruTags.filter(t => t !== tag);
+    // Add the new tag to the beginning of the array
     mruTags.unshift(tag);
+    // Trim the array to the 3 most recent tags
     const newMruTags = mruTags.slice(0, 3);
     chrome.storage.local.set({ mruTags: newMruTags });
   });
 }
 
+/**
+ * @description Sends a test request to the configured Google Apps Script URL to verify connectivity.
+ * @param {string} url - The Google Apps Script URL to test.
+ * @returns {Promise<object>} A promise that resolves to a JSON object with the test result.
+ */
 async function testWebAppConnection(url) {
   if (!url || (!url.startsWith("http:") && !url.startsWith("https://"))) {
     return { status: "error", message: "Invalid URL. Must start with http:// or https://" };
@@ -272,220 +334,207 @@ async function testWebAppConnection(url) {
   }
 }
 
-// --- Data Handling & Message Listeners ---
+// --- Message Handling ---
+
+/**
+ * @description Central listener for messages from other parts of the extension (e.g., content scripts, popups).
+ * It routes requests to the appropriate functions based on the 'action' property.
+ * @param {object} request - The message object.
+ * @param {chrome.runtime.MessageSender} sender - Information about the sender.
+ * @param {function} sendResponse - A function to send a response back to the sender.
+ * @returns {boolean} Returns true to indicate that the response will be sent asynchronously.
+ */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
-  // Case 1: User submitted a log
-  if (request.action === "logWork") {
-    // [NEW] request.data = { logText, tag, drifted, reactive, domain }
-    console.log("Received log object:", request.data);
-    
-    chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
-      const WEB_APP_URL = data.webAppUrl;
-      if (!WEB_APP_URL) {
-          const errorMsg = "Google Apps Script URL is not set.";
-          console.error(errorMsg);
-          chrome.storage.local.set({ lastError: errorMsg });
-          sendResponse({ status: "error", message: errorMsg });
-          return;
-      }
+  switch (request.action) {
+    // Case 1: A new log is submitted from the content script or popup
+    case "logWork":
+      console.log("Received log object:", request.data);
+      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
+        const WEB_APP_URL = data.webAppUrl;
+        if (!WEB_APP_URL) {
+            const errorMsg = "Google Apps Script URL is not set.";
+            chrome.storage.local.set({ lastError: errorMsg });
+            sendResponse({ status: "error", message: errorMsg });
+            return;
+        }
         
-      logToGoogleSheet(request.data, WEB_APP_URL)
-        .then((jsonResponse) => {
-          console.log("Log successfully sent:", jsonResponse);
-          chrome.storage.local.set({ 
-            lastLog: request.data.logText,
-            lastTag: request.data.tag,
-            lastError: "" 
+        logToGoogleSheet(request.data, WEB_APP_URL)
+          .then((jsonResponse) => {
+            chrome.storage.local.set({
+              lastLog: request.data.logText,
+              lastTag: request.data.tag,
+              lastError: ""
+            });
+            updateMruTags(request.data.tag);
+            // Clear the alarm badge, but leave the timer badge if it's active
+            alarmBadgeActive = false;
+            if (!timerBadgeActive) {
+              chrome.action.setBadgeText({ text: '' });
+            }
+            sendResponse({ status: "success" });
+          })
+          .catch((error) => {
+            chrome.storage.local.set({ lastError: error.message });
+            sendResponse({ status: "error", message: error.message });
           });
-          updateMruTags(request.data.tag);
-          alarmBadgeActive = false;
-          if (!timerBadgeActive) {
-            chrome.action.setBadgeText({ text: '' });
-          }
-          sendResponse({ status: "success" });
-        })
-        .catch((error) => {
-          console.error("Error sending log to Google Sheet:", error.message);
-          chrome.storage.local.set({ lastError: error.message });
-          sendResponse({ status: "error", message: error.message });
-        });
-    });
-    
-    return true; // Indicates async response
-  }
-  
-  // Case 2: User hit "Snooze" or "Skip"
-  if (request.action === "snoozeLog") {
-    const minutes = request.minutes;
-    alarmBadgeActive = false;
-    if (!timerBadgeActive) {
-      chrome.action.setBadgeText({ text: '' });
-    }
-    chrome.alarms.clear("workLogAlarm", (wasCleared) => {
-      if (minutes > 0) {
-        console.log(`Snoozing log for ${minutes} minutes.`);
-        chrome.alarms.create("snoozeAlarm", { delayInMinutes: minutes });
-        sendResponse({ status: "snoozed" });
-      } else {
-        console.log("Skipping this log. Resetting main alarm cycle.");
-        createWorkLogAlarm();
-        sendResponse({ status: "skipped" });
-      }
-    });
-    return true; // Indicates async response
-  }
-
-  // Case 3: Log and Snooze
-  if (request.action === "logAndSnooze") {
-    const { data: logData, minutes } = request; // [NEW] logData includes .reactive
-    console.log(`Received logAndSnooze for ${minutes} min:`, logData);
-    
-    chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
-      const WEB_APP_URL = data.webAppUrl;
-      if (!WEB_APP_URL) {
-        const errorMsg = "Google Apps Script URL is not set.";
-        sendResponse({ status: "error", message: errorMsg });
-        return;
-      }
-
-      logToGoogleSheet(logData, WEB_APP_URL)
-        .then((jsonResponse) => {
-          console.log("Log (part 1) successful:", jsonResponse);
-          chrome.storage.local.set({ 
-            lastLog: logData.logText,
-            lastTag: logData.tag,
-            lastError: "" 
-          });
-          updateMruTags(logData.tag);
-
-          alarmBadgeActive = false;
-          if (!timerBadgeActive) {
-            chrome.action.setBadgeText({ text: '' });
-          }
-          
-          chrome.alarms.clear("workLogAlarm", (wasCleared) => {
-            console.log(`Snoozing log for ${minutes} minutes.`);
-            chrome.alarms.create("snoozeAlarm", { delayInMinutes: minutes });
-            sendResponse({ status: "success_and_snoozed" });
-          });
-        })
-        .catch((error) => {
-          console.error("Error sending log (in logAndSnooze):", error.message);
-          chrome.storage.local.set({ lastError: error.message });
-          sendResponse({ status: "error", message: error.message });
-        });
-    });
-    return true; // Indicates async response
-  }
-  
-  // Case 4: Settings updated
-  if (request.action === "settingsUpdated") {
-    console.log("Settings updated. Re-creating alarm (1-min delay).");
-    createWorkLogAlarm(1);
-    sendResponse({ status: "settings acknowledged" });
-    return true;
-  }
-
-  // Case 5: Get Debug Info
-  if (request.action === "getDebugInfo") {
-    chrome.storage.sync.get({ webAppUrl: "(Not Set)" }, (syncData) => {
-      chrome.storage.local.get({ lastError: "No errors yet." }, (localData) => {
-        sendResponse({
-          webAppUrl: syncData.webAppUrl,
-          lastError: localData.lastError
-        });
       });
-    });
-    return true; // Indicates async response
-  }
+      return true;
 
-  // Case 6: Get Active Tab Info
-  if (request.action === "getActiveTabInfo") {
-    chrome.storage.sync.get({ isDomainLogEnabled: false }, (data) => {
-      if (!data.isDomainLogEnabled) {
-        sendResponse({ domain: "" });
-        return;
+    // Case 2: User snoozes or skips a log
+    case "snoozeLog":
+      alarmBadgeActive = false;
+      if (!timerBadgeActive) {
+        chrome.action.setBadgeText({ text: '' });
       }
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs.length > 0 && tabs[0].url) {
-          let urlHostname = "";
-          try {
-            urlHostname = new URL(tabs[0].url).hostname;
-          } catch (e) { /* Invalid URL */ }
-          sendResponse({ domain: urlHostname });
+      chrome.alarms.clear("workLogAlarm", () => {
+        if (request.minutes > 0) {
+          console.log(`Snoozing log for ${request.minutes} minutes.`);
+          chrome.alarms.create("snoozeAlarm", { delayInMinutes: request.minutes });
+          sendResponse({ status: "snoozed" });
         } else {
-          sendResponse({ domain: "" }); // No active tab
+          console.log("Skipping this log. Resetting main alarm cycle.");
+          createWorkLogAlarm();
+          sendResponse({ status: "skipped" });
         }
       });
-    });
-    return true; // Indicates async response
-  }
+      return true;
 
-  // Case 7: Get MRU Tags
-  if (request.action === "getMruTags") {
-    chrome.storage.local.get({ mruTags: [] }, (data) => {
-      sendResponse(data.mruTags || []);
-    });
-    return true; // Indicates async response
-  }
-  
-  // Case 8 & 9: Timer Badge Control
-  if (request.action === "startTimer") {
-    timerBadgeActive = true;
-    chrome.action.setBadgeText({ text: 'ON' });
-    chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green
-    sendResponse({ status: "timer_badge_on" });
-    return true;
-  }
-  
-  if (request.action === "stopTimer") {
-    timerBadgeActive = false;
-    if (!alarmBadgeActive) {
-      chrome.action.setBadgeText({ text: '' });
-    }
-    sendResponse({ status: "timer_badge_off" });
-    return true;
-  }
-  
-  // Case 10: Test Connection
-  if (request.action === "testConnection") {
-    testWebAppConnection(request.url)
-      .then(response => {
-        sendResponse(response);
-      })
-      .catch(error => {
-        sendResponse({ status: "error", message: error.message });
+    // Case 3: User logs and then snoozes
+    case "logAndSnooze":
+      console.log(`Received logAndSnooze for ${request.minutes} min:`, request.data);
+      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
+        const WEB_APP_URL = data.webAppUrl;
+        if (!WEB_APP_URL) {
+          sendResponse({ status: "error", message: "Google Apps Script URL is not set." });
+          return;
+        }
+
+        logToGoogleSheet(request.data, WEB_APP_URL)
+          .then(() => {
+            chrome.storage.local.set({
+              lastLog: request.data.logText,
+              lastTag: request.data.tag,
+              lastError: ""
+            });
+            updateMruTags(request.data.tag);
+            alarmBadgeActive = false;
+            if (!timerBadgeActive) {
+              chrome.action.setBadgeText({ text: '' });
+            }
+
+            chrome.alarms.clear("workLogAlarm", () => {
+              chrome.alarms.create("snoozeAlarm", { delayInMinutes: request.minutes });
+              sendResponse({ status: "success_and_snoozed" });
+            });
+          })
+          .catch((error) => {
+            chrome.storage.local.set({ lastError: error.message });
+            sendResponse({ status: "error", message: error.message });
+          });
       });
-    return true; // Indicates async response
+      return true;
+
+    // Case 4: Settings have been updated in the options page
+    case "settingsUpdated":
+      console.log("Settings updated. Re-creating alarm (1-min delay).");
+      createWorkLogAlarm(1);
+      sendResponse({ status: "settings acknowledged" });
+      return true;
+
+    // Case 5: Popup requests debug information
+    case "getDebugInfo":
+      chrome.storage.sync.get({ webAppUrl: "(Not Set)" }, (syncData) => {
+        chrome.storage.local.get({ lastError: "No errors yet." }, (localData) => {
+          sendResponse({
+            webAppUrl: syncData.webAppUrl,
+            lastError: localData.lastError
+          });
+        });
+      });
+      return true;
+
+    // Case 6: Popup requests the domain of the active tab
+    case "getActiveTabInfo":
+      chrome.storage.sync.get({ isDomainLogEnabled: false }, (data) => {
+        if (!data.isDomainLogEnabled) {
+          sendResponse({ domain: "" });
+          return;
+        }
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          let urlHostname = "";
+          if (tabs.length > 0 && tabs[0].url) {
+            try { urlHostname = new URL(tabs[0].url).hostname; } catch (e) {}
+          }
+          sendResponse({ domain: urlHostname });
+        });
+      });
+      return true;
+
+    // Case 7: Content script requests the MRU tags
+    case "getMruTags":
+      chrome.storage.local.get({ mruTags: [] }, (data) => {
+        sendResponse(data.mruTags || []);
+      });
+      return true;
+
+    // Case 8 & 9: Popup controls the timer badge
+    case "startTimer":
+      timerBadgeActive = true;
+      chrome.action.setBadgeText({ text: 'ON' });
+      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green
+      sendResponse({ status: "timer_badge_on" });
+      return true;
+
+    case "stopTimer":
+      timerBadgeActive = false;
+      if (!alarmBadgeActive) {
+        chrome.action.setBadgeText({ text: '' });
+      }
+      sendResponse({ status: "timer_badge_off" });
+      return true;
+
+    // Case 10: Options page requests a connection test
+    case "testConnection":
+      testWebAppConnection(request.url)
+        .then(response => sendResponse(response))
+        .catch(error => sendResponse({ status: "error", message: error.message }));
+      return true;
   }
-  
 });
 
-// --- Google Sheet Fetch Logic ---
 
+// --- Google Sheet Communication ---
+
+/**
+ * @description Sends the log data to the Google Apps Script web app.
+ * @param {object} logData - The data to be logged.
+ * @param {string} logData.logText - The main log entry text.
+ * @param {string} logData.tag - The selected tag.
+ * @param {boolean} logData.drifted - Whether the user was off-task.
+ * @param {boolean} logData.reactive - Whether the work was ad-hoc.
+ * @param {string} [logData.domain] - The domain of the active tab, if enabled.
+ * @param {string} webAppUrl - The URL of the Google Apps Script.
+ * @returns {Promise<object>} A promise that resolves with the JSON response from the script.
+ * @throws {Error} Throws an error if the fetch request fails or the script returns an error.
+ */
 async function logToGoogleSheet(logData, webAppUrl) {
-  // [NEW] logData = { logText, tag, drifted, reactive, domain }
   const payload = {
     log: logData.logText,
     tag: logData.tag,
     drifted: logData.drifted,
-    reactive: logData.reactive // [NEW]
+    reactive: logData.reactive
   };
   
   if (logData.domain !== undefined) {
     payload.domain = logData.domain;
   }
   
-  let response;
-
   try {
-    response = await fetch(webAppUrl, {
+    const response = await fetch(webAppUrl, {
       method: "POST",
       cache: "no-cache",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       redirect: "follow",
       body: JSON.stringify(payload)
     });
@@ -513,4 +562,3 @@ async function logToGoogleSheet(logData, webAppUrl) {
     throw new Error(errorMessage);
   }
 }
-
