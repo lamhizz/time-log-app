@@ -10,11 +10,15 @@ Go to sheets.google.com and create a New blank spreadsheet.
 
 Name it something clear, like "My Work Logs".
 
-In the first row (Row 1), create your headers. A good setup is:
+In the first row (Row 1), create your headers. The extension (v1.5) sends four pieces of data: Timestamp, Log Entry, Tag, and Drifted.
 
 In cell A1, type: Timestamp
 
 In cell B1, type: Log Entry
+
+In cell C1, type: Tag
+
+In cell D1, type: Drifted
 
 Your sheet should look like this:
 
@@ -24,13 +28,25 @@ A
 
 B
 
+C
+
+D
+
 1
 
 Timestamp
 
 Log Entry
 
+Tag
+
+Drifted
+
 2
+
+
+
+
 
 
 
@@ -49,34 +65,54 @@ Delete any placeholder code in the Code.gs file (e.g., function myFunction() { .
 Copy and paste the entire script below into the Code.gs editor:
 
 /*
- * Google Apps Script for Work Log Chrome Extension
+ * Google Apps Script for Work Log Chrome Extension (v1.5)
+ *
+ * This script is updated to match the data structure sent by
+ * background.js (v1.5), which includes `log`, `tag`, and `drifted`.
+ *
+ * Your Google Sheet Headers (Row 1) should be:
+ * A1: Timestamp
+ * B1: Log Entry
+ * C1: Tag
+ * D1: Drifted
  */
 
 // This function runs when the web app receives a POST request.
 function doPost(e) {
   try {
-    // Get the active spreadsheet and the first sheet (or by name)
+    // Get the active spreadsheet and the sheet named "Sheet1".
+    // !!! IMPORTANT: If your sheet has a different name, change "Sheet1" below.
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Sheet1");
-    // If your sheet is named something else, change "Sheet1" above.
+    
+    if (!sheet) {
+      // Handle case where sheet name is wrong
+      throw new Error("Could not find a sheet named 'Sheet1'. Please check your sheet name.");
+    }
 
-    // Parse the data sent from the extension
+    // Parse the data object sent from the extension
     var data = JSON.parse(e.postData.contents);
-    var logEntry = data.log;
+    
+    // Extract data from the payload
+    var logEntry = data.log || "";       // Get the log text
+    var tag = data.tag || "";           // Get the tag
+    var drifted = data.drifted || false;  // Get the drifted boolean
 
     // Get the current date and time
     var timestamp = new Date();
 
-    // Add the new log as a new row
-    sheet.appendRow([timestamp, logEntry]);
+    // Add the new log as a new row, matching the headers
+    // [Timestamp, Log Entry, Tag, Drifted]
+    sheet.appendRow([timestamp, logEntry, tag, drifted]);
 
     // Return a success message (JSON format)
     return ContentService.createTextOutput(JSON.stringify({ "status": "success", "row": sheet.getLastRow() }))
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
-    // Log any errors
+    // Log any errors (visible in Apps Script -> Executions)
     Logger.log(err);
-    // Return an error message
+    
+    // Return an error message to the extension
     return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
@@ -147,5 +183,3 @@ Select the folder that contains all the extension files (manifest.json, backgrou
 The "Work Log Timer" extension should now appear in your list.
 
 That's it! The extension is installed. The alarm will create itself and should fire in 1-15 minutes for the first time, and then every 15 minutes after that (on weekdays).
-
-P.S. You'll also need some simple icons. Create a folder named icons in your extension directory and add icon16.png, icon48.png, and icon128.png. You can find free placeholder icons online, or I can help generate simple ones if you'd like!

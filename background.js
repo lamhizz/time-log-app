@@ -1,14 +1,53 @@
-// IMPORTANT: REPLACE THIS URL with your *new* v1.2 Google Apps Script URL.
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxn5eukQ3sSLrrQsMbUo6PzyyY7aEz9b2Y6xgQFHQdLmSc7csGcc4irUOuxqsO4YbI/exec";
+// [SEC-01] IMPORTANT: The WEB_APP_URL is now stored in chrome.storage.sync
 
 // --- Alarm Management ---
 
 // Create the alarm when the extension is installed
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Work Log extension installed (v1.5). Creating 1-min alarm...");
+  console.log("Work Log extension installed (v1.9). Creating 1-min alarm...");
+
+  // --- Set all default settings on install ---
+  // This will set defaults, but not overwrite existing settings
+  chrome.storage.sync.get(null, (existingSettings) => {
+    const defaults = {
+      logInterval: 15,
+      logTags: "Meeting\nFocus Time\nSlack\nJira Tasks\nEmailing\nBreak",
+      isDebugMode: false,
+      workingDays: ["1", "2", "3", "4", "5"],
+      workStartHour: 9,
+      workEndHour: 18,
+      blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
+      // --- UPDATED with your new default link ---
+      webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
+      isDomainLogEnabled: false // --- New: [FEAT-03] ---
+    };
+    
+    // Only set defaults for keys that are not already in storage
+    let newSettings = {};
+    for (let key in defaults) {
+      if (existingSettings[key] === undefined) {
+        newSettings[key] = defaults[key];
+      }
+    }
+    
+    if (Object.keys(newSettings).length > 0) {
+      chrome.storage.sync.set(newSettings, () => {
+        console.log("Default settings saved:", newSettings);
+      });
+    }
+  });
+
+
   createWorkLogAlarm(1); // Start 1 minute after install
   // Set default badge color
   chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
+  
+  // --- New: [UX-03] Context Menu ---
+  chrome.contextMenus.create({
+    id: "logWorkContextMenu",
+    title: "Log Work",
+    contexts: ["page"]
+  });
 });
 
 // Create the alarm on browser startup
@@ -53,24 +92,39 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     checkDayAndTriggerPopup();
   }
   
-  // Special 5-minute postpone timer
-  if (alarm.name === "postponeAlarm") {
-    console.log("Postpone Alarm triggered.");
+  // [UX-02] Renamed from "postponeAlarm"
+  if (alarm.name === "snoozeAlarm") {
+    console.log("Snooze Alarm triggered.");
     checkDayAndTriggerPopup();
-    // After the postpone alarm fires, re-create the main alarm.
+    // After the snooze alarm fires, re-create the main alarm.
     // This restarts the main cycle, with the first alarm
     // firing after the *full* interval.
     createWorkLogAlarm(); // No param = use full interval for delay
   }
 });
 
-// --- New: Listen for keyboard shortcut ---
+// --- New: [UX-03] Listen for Context Menu ---
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "logWorkContextMenu") {
+    console.log("Manual log popup triggered by context menu.");
+    // `tab` is provided by the listener
+    // We pass `true` to bypassDnd check, as this is an explicit user action.
+    triggerPopupOnTab(tab, true); 
+  }
+});
+
+// --- New: [UX-03] Listen for keyboard shortcut ---
 chrome.commands.onCommand.addListener((command) => {
   if (command === "trigger-log-popup") {
     console.log("Manual log popup triggered by keyboard shortcut.");
     // We trigger the popup directly, bypassing work-hour/day checks
     // as this is an explicit user action.
-    triggerPopupOnActiveTab();
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs.length > 0 && tabs[0].id) {
+        // We pass `true` to bypassDnd check
+        triggerPopupOnTab(tabs[0], true);
+      }
+    });
   }
 });
 
@@ -95,7 +149,14 @@ function checkDayAndTriggerPopup() {
 
     if (isWorkingDay && isWorkingHour) {
       console.log("It's a working day and hour. Triggering popup on active tab.");
-      triggerPopupOnActiveTab();
+      // Get active tab and trigger popup (which will include DND check)
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs.length > 0 && tabs[0].id) {
+          triggerPopupOnTab(tabs[0], false); // Pass `false` to NOT bypassDnd
+        } else {
+          console.warn("No active tab found.");
+        }
+      });
     } else if (!isWorkingDay) {
       console.log("It's not a working day. No log needed.");
     } else if (!isWorkingHour) {
@@ -104,77 +165,153 @@ function checkDayAndTriggerPopup() {
   });
 }
 
-function triggerPopupOnActiveTab() {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs.length > 0 && tabs[0].id) {
-      chrome.tabs.sendMessage(tabs[0].id, { action: "showLogPopup" }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.warn("Could not send message:", chrome.runtime.lastError.message);
-        } else {
-          console.log("Popup message sent, response:", response);
-        }
-      });
-    } else {
-      console.warn("No active tab found.");
-    }
-  });
+/**
+ * [UX-01] Refactored function to trigger popup on a specific tab
+ * and includes the "Do Not Disturb" check.
+ * @param {chrome.tabs.Tab} tab - The tab to trigger the popup on.
+ * @param {boolean} bypassDnd - If true, skip the DND check (for manual triggers).
+ */
+async function triggerPopupOnTab(tab, bypassDnd = false) {
+  if (!tab || !tab.id || !tab.url) {
+    console.warn("Invalid tab object.", tab);
+    return;
+  }
   
-  // --- New: Set badge text ---
-  console.log("Setting badge text.");
-  chrome.action.setBadgeText({ text: '!' });
+  const tabId = tab.id;
+  const tabUrl = tab.url;
+  
+  // [UX-01] Do Not Disturb check
+  // --- New: [FEAT-03] Also get isDomainLogEnabled setting ---
+  chrome.storage.sync.get({ 
+    blockedDomains: "",
+    isDomainLogEnabled: false
+  }, (data) => {
+    const domains = data.blockedDomains.split('\n').filter(Boolean);
+    
+    // Check if the tab's URL hostname matches any blocked domain
+    let urlHostname = "";
+    try {
+      urlHostname = new URL(tabUrl).hostname;
+    } catch (e) {
+      // Invalid URL (e.g., "chrome://", "about:blank"), can't get hostname
+    }
+    
+    const isBlocked = domains.some(domain => urlHostname.includes(domain.trim()));
+
+    // If it's blocked AND we are *not* bypassing the check
+    if (isBlocked && !bypassDnd) {
+      console.log(`Popup skipped: Active tab (${tabUrl}) is on a "Do Not Disturb" domain.`);
+      // We do nothing, and the main alarm will just fire again at its next
+      // scheduled interval.
+      return;
+    }
+    
+    // [PERF-01] If not blocked, or if check is bypassed,
+    // programmatically inject scripts and then send message.
+    console.log(`Injecting scripts into tab ${tab.id}`);
+    (async () => {
+      try {
+        await chrome.scripting.insertCSS({
+          target: { tabId: tab.id },
+          files: ["style.css"]
+        });
+        
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id },
+          files: ["content.js"]
+        });
+        
+        // --- New: [FEAT-03] Pass domain to content script if enabled ---
+        const domainToLog = data.isDomainLogEnabled ? urlHostname : "";
+        
+        // Now that scripts are injected, send the message to show the popup
+        chrome.tabs.sendMessage(tab.id, { 
+          action: "showLogPopup",
+          domain: domainToLog // Pass the domain (or "")
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.warn(`Could not send message to tab ${tab.id}:`, chrome.runtime.lastError.message);
+          } else {
+            console.log("Popup message sent, response:", response);
+          }
+        });
+
+        // Set the badge
+        console.log("Setting badge text.");
+        chrome.action.setBadgeText({ text: '!' });
+
+      } catch (err) {
+        console.error(`Failed to inject scripts into tab ${tab.id} (${tab.url}): ${err.message}. This might be a protected page.`);
+      }
+    })(); // Execute the async function
+  });
 }
 
 
 // --- Data Handling & Message Listeners ---
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   // Case 1: User submitted a log
   if (request.action === "logWork") {
-    // request.data is now an object: { logText, tag, drifted }
+    // request.data is now an object: { logText, tag, drifted, domain }
     console.log("Received log object:", request.data);
     
-    if (WEB_APP_URL === "YOUR_GOOGLE_APPS_SCRIPT_DEPLOYMENT_URL_HERE") {
-        const errorMsg = "Extension not configured. Please update WEB_APP_URL in background.js with your new v1.2 URL.";
-        console.error(errorMsg);
-        chrome.storage.local.set({ lastError: errorMsg });
-        sendResponse({ status: "error", message: errorMsg });
-        return true;
-    }
-      
-    // Send the full data object to the Google Sheet
-    logToGoogleSheet(request.data)
-      .then((jsonResponse) => {
-        console.log("Log successfully sent:", jsonResponse);
-        // Save this log as the "last successful log"
-        chrome.storage.local.set({ 
-          lastLog: request.data.logText,
-          lastTag: request.data.tag,
-          lastError: "" 
+    // [SEC-01] Get URL from storage
+    chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
+      const WEB_APP_URL = data.webAppUrl;
+
+      if (!WEB_APP_URL) {
+          const errorMsg = "Google Apps Script URL is not set. Please set it in the extension options.";
+          console.error(errorMsg);
+          chrome.storage.local.set({ lastError: errorMsg });
+          sendResponse({ status: "error", message: errorMsg });
+          return; // Stop execution
+      }
+        
+      // Send the full data object to the Google Sheet
+      logToGoogleSheet(request.data, WEB_APP_URL) // Pass URL
+        .then((jsonResponse) => {
+          console.log("Log successfully sent:", jsonResponse);
+          // Save this log as the "last successful log"
+          chrome.storage.local.set({ 
+            lastLog: request.data.logText,
+            lastTag: request.data.tag,
+            lastError: "" 
+          });
+          // --- New: Clear badge on success ---
+          chrome.action.setBadgeText({ text: '' });
+          sendResponse({ status: "success" });
+        })
+        .catch((error) => {
+          console.error("Error sending log to Google Sheet:", error.message);
+          chrome.storage.local.set({ lastError: error.message });
+          sendResponse({ status: "error", message: error.message });
         });
-        // --- New: Clear badge on success ---
-        chrome.action.setBadgeText({ text: '' });
-        sendResponse({ status: "success" });
-      })
-      .catch((error) => {
-        console.error("Error sending log to Google Sheet:", error.message);
-        chrome.storage.local.set({ lastError: error.message });
-        sendResponse({ status: "error", message: error.message });
-      });
+    });
     
     return true; // Indicates async response
   }
   
-  // Case 2: User hit "Postpone 5 min"
-  if (request.action === "postponeLog") {
-    console.log("Postponing log for 5 minutes.");
+  // Case 2: [UX-02] User hit "Snooze" or "Skip"
+  if (request.action === "snoozeLog") {
+    const minutes = request.minutes;
+    
     // Clear the main alarm first
     chrome.alarms.clear("workLogAlarm", (wasCleared) => {
-      // Create a new, one-time alarm
-      chrome.alarms.create("postponeAlarm", {
-        delayInMinutes: 5
-      });
-      sendResponse({ status: "postponed" });
+      if (minutes > 0) {
+        // Create a new, one-time snooze alarm
+        console.log(`Snoozing log for ${minutes} minutes.`);
+        chrome.alarms.create("snoozeAlarm", {
+          delayInMinutes: minutes
+        });
+        sendResponse({ status: "snoozed" });
+      } else {
+        // This is "Skip this log" (minutes = -1)
+        console.log("Skipping this log. Resetting main alarm cycle.");
+        // Re-create the main alarm to start its *next* full cycle
+        createWorkLogAlarm();
+        sendResponse({ status: "skipped" });
+      }
     });
     return true; // Indicates async response
   }
@@ -190,10 +327,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   // Case 4: The popup.html is asking for debug info
   if (request.action === "getDebugInfo") {
-    chrome.storage.local.get({ lastError: "No errors yet." }, (data) => {
-      sendResponse({
-        webAppUrl: WEB_APP_URL,
-        lastError: data.lastError
+    // [SEC-01] Must fetch URL from storage
+    chrome.storage.sync.get({ webAppUrl: "(Not Set)" }, (syncData) => {
+      chrome.storage.local.get({ lastError: "No errors yet." }, (localData) => {
+        sendResponse({
+          webAppUrl: syncData.webAppUrl,
+          lastError: localData.lastError
+        });
       });
     });
     return true; // Indicates async response
@@ -203,18 +343,23 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // --- Google Sheet Fetch Logic ---
 
-async function logToGoogleSheet(logData) {
-  // logData = { logText, tag, drifted }
+async function logToGoogleSheet(logData, webAppUrl) {
+  // logData = { logText, tag, drifted, domain }
   const payload = {
     log: logData.logText,
     tag: logData.tag,
     drifted: logData.drifted
   };
   
+  // --- New: [FEAT-03] Conditionally add domain to payload ---
+  if (logData.domain) {
+    payload.domain = logData.domain;
+  }
+  
   let response;
 
   try {
-    response = await fetch(WEB_APP_URL, {
+    response = await fetch(webAppUrl, {
       method: "POST",
       cache: "no-cache",
       headers: {
@@ -247,6 +392,4 @@ async function logToGoogleSheet(logData) {
     throw new Error(errorMessage);
   }
 }
-
-
 

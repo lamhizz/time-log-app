@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Work Log Timer",
-  "version": "1.5",
+  "version": "1.7",
   "description": "Pops up at an interval to log your work to a Google Sheet.",
   "permissions": [
-    "storage", 
-    "alarms", 
-    "tabs", 
-    "activeTab"
+    "storage",
+    "alarms",
+    "tabs",
+    "activeTab",
+    "contextMenus",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>",
@@ -16,19 +18,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ],
-      "css": [
-        "style.css"
-      ]
-    }
-  ],
   "action": {
     "default_title": "Log Work Manually",
     "default_popup": "popup.html"
