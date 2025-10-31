@@ -3,294 +3,229 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Log Settings</title>
+  <title>WurkWurk Settings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --work-log-primary: #3B82F6; /* Blue 500 */
-      --work-log-primary-hover: #2563EB; /* Blue 600 */
-      --work-log-secondary: #F3F4F6; /* Gray 100 */
-      --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
-      --work-log-text-dark: #1F2937; /* Gray 800 */
-      --work-log-text-light: #6B7280; /* Gray 500 */
-      --work-log-error: #EF4444; /* Red 500 */
-      --work-log-success: #10B981; /* Green 500 */
-      --work-log-border: #D1D5DB; /* Gray 300 */
-      --work-log-radius: 4px;
-      --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --wurkwurk-text: #315558;
+      --wurkwurk-accent-small: #EEBD69;
+      --wurkwurk-accent-large: #52A2A0;
+      --wurkwurk-background: #FFFFFF;
+      --wurkwurk-secondary: #f8f9fa;
+      --wurkwurk-error: #EF4444;
+      --wurkwurk-success: #10B981;
+      --wurkwurk-border: #D1D5DB;
+      --wurkwurk-radius: 4px;
+      --wurkwurk-font: 'Montserrat', sans-serif;
     }
     body {
-      font-family: var(--work-log-font);
+      font-family: var(--wurkwurk-font);
+      background-color: var(--wurkwurk-secondary);
+      color: var(--wurkwurk-text);
       margin: 0;
       padding: 20px;
-      background-color: var(--work-log-secondary);
-      color: var(--work-log-text-dark);
-      min-width: 400px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
     .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #fff;
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: var(--wurkwurk-background);
       padding: 24px;
-      border-radius: var(--work-log-radius);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border-radius: var(--wurkwurk-radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border-top: 5px solid var(--wurkwurk-accent-large);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .header img {
+      height: 40px;
+      width: 40px;
     }
     h1 {
-      margin: 0 0 20px 0;
-      font-size: 22px;
-      font-weight: 600;
-      text-align: center;
+      color: var(--wurkwurk-text);
+      font-size: 24px;
+      margin: 0;
     }
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     .form-group label {
       display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
-    .form-group input[type="number"],
-    .form-group textarea,
-    .form-group input[type="text"],
-    .form-group select { /* Added select */
+    input[type="text"], input[type="number"], textarea, select {
       width: 100%;
-      padding: 9px 12px;
-      font-size: 14px;
+      padding: 10px;
+      border: 1px solid var(--wurkwurk-border);
+      border-radius: var(--wurkwurk-radius);
       font-family: inherit;
-      border: 1px solid var(--work-log-border);
-      border-radius: var(--work-log-radius);
-      box-sizing: border-box; /* Important */
+      box-sizing: border-box;
     }
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-    .form-group input[type="number"] {
-      max-width: 100px;
-    }
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus { /* Added select */
-      border-color: var(--work-log-primary);
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--wurkwurk-accent-large);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
-    .form-group p.description {
+    button {
+      font-family: inherit;
+      border-radius: var(--wurkwurk-radius);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 600;
+    }
+    #save {
+      width: 100%;
+      background-color: var(--wurkwurk-accent-large);
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+    }
+    .description {
       font-size: 12px;
-      color: var(--work-log-text-light);
-      margin: 5px 0 0 0;
+      color: #6c757d;
+      margin-top: 6px;
     }
-    .form-group-checkbox {
+    .form-group-flex {
       display: flex;
-      align-items: center;
       gap: 8px;
     }
-    .form-group-checkbox label {
-      font-weight: 500;
-      font-size: 14px;
-      margin: 0;
+    #test-connection {
+      background-color: var(--wurkwurk-accent-small);
+      color: var(--wurkwurk-text);
+      border: none;
+      padding: 0 16px;
     }
-    .form-group-checkbox input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-    }
-    
-    .working-days-group {
+    .working-days-group, .working-hours-group {
       display: flex;
       gap: 12px;
-      justify-content: flex-start;
-      flex-wrap: wrap;
+      align-items: center;
     }
     .working-days-group > div {
       display: flex;
       align-items: center;
       gap: 5px;
     }
-    .working-days-group label {
-      font-size: 14px;
-      font-weight: 500;
-      margin: 0;
-      user-select: none;
-      cursor: pointer;
-    }
-    .working-days-group input[type="checkbox"] {
-       width: 16px;
-       height: 16px;
-       cursor: pointer;
-    }
-    
-    .working-hours-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .working-hours-group input[type="time"] {
-      font-family: inherit;
-      border: 1px solid var(--work-log-border);
-      border-radius: var(--work-log-radius);
-      padding: 8px; /* Compact */
-      font-size: 14px;
-      width: 100px;
-    }
-    .working-hours-group input[type="time"]:focus {
-      border-color: var(--work-log-primary);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-    }
-    .working-hours-group span {
-      font-size: 14px;
-      color: var(--work-log-text-light);
-    }
-    
-    /* --- [QOL-50] Test Button Styles --- */
-    .form-group-flex {
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-    }
-    .form-group-flex input[type="text"] {
-      flex-grow: 1;
-    }
-    .form-group-flex button {
-      flex-shrink: 0;
-      background-color: var(--work-log-secondary);
-      border: 1px solid var(--work-log-border);
-      color: var(--work-log-text-dark);
-      padding: 9px 16px;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: var(--work-log-radius);
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .form-group-flex button:hover {
-      background-color: var(--work-log-secondary-hover);
-    }
-    #test-status {
-      font-size: 12px;
-      font-weight: 500;
-      margin-top: 6px;
-      padding-left: 2px;
-    }
-    #test-status.success {
-      color: var(--work-log-success);
-    }
-    #test-status.error {
-      color: var(--work-log-error);
-    }
-    /* --- End [QOL-50] --- */
-    
-    button#save {
-      background-color: var(--work-log-primary);
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      border: none;
-      border-radius: var(--work-log-radius);
-      padding: 10px 20px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      width: 100%;
-      font-family: inherit;
-      margin-top: 10px;
-    }
-    button#save:hover {
-      background-color: var(--work-log-primary-hover);
-    }
-    #status {
-      margin-top: 15px;
+    .footer {
       text-align: center;
-      font-size: 14px;
-      font-weight: 500;
-      color: #10B981;
+      margin-top: 20px;
+    }
+    .divider {
+      border-top: 1px solid var(--wurkwurk-border);
+      margin: 20px 0;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+    }
+    input:checked + .slider {
+      background-color: var(--wurkwurk-accent-large);
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .slider.round {
+      border-radius: 34px;
+    }
+    .slider.round:before {
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Work Log Settings</h1>
+    <div class="header">
+      <img src="icons/wurk-wurk-logo-128.png" alt="WurkWurk Logo">
+      <h1>WurkWurk Settings</h1>
+    </div>
 
-    <!-- --- [QOL-50] Web App URL --- -->
     <div class="form-group">
-      <label for="web-app-url">Google Apps Script URL</label>
+      <label for="web-app-url" data-tooltip="This is the crucial link between the extension and your Google Sheet.">
+        Google Apps Script URL
+      </label>
       <div class="form-group-flex">
         <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/...">
         <button id="test-connection">Test</button>
       </div>
       <div id="test-status"></div>
-      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must update your Apps Script (from SETUP_GUIDE.txt) for logging and testing to work.</p>
     </div>
 
     <div class="form-group">
-      <label for="log-interval">Log Interval (in minutes)</label>
+      <label for="log-interval" data-tooltip="Set how frequently you want the logging pop-up to appear.">
+        Log Interval (minutes)
+      </label>
       <input type="number" id="log-interval" min="1">
-      <p class="description">How often the popup should appear. Default is 15.</p>
     </div>
 
-    <!-- --- [QOL-51] Notification Sound --- -->
     <div class="form-group">
       <label for="notification-sound">Notification Sound</label>
       <select id="notification-sound">
         <option value="none">None</option>
-        <option value="ClickUp.wav" selected>ClickUp (Default)</option>
+        <option value="ClickUp.wav">Default</option>
         <option value="Chime.wav">Chime</option>
-        <option value="Notify.wav">Notify</option>
       </select>
-      <p class="description">Plays a sound when the log popup appears. Requires a <code>sounds</code> folder with the .wav files in the extension directory.</p>
     </div>
     
     <div class="form-group">
       <label for="log-tags">Log Tags</label>
-      <textarea id="log-tags" rows="5"></textarea>
-      <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
+      <textarea id="log-tags" rows="4"></textarea>
+      <p class="description">One tag per line. These will appear in the pop-up dropdown.</p>
     </div>
-    
+
     <div class="form-group">
       <label for="blocked-domains">"Do Not Disturb" Domains</label>
-      <textarea id="blocked-domains" rows="4"></textarea>
-      <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
+      <textarea id="blocked-domains" rows="3"></textarea>
+      <p class="description">One domain per line. Popups will be skipped on these sites.</p>
     </div>
-    
+
     <div class="form-group">
       <label>Active Working Days</label>
       <div class="working-days-group">
-        <div>
-          <input type="checkbox" id="day-0" data-day="0">
-          <label for="day-0">Sun</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-1" data-day="1">
-          <label for="day-1">Mon</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-2" data-day="2">
-          <label for="day-2">Tue</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-3" data-day="3">
-          <label for="day-3">Wed</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-4" data-day="4">
-          <label for="day-4">Thu</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-5" data-day="5">
-          <label for="day-5">Fri</label>
-        </div>
-        <div>
-          <input type="checkbox" id="day-6" data-day="6">
-          <label for="day-6">Sat</label>
-        </div>
+        <div><input type="checkbox" id="day-0" data-day="0"><label for="day-0">Sun</label></div>
+        <div><input type="checkbox" id="day-1" data-day="1"><label for="day-1">Mon</label></div>
+        <div><input type="checkbox" id="day-2" data-day="2"><label for="day-2">Tue</label></div>
+        <div><input type="checkbox" id="day-3" data-day="3"><label for="day-3">Wed</label></div>
+        <div><input type="checkbox" id="day-4" data-day="4"><label for="day-4">Thu</label></div>
+        <div><input type="checkbox" id="day-5" data-day="5"><label for="day-5">Fri</label></div>
+        <div><input type="checkbox" id="day-6" data-day="6"><label for="day-6">Sat</label></div>
       </div>
     </div>
-    
+
     <div class="form-group">
       <label>Active Working Hours</label>
       <div class="working-hours-group">
@@ -298,23 +233,65 @@
         <span>to</span>
         <input type="time" id="work-end-hour">
       </div>
-      <p class="description">Popup will only appear between these hours (24h format).</p>
     </div>
-    
-    <div class="form-group form-group-checkbox">
-      <input type="checkbox" id="log-domain">
-      <label for="log-domain">Log active website domain</label>
-      <p class="description" style="margin: 0 0 0 8px;">(Adds a "Domain" column to your sheet)</p>
+
+    <div class="divider"></div>
+
+    <h2>Pomodoro Timer</h2>
+    <div class="form-group">
+      <label class="switch">
+        <input type="checkbox" id="pomodoro-enabled">
+        <span class="slider round"></span>
+      </label>
+      <label for="pomodoro-enabled">Enable Pomodoro</label>
+      <p class="description">Integrate a Pomodoro timer into your workflow.</p>
     </div>
-    
-    <div class="form-group form-group-checkbox">
-      <input type="checkbox" id="debug-mode" style="width: auto;">
-      <label for="debug-mode" style="margin: 0;">Enable Debug Mode</label>
-      <p class="description" style="margin: 0;">(Shows debug info in the icon popup)</p>
+
+    <div id="pomodoro-settings">
+      <div class="form-group">
+        <label for="pomodoro-focus-duration">Focus Duration (minutes)</label>
+        <input type="number" id="pomodoro-focus-duration" min="1" value="20">
+      </div>
+      <div class="form-group">
+        <label for="pomodoro-short-break-duration">Short Break (minutes)</label>
+        <input type="number" id="pomodoro-short-break-duration" min="1" value="5">
+      </div>
+      <div class="form-group">
+        <label for="pomodoro-long-break-duration">Long Break (minutes)</label>
+        <input type="number" id="pomodoro-long-break-duration" min="1" value="15">
+      </div>
+      <div class="form-group">
+        <label for="pomodoro-sessions">Sessions before long break</label>
+        <input type="number" id="pomodoro-sessions" min="1" value="4">
+      </div>
+      <div class="form-group">
+        <label class="switch">
+          <input type="checkbox" id="pomodoro-auto-start">
+          <span class="slider round"></span>
+        </label>
+        <label for="pomodoro-auto-start">Auto-start breaks</label>
+      </div>
+      <div class="form-group">
+        <label class="switch">
+          <input type="checkbox" id="pomodoro-ticking-sound">
+          <span class="slider round"></span>
+        </label>
+        <label for="pomodoro-ticking-sound">Ticking Sound</label>
+      </div>
+      <div class="form-group">
+        <label for="pomodoro-volume">Volume</label>
+        <input type="range" id="pomodoro-volume" min="0" max="1" step="0.1" value="0.5">
+      </div>
     </div>
 
     <button id="save">Save Settings</button>
     <div id="status"></div>
+  </div>
+
+  <div class="footer">
+    <a href="about.html" target="_blank">About WurkWurk</a> |
+    <a href="setup.html" target="_blank">Setup Guide</a>
+    <div id="bmc-container"></div>
   </div>
 
   <script src="options.js"></script>
