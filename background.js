@@ -249,9 +249,9 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
     return;
   }
   
-  // Don't show on other extension pages
-  if (tab.url.startsWith("chrome-extension://")) {
-    console.log("Popup skipped: Cannot inject into other extension pages.");
+  // Don't show on other extension pages or protected chrome:// pages
+  if (tab.url.startsWith("chrome-extension://") || tab.url.startsWith("chrome://")) {
+    console.log("Popup skipped: Cannot inject into protected pages.");
     return;
   }
 
