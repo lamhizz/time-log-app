@@ -169,6 +169,146 @@ h1 {
     display: contents; /* Inherit grid from parent */
 }
 
+/* --- NEW: Dashboard Section Layout --- */
+.dashboard-section {
+    grid-column: 1 / -1;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.dashboard-section h2 {
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--work-log-text);
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 0.75rem;
+}
+
+.dashboard-section h3 {
+    font-size: 1.1rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #374151;
+    font-weight: 600;
+}
+
+.date-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+}
+
+#custom-date-inputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* --- NEW: KPI Grid --- */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Use existing .stat-card for KPIs */
+
+/* --- NEW: Chart & Table Layouts --- */
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.chart-container, .table-container, .heatmap-container {
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- NEW: Styled Tables --- */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.dashboard-table th, .dashboard-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.dashboard-table th {
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.dashboard-table tbody tr:hover {
+    background-color: #f9fafb;
+}
+
+.percentage-bar-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.percentage-bar {
+    height: 10px;
+    background-color: var(--work-log-accent);
+    border-radius: 5px;
+}
+
+/* --- NEW: Heatmap --- */
+.heatmap-container .filter-container {
+    margin-bottom: 1rem;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.heatmap-table th, .heatmap-table td {
+    border: 1px solid #e5e7eb;
+    height: 30px;
+    text-align: center;
+    font-size: 0.8rem;
+}
+.heatmap-table th {
+    background-color: #f9fafb;
+}
+.heatmap-table .heatmap-time-label {
+    font-weight: 500;
+    background-color: #f9fafb;
+}
+
+/* --- NEW: Blindsides Section --- */
+.kpi-standalone {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.kpi-standalone strong {
+    color: var(--work-log-accent-dark);
+    font-weight: 700;
+}
+
+
 .chart-card {
     background-color: #ffffff;
     padding: 1.5rem;
