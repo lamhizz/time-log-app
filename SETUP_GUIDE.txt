@@ -1,50 +1,91 @@
-# Work Log Timer - Detailed Setup Guide
+WurkWurk - Detailed Setup Guide
 
-This guide provides step-by-step instructions to connect the Work Log Timer extension to your own private Google Sheet.
+This guide provides step-by-step instructions to connect the WurkWurk Chrome extension to your own private Google Sheet.
 
-## Step 1: Create Your Google Sheet
+Step 1: Create Your Google Sheet
 
-1.  Go to [sheets.google.com](https://sheets.google.com).
-2.  Click on **Blank** to create a new spreadsheet.
-3.  Give the spreadsheet a name you'll remember, like "My Work Logs."
+Go to sheets.google.com.
 
-## Step 2: Add Headers to the Sheet
+Click on Blank to create a new spreadsheet.
+
+Give the spreadsheet a name you'll remember, like "My WurkWurk Logs."
+
+Step 2: Add Headers to the Sheet
 
 This is a critical step. The script requires nine specific headers in the first row, in this exact order, to function correctly.
 
-1.  In cell **A1**, type: `Date`
-2.  In cell **B1**, type: `Time`
-3.  In cell **C1**, type: `Log Entry`
-4.  In cell **D1**, type: `Tag`
-5.  In cell **E1**, type: `Drifted`
-6.  In cell **F1**, type: `Mins Since Last`
-7.  In cell **G1**, type: `FullTimestamp`
-8.  In cell **H1**, type: `Domain`
-9.  In cell **I1**, type: `Reactive`
+In cell A1, type: Date
+
+In cell B1, type: Time
+
+In cell C1, type: Log Entry
+
+In cell D1, type: Tag
+
+In cell E1, type: Drifted
+
+In cell F1, type: Mins Since Last
+
+In cell G1, type: FullTimestamp
+
+In cell H1, type: Domain
+
+In cell I1, type: Reactive
 
 Your sheet's first row should look like this:
 
-| A      | B    | C         | D   | E       | F               | G             | H      | I        |
-| ------ | ---- | --------- | --- | ------- | --------------- | ------------- | ------ | -------- |
-| Date   | Time | Log Entry | Tag | Drifted | Mins Since Last | FullTimestamp | Domain | Reactive |
+A
 
----
+B
 
-## Step 3: Create the Google Apps Script
+C
+
+D
+
+E
+
+F
+
+G
+
+H
+
+I
+
+Date
+
+Time
+
+Log Entry
+
+Tag
+
+Drifted
+
+Mins Since Last
+
+FullTimestamp
+
+Domain
+
+Reactive
+
+Step 3: Create the Google Apps Script
 
 This script will act as the secure bridge between the Chrome extension and your Google Sheet.
 
-1.  In your Google Sheet, click **Extensions** > **Apps Script**.
-2.  A new browser tab will open with the Apps Script editor.
+In your Google Sheet, click Extensions > Apps Script.
 
-## Step 4: Paste the Script Code
+A new browser tab will open with the Apps Script editor.
 
-1.  Delete any placeholder code in the `Code.gs` file (e.g., `function myFunction() { ... }`).
-2.  Copy the entire script below and paste it into the empty `Code.gs` editor.
+Step 4: Paste the Script Code
 
-```javascript
+Delete any placeholder code in the Code.gs file (e.g., function myFunction() { ... }).
+
+Copy the entire script below and paste it into the empty Code.gs editor.
+
 /**
- * @file Google Apps Script for Work Log Chrome Extension (v2.2)
+ * @file Google Apps Script for WurkWurk Chrome Extension (v2.2)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
  * It handles a 9-column layout and includes a test function.
  */
@@ -54,10 +95,10 @@ This script will act as the secure bridge between the Chrome extension and your 
 /**
  * @const {string}
  * @description The time zone for formatting dates and times.
- * Find your time zone here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+ * Find your time zone here: [https://en.wikipedia.org/wiki/List_of_tz_database_time_zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
  * @example "America/New_York", "Europe/London", "Asia/Tokyo"
  */
-const TIME_ZONE = "America/New_York";
+const TIME_ZONE = "Europe/Vilnius";
 
 /**
  * @const {string}
@@ -77,6 +118,7 @@ const SHEET_NAME = "Sheet1";
 function doGet(e) {
   try {
     if (e.parameter.action === "test") {
+      Logger.log("WurkWurk: Received successful test ping.");
       return ContentService.createTextOutput(
         JSON.stringify({
           status: "success",
@@ -85,6 +127,7 @@ function doGet(e) {
       ).setMimeType(ContentService.MimeType.JSON);
     }
   } catch (err) {
+    Logger.log("WurkWurk: doGet Error - " + err.message);
     return ContentService.createTextOutput(
       JSON.stringify({ status: "error", message: err.message })
     ).setMimeType(ContentService.MimeType.JSON);
@@ -129,7 +172,8 @@ function doPost(e) {
     const lastRow = sheet.getLastRow();
     
     if (lastRow >= 1) {
-      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); // Column G is FullTimestamp
+      // Column G (index 7) is FullTimestamp
+      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); 
       if (lastTimestampStr) {
         const lastTimestamp = new Date(lastTimestampStr);
         const diffMs = now.getTime() - lastTimestamp.getTime();
@@ -160,56 +204,70 @@ function doPost(e) {
 
   } catch (err) {
     // 6. Log the error and return an error response
-    Logger.log(err);
+    Logger.log("WurkWurk: doPost Error - " + err.message);
     return ContentService.createTextOutput(
       JSON.stringify({ status: "error", message: err.message, sheetName: SHEET_NAME })
     ).setMimeType(ContentService.MimeType.JSON);
   }
 }
-```
 
-3.  **IMPORTANT**: Find the line `const TIME_ZONE = "America/New_York";` and change the time zone to your own (e.g., `"Europe/Vilnius"`).
-4.  Save the script by clicking the floppy disk icon or pressing `Ctrl+S`.
 
----
+IMPORTANT: Find the line const TIME_ZONE = "Europe/Vilnius"; and change the time zone to your own if it's incorrect (e.g., "America/New_York").
 
-## Step 5: Deploy the Script as a Web App
+Save the script by clicking the floppy disk icon or pressing Ctrl+S.
+
+Step 5: Deploy the Script as a Web App
 
 This step creates the secret URL the extension will use to send data to your sheet.
 
-1.  In the Apps Script editor, click the blue **Deploy** button in the top-right corner.
-2.  Select **New deployment**.
-3.  Click the gear icon (⚙️) next to "Select type" and choose **Web app**.
-4.  In the dialog box, enter the following settings:
-    *   **Description**: `Work Log Receiver` (Optional)
-    *   **Execute as**: `Me` (This is very important).
-    *   **Who has access**: `Anyone` (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).
-5.  Click **Deploy**.
+In the Apps Script editor, click the blue Deploy button in the top-right corner.
 
-## Step 6: Authorize the Script
+Select New deployment.
 
-1.  Google will prompt you to authorize the script. Click **Authorize access**.
-2.  Choose your Google account.
-3.  You will likely see a "Google hasn't verified this app" warning. This is normal for personal scripts. Click **Advanced**, then click **"Go to [Your Script Name] (unsafe)"**.
-4.  Click **Allow** to grant the script permission to edit your spreadsheets.
+Click the gear icon (⚙️) next to "Select type" and choose Web app.
 
-## Step 7: Copy the Web App URL
+In the dialog box, enter the following settings:
 
-After deployment is complete, a dialog box will appear with the **Web app URL**.
+Description: WurkWurk Log Receiver (Optional)
 
-**COPY THIS URL.** You will need it for the final step.
+Execute as: Me (This is very important).
 
----
+Who has access: Anyone (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).
 
-## Step 8: Configure the Extension
+Click Deploy.
 
-1.  Go to your Chrome extensions page by navigating to `chrome://extensions`.
-2.  Find the "Work Log Timer" extension.
-3.  Right-click the extension's icon in your Chrome toolbar and click **Options**.
-4.  On the settings page:
-    *   Paste the **Web app URL** you copied into the first field, "Google Apps Script URL."
-    *   Click the **Test** button next to it. You should see a green "Success!" message. If not, double-check your script deployment and URL.
-    *   Configure your other preferences, such as the log interval and notification sound.
-5.  Scroll to the bottom and click **Save Settings**.
+Step 6: Authorize the Script
+
+Google will prompt you to authorize the script. Click Authorize access.
+
+Choose your Google account.
+
+You will likely see a "Google hasn't verified this app" warning. This is normal for personal scripts. Click Advanced, then click "Go to [Your Script Name] (unsafe)".
+
+Click Allow to grant the script permission to edit your spreadsheets.
+
+Step 7: Copy the Web App URL
+
+After deployment is complete, a dialog box will appear with the Web app URL.
+
+COPY THIS URL. You will need it for the final step.
+
+Step 8: Configure the Extension
+
+Go to your Chrome extensions page by navigating to chrome://extensions.
+
+Find the "WurkWurk" extension.
+
+Right-click the extension's icon in your Chrome toolbar and click Options.
+
+On the settings page:
+
+Paste the Web app URL you copied into the first field, "Google Apps Script URL."
+
+Click the Test button next to it. You should see a green "Success!" message. If not, double-check your script deployment and URL.
+
+Configure your other preferences, such as the log interval and notification sound.
+
+Scroll to the bottom and click Save Settings.
 
 You are all set! The extension is now fully configured and will start prompting you at your chosen interval during your working hours.

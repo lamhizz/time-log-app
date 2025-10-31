@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-R">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log Work</title>
+  <title>Log to WurkWurk</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --work-log-primary: #3B82F6; /* Blue 500 */
-      --work-log-primary-hover: #2563EB; /* Blue 600 */
-      --work-log-secondary: #F3F4F6; /* Gray 100 */
-      --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
-      --work-log-text-dark: #1F2937; /* Gray 800 */
-      --work-log-text-light: #6B7280; /* Gray 500 */
-      --work-log-error: #EF4444; /* Red 500 */
-      --work-log-success: #10B981; /* Green 500 */
+      /* New Color Palette */
+      --wurk-primary: #52A2A0; /* Big Accent - Teal */
+      --wurk-primary-hover: #428482; /* Darker Teal */
+      --wurk-secondary: #F4F4F4; /* Light Gray */
+      --wurk-secondary-hover: #EAEAEA; /* Darker Light Gray */
+      --wurk-accent: #EEBD69; /* Small Accent - Gold */
+      --wurk-text-dark: #315558; /* Main Text */
+      --wurk-text-light: #6A8A8C; /* Lighter Text */
+      
+      --work-log-primary: var(--wurk-primary);
+      --work-log-primary-hover: var(--wurk-primary-hover);
+      --work-log-secondary: var(--wurk-secondary);
+      --work-log-secondary-hover: var(--wurk-secondary-hover);
+      --work-log-text-dark: var(--wurk-text-dark);
+      --work-log-text-light: var(--wurk-text-light);
+
+      /* Standard Colors */
+      --work-log-error: #EF4444; /* Red */
+      --work-log-success: #10B981; /* Green */
       --work-log-border: #D1D5DB; /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -35,6 +46,7 @@
       text-align: center;
       font-weight: 600;
       font-size: 16px;
+      color: var(--wurk-text-dark);
     }
     .form-group {
       margin-bottom: 10px;
@@ -44,6 +56,7 @@
       margin-bottom: 4px;
       font-weight: 500;
       font-size: 13px;
+      color: var(--wurk-text-light);
     }
     textarea, select, input[type="text"] {
       width: 100%;
@@ -54,12 +67,13 @@
       font-family: inherit;
       box-sizing: border-box;
       background-color: #fff;
+      color: var(--wurk-text-dark);
     }
     select {
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2D%2Dwidth%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2D%2Dwidth%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236A8A8C%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
       background-repeat: no-repeat;
       background-position: right 8px center;
       background-size: 16px;
@@ -71,10 +85,10 @@
     textarea:focus, select:focus, input[type="text"]:focus {
       border-color: var(--work-log-primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
     
-    /* [NEW] Checkbox layout */
+    /* Checkbox layout */
     .checkbox-container {
       display: flex;
       justify-content: space-between;
@@ -85,7 +99,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      /* margin-bottom: 12px; */ /* Removed */
     }
     .checkbox-group input[type="checkbox"] {
       width: 15px;
@@ -98,9 +111,10 @@
       margin: 0;
       font-size: 13px;
       user-select: none;
+      color: var(--wurk-text-dark);
     }
     
-    /* --- [UX-10] MRU Tags --- */
+    /* MRU Tags */
     .mru-tags-container {
       display: flex;
       gap: 6px;
@@ -115,6 +129,7 @@
       border: 1px solid var(--work-log-border);
       padding: 4px 6px;
       font-weight: 500;
+      border-radius: var(--work-log-radius);
     }
     .mru-tag-btn:hover {
       background-color: var(--work-log-secondary-hover);
@@ -131,6 +146,7 @@
       transition: background-color 0.2s ease, border-color 0.2s ease;
       box-sizing: border-box;
       color: var(--work-log-text-dark);
+      background-color: #fff;
     }
     button#submit-log {
       width: 100%;
@@ -243,17 +259,19 @@
   </style>
 </head>
 <body>
+  
+  <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" style="width: 100px; display: block; margin: -5px auto 5px; opacity: 0.8;">
 
   <!-- [UX-12] Timer Section -->
   <div class="timer-container">
     <div class="active-task-display" id="active-task-container" style="display: none;">
       <p>Active Task: <span id="active-task-name"></span></p>
       <span id="active-task-timer">00:00:00</span>
-      <button id="stop-task-btn">Stop Task & Log</button>
+      <button id="stop-task-btn" title="Stop the timer and pre-fill the log.">Stop Task & Log</button>
     </div>
     <div class="start-task-form" id="start-task-container">
-      <input type="text" id="task-name-input" placeholder="Enter task name...">
-      <button id="start-task-btn">Start</button>
+      <input type="text" id="task-name-input" placeholder="Enter task name..." title="Name of the task you are starting.">
+      <button id="start-task-btn" title="Start a new task timer.">Start</button>
     </div>
   </div>
 
@@ -261,11 +279,11 @@
 
   <!-- Main Log Form -->
   <div class="log-form-container" id="log-form-container">
-    <h3>Log Your Work</h3>
+    <h3>Log your Wurk!</h3>
     
     <div class="form-group">
       <label for="tag-select">Tag:</label>
-      <select id="tag-select">
+      <select id="tag-select" title="Categorize your work entry.">
         <!-- Tags will be injected here by popup.js -->
       </select>
     </div>
@@ -276,29 +294,29 @@
 
     <div class="form-group">
       <label for="log-input">Log:</label>
-      <textarea id="log-input" placeholder="What are you working on?"></textarea>
+      <textarea id="log-input" placeholder="What are you working on?" title="What are you working on?"></textarea>
     </div>
     
     <!-- [NEW] Checkbox Container -->
     <div class="checkbox-container">
       <div class="checkbox-group">
         <input type="checkbox" id="drifted-check">
-        <label for="drifted-check">I drifted</label>
+        <label for="drifted-check" title="Check this if you got distracted or went off-task.">I drifted</label>
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="reactive-check">
-        <label for="reactive-check">I reacted</label>
+        <label for="reactive-check" title="Check this if the work was unplanned or an interruption.">I reacted</label>
       </div>
     </div>
     
-    <button id="submit-log">Log It (Ctrl+Enter)</button>
+    <button id="submit-log" title="Submit this log entry (Ctrl+Enter)">Log It (Ctrl+Enter)</button>
     
     <p class="status" id="status-message"></p>
   </div>
   
   <div class="footer-links">
-    <a id="open-settings">Settings</a>
-    <a id="toggle-debug">Show Debug</a>
+    <a id="open-settings" title="Open the WurkWurk settings page.">Settings</a>
+    <a id="toggle-debug" title="Show/hide debug information.">Show Debug</a>
   </div>
 
   <div id="debug-info">

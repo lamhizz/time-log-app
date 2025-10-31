@@ -1,22 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-R">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Work Log Settings</title>
+  <title>WurkWurk Settings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --work-log-primary: #3B82F6; /* Blue 500 */
-      --work-log-primary-hover: #2563EB; /* Blue 600 */
-      --work-log-secondary: #F3F4F6; /* Gray 100 */
-      --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
-      --work-log-text-dark: #1F2937; /* Gray 800 */
-      --work-log-text-light: #6B7280; /* Gray 500 */
-      --work-log-error: #EF4444; /* Red 500 */
-      --work-log-success: #10B981; /* Green 500 */
+      /* New Color Palette */
+      --wurk-primary: #52A2A0; /* Big Accent - Teal */
+      --wurk-primary-hover: #428482; /* Darker Teal */
+      --wurk-secondary: #F4F4F4; /* Light Gray */
+      --wurk-secondary-hover: #EAEAEA; /* Darker Light Gray */
+      --wurk-accent: #EEBD69; /* Small Accent - Gold */
+      --wurk-text-dark: #315558; /* Main Text */
+      --wurk-text-light: #6A8A8C; /* Lighter Text */
+      
+      --work-log-primary: var(--wurk-primary);
+      --work-log-primary-hover: var(--wurk-primary-hover);
+      --work-log-secondary: var(--wurk-secondary);
+      --work-log-secondary-hover: var(--wurk-secondary-hover);
+      --work-log-text-dark: var(--wurk-text-dark);
+      --work-log-text-light: var(--wurk-text-light);
+
+      /* Standard Colors */
+      --work-log-error: #EF4444; /* Red */
+      --work-log-success: #10B981; /* Green */
       --work-log-border: #D1D5DB; /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -44,6 +55,7 @@
       font-size: 22px;
       font-weight: 600;
       text-align: center;
+      color: var(--wurk-text-dark);
     }
     .form-group {
       margin-bottom: 16px;
@@ -53,6 +65,7 @@
       margin-bottom: 6px;
       font-weight: 500;
       font-size: 14px;
+      color: var(--wurk-text-dark);
     }
     .form-group input[type="number"],
     .form-group textarea,
@@ -65,6 +78,7 @@
       border: 1px solid var(--work-log-border);
       border-radius: var(--work-log-radius);
       box-sizing: border-box; /* Important */
+      color: var(--wurk-text-dark);
     }
     .form-group textarea {
       resize: vertical;
@@ -78,7 +92,7 @@
     .form-group select:focus { /* Added select */
       border-color: var(--work-log-primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
     .form-group p.description {
       font-size: 12px;
@@ -140,7 +154,7 @@
     .working-hours-group input[type="time"]:focus {
       border-color: var(--work-log-primary);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
     .working-hours-group span {
       font-size: 14px;
@@ -207,53 +221,55 @@
       text-align: center;
       font-size: 14px;
       font-weight: 500;
-      color: #10B981;
+      color: var(--work-log-success);
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Work Log Settings</h1>
+    <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" style="width: 120px; display: block; margin: 0 auto 10px; opacity: 0.8;">
+    <h1>WurkWurk Settings</h1>
 
     <!-- --- [QOL-50] Web App URL --- -->
     <div class="form-group">
       <label for="web-app-url">Google Apps Script URL</label>
       <div class="form-group-flex">
-        <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/...">
-        <button id="test-connection">Test</button>
+        <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the unique URL from your Google Apps Script deployment.">
+        <button id="test-connection" title="Click to test the connection to your Google Sheet.">Test</button>
       </div>
       <div id="test-status"></div>
-      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must update your Apps Script (from SETUP_GUIDE.txt) for logging and testing to work.</p>
+      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> See the <strong>SETUP_GUIDE.txt</strong> file for instructions.</p>
     </div>
 
     <div class="form-group">
       <label for="log-interval">Log Interval (in minutes)</label>
-      <input type="number" id="log-interval" min="1">
-      <p class="description">How often the popup should appear. Default is 15.</p>
+      <input type="number" id="log-interval" min="0" title="How often (in minutes) the popup will appear to log your work.">
+      <p class="description">How often the popup should appear. Default is 15. Set to 0 to disable automatic popups.</p>
     </div>
 
     <!-- --- [QOL-51] Notification Sound --- -->
     <div class="form-group">
       <label for="notification-sound">Notification Sound</label>
-      <select id="notification-sound">
+      <select id="notification-sound" title="Play a sound when the automatic popup appears.">
         <option value="none">None</option>
         <option value="ClickUp.wav" selected>ClickUp (Default)</option>
-        <option value="Chime.wav">Chime</option>
-        <option value="Notify.wav">Notify</option>
+        <option value="Bell.wav">Bell</option>
+        <option value="Bamboo.wav">Bamboo</option>
+        <option value="Pop.wav">Pop</option>
       </select>
-      <p class="description">Plays a sound when the log popup appears. Requires a <code>sounds</code> folder with the .wav files in the extension directory.</p>
+      <p class="description">Plays a sound when the log popup appears.</p>
     </div>
     
     <div class="form-group">
       <label for="log-tags">Log Tags</label>
-      <textarea id="log-tags" rows="5"></textarea>
+      <textarea id="log-tags" rows="5" title="Create a list of common tasks or categories, one per line."></textarea>
       <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
     </div>
     
     <div class="form-group">
       <label for="blocked-domains">"Do Not Disturb" Domains</label>
-      <textarea id="blocked-domains" rows="4"></textarea>
+      <textarea id="blocked-domains" rows="4" title="List websites where the automatic popup should not appear (e.g., meet.google.com)."></textarea>
       <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
     </div>
     
@@ -262,31 +278,31 @@
       <div class="working-days-group">
         <div>
           <input type="checkbox" id="day-0" data-day="0">
-          <label for="day-0">Sun</label>
+          <label for="day-0" title="Log popups will only appear on these selected days.">Sun</label>
         </div>
         <div>
           <input type="checkbox" id="day-1" data-day="1">
-          <label for="day-1">Mon</label>
+          <label for="day-1" title="Log popups will only appear on these selected days.">Mon</label>
         </div>
         <div>
           <input type="checkbox" id="day-2" data-day="2">
-          <label for="day-2">Tue</label>
+          <label for="day-2" title="Log popups will only appear on these selected days.">Tue</label>
         </div>
         <div>
           <input type="checkbox" id="day-3" data-day="3">
-          <label for="day-3">Wed</label>
+          <label for="day-3" title="Log popups will only appear on these selected days.">Wed</label>
         </div>
         <div>
           <input type="checkbox" id="day-4" data-day="4">
-          <label for="day-4">Thu</label>
+          <label for="day-4" title="Log popups will only appear on these selected days.">Thu</label>
         </div>
         <div>
           <input type="checkbox" id="day-5" data-day="5">
-          <label for="day-5">Fri</label>
+          <label for="day-5" title="Log popups will only appear on these selected days.">Fri</label>
         </div>
         <div>
           <input type="checkbox" id="day-6" data-day="6">
-          <label for="day-6">Sat</label>
+          <label for="day-6" title="Log popups will only appear on these selected days.">Sat</label>
         </div>
       </div>
     </div>
@@ -294,29 +310,28 @@
     <div class="form-group">
       <label>Active Working Hours</label>
       <div class="working-hours-group">
-        <input type="time" id="work-start-hour">
+        <input type="time" id="work-start-hour" title="Log popups will only appear after this time.">
         <span>to</span>
-        <input type="time" id="work-end-hour">
+        <input type="time" id="work-end-hour" title="Log popups will only appear before this time.">
       </div>
       <p class="description">Popup will only appear between these hours (24h format).</p>
     </div>
     
     <div class="form-group form-group-checkbox">
       <input type="checkbox" id="log-domain">
-      <label for="log-domain">Log active website domain</label>
-      <p class="description" style="margin: 0 0 0 8px;">(Adds a "Domain" column to your sheet)</p>
+      <label for="log-domain" title="Check this to save the website domain (e.g., 'google.com') with your log entry.">Log active website domain</label>
     </div>
     
     <div class="form-group form-group-checkbox">
       <input type="checkbox" id="debug-mode" style="width: auto;">
-      <label for="debug-mode" style="margin: 0;">Enable Debug Mode</label>
-      <p class="description" style="margin: 0;">(Shows debug info in the icon popup)</p>
+      <label for="debug-mode" style="margin: 0;" title="Show technical details in the popup footer for troubleshooting.">Enable Debug Mode</label>
     </div>
 
-    <button id="save">Save Settings</button>
+    <button id="save" title="Save all your settings.">Save Settings</button>
     <div id="status"></div>
   </div>
 
   <script src="options.js"></script>
 </body>
 </html>
+

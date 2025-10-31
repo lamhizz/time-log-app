@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Work Log Timer",
-  "version": "2.1",
+  "name": "WurkWurk: Work Log Timer",
+  "version": "2.2",
   "description": "Pops up at an interval to log your work to a Google Sheet.",
   "permissions": [
     "storage",
@@ -19,14 +19,15 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Log Work Manually",
+    "default_title": "Log to WurkWurk",
     "default_popup": "popup.html"
   },
   "options_page": "options.html",
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "icons/wurk-wurk-logo-16.png",
+    "32": "icons/wurk-wurk-logo-32.png",
+    "48": "icons/wurk-wurk-logo-48.png",
+    "128": "icons/wurk-wurk-logo-128.png"
   },
   "commands": {
     "trigger-log-popup": {
@@ -34,12 +35,15 @@
         "default": "Ctrl+Shift+L",
         "mac": "Command+Shift+L"
       },
-      "description": "Open the work log popup"
+      "description": "Open the WurkWurk log popup"
     }
   },
   "web_accessible_resources": [
     {
-      "resources": [ "sounds/*.wav" ],
+      "resources": [ 
+        "sounds/*.wav",
+        "images/wurk-wurk-logo.png" 
+      ],
       "matches": [ "<all_urls>" ]
     }
   ]

@@ -38,9 +38,9 @@ function createPopup(domainToLog, soundToPlay) {
       const soundUrl = chrome.runtime.getURL(`sounds/${soundToPlay}`);
       const audio = new Audio(soundUrl);
       audio.volume = 0.5; // Set volume to 50% to be less intrusive
-      audio.play().catch(e => console.warn(`Work Log: Could not play notification sound: ${e.message}`));
+      audio.play().catch(e => console.warn(`WurkWurk: Could not play notification sound: ${e.message}`));
     } catch (e) {
-      console.error("Work Log: Error playing sound.", e);
+      console.error("WurkWurk: Error playing sound.", e);
     }
   }
   
@@ -61,9 +61,14 @@ function createPopup(domainToLog, soundToPlay) {
   const modal = document.createElement("div");
   modal.id = "work-log-popup-modal";
   
+  // Add logo
+  const logoImg = document.createElement("img");
+  logoImg.id = "work-log-popup-logo";
+  logoImg.src = chrome.runtime.getURL("images/wurk-wurk-logo.png");
+  
   const title = document.createElement("h2");
   title.id = "work-log-popup-title";
-  title.textContent = "What are you working on?";
+  title.textContent = "Log your Wurk!";
   
   // Tag selection dropdown
   const tagGroup = document.createElement("div");
@@ -73,6 +78,8 @@ function createPopup(domainToLog, soundToPlay) {
   tagLabel.textContent = "Select a Tag (Optional):";
   const tagSelect = document.createElement("select");
   tagSelect.id = "work-log-tag-select";
+  tagSelect.className = "work-log-popup-select"; // Add class for styling
+  tagSelect.title = "Categorize your work entry.";
   
   // Populate tags from user settings
   chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
@@ -114,6 +121,7 @@ function createPopup(domainToLog, soundToPlay) {
   const textarea = document.createElement("textarea");
   textarea.id = "work-log-popup-input";
   textarea.placeholder = "Enter a brief log...";
+  textarea.title = "What are you working on? Be specific!";
   textGroup.appendChild(textarea);
   
   // Checkboxes for 'Drifted' and 'Reactive'
@@ -125,12 +133,14 @@ function createPopup(domainToLog, soundToPlay) {
   const driftedLabel = document.createElement("label");
   driftedLabel.htmlFor = "work-log-drifted-check";
   driftedLabel.textContent = "I drifted (off-task)";
+  driftedLabel.title = "Check this if you got distracted or went off-task.";
   const reactiveCheck = document.createElement("input");
   reactiveCheck.type = "checkbox";
   reactiveCheck.id = "work-log-reactive-check";
   const reactiveLabel = document.createElement("label");
   reactiveLabel.htmlFor = "work-log-reactive-check";
   reactiveLabel.textContent = "I reacted (ad-hoc)";
+  reactiveLabel.title = "Check this if the work was unplanned or an interruption.";
   
   checkboxContainer.innerHTML = `
     <div class="work-log-form-group work-log-checkbox-group">
@@ -150,6 +160,7 @@ function createPopup(domainToLog, soundToPlay) {
   snoozeGroup.className = "work-log-snooze-group";
   const snoozeSelect = document.createElement("select");
   snoozeSelect.id = "work-log-snooze-select";
+  snoozeSelect.className = "work-log-popup-select work-log-snooze-select"; // Add classes
   snoozeSelect.innerHTML = `
     <option value="5" selected>Postpone 5 min</option>
     <option value="10">Snooze 10 min</option>
@@ -161,22 +172,28 @@ function createPopup(domainToLog, soundToPlay) {
   snoozeButton.id = "work-log-snooze-button";
   snoozeButton.className = "work-log-popup-button work-log-button-secondary";
   snoozeButton.textContent = "Snooze";
+  snoozeButton.title = "Postpone or skip this reminder.";
   snoozeGroup.appendChild(snoozeSelect);
   snoozeGroup.appendChild(snoozeButton);
   
   const submitButton = document.createElement("button");
   submitButton.id = "work-log-popup-submit";
   submitButton.textContent = "Log It (Ctrl+Enter)";
+  submitButton.title = "Submit this log entry (Ctrl+Enter)";
   
   const logAndSnoozeButton = document.createElement("button");
+  logAndSnoozeButton.id = "work-log-log-and-snooze-btn"; // Add ID for styling
   logAndSnoozeButton.className = "work-log-popup-button work-log-button-secondary";
   logAndSnoozeButton.textContent = "Log & Snooze 30 min";
+  logAndSnoozeButton.title = "Log this entry and snooze reminders for 30 minutes.";
   
   const sameAsLastButton = document.createElement("button");
   sameAsLastButton.className = "work-log-popup-button work-log-button-secondary";
   sameAsLastButton.textContent = "Log 'Doing Same'";
+  sameAsLastButton.title = "Log 'Doing Same' as your last entry.";
   
   const breakButton = document.createElement("button");
+  breakButton.id = "work-log-break-btn"; // Add ID for styling
   breakButton.className = "work-log-popup-button work-log-button-secondary";
   breakButton.title = "Log a 'Break'";
   breakButton.innerHTML = `<span class="material-symbols-outlined">local_cafe</span>`;
@@ -309,7 +326,10 @@ function createPopup(domainToLog, soundToPlay) {
       document.getElementById("work-log-drifted-check"),
       document.getElementById("work-log-reactive-check")
     ];
-    elementsToDisable.forEach(el => el.disabled = isLoading);
+    // Ensure all elements exist before trying to disable them
+    elementsToDisable.forEach(el => {
+      if (el) el.disabled = isLoading;
+    });
     
     submitButton.textContent = isLoading ? message : "Log It (Ctrl+Enter)";
     statusMessage.style.display = isLoading ? "none" : "block";
@@ -317,6 +337,7 @@ function createPopup(domainToLog, soundToPlay) {
   
   // --- Assemble and Inject Popup ---
   
+  modal.appendChild(logoImg); // Add logo at the top
   modal.appendChild(closeButton);
   modal.appendChild(title);
   modal.appendChild(tagGroup);
@@ -356,7 +377,8 @@ function showStatus(message, type) {
   const statusMessage = document.getElementById("work-log-popup-status");
   if (statusMessage) {
     statusMessage.textContent = message;
-    statusMessage.className = `work-log-status-${type}`;
+    statusMessage.className = type ? `work-log-status-${type}` : "";
     statusMessage.style.display = "block";
   }
 }
+

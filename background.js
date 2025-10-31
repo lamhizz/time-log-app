@@ -2,7 +2,7 @@
 
 /**
  * @file background.js
- * @description This is the service worker for the Work Log Timer Chrome extension.
+ * @description This is the service worker for the WurkWurk Chrome extension.
  * It manages alarms, handles context menus, listens for keyboard shortcuts,
  * and processes all communication with the content scripts and the Google Apps Script backend.
  */
@@ -28,7 +28,7 @@ let alarmBadgeActive = false;
  * creates a context menu item, and sets up an initial alarm.
  */
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Work Log extension installed (v2.2). Creating 1-min alarm...");
+  console.log("WurkWurk extension installed (v2.2). Creating 1-min alarm...");
 
   // Set default values in storage if they don't exist
   chrome.storage.sync.get(null, (existingSettings) => {
@@ -59,7 +59,7 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
   
-  chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red for alarm state
+  chrome.action.setBadgeBackgroundColor({ color: '#EEBD69' }); // New: Gold for alarm state
   
   checkTimerStateOnStartup();
   createWorkLogAlarm(1); // Create a short-delay alarm on install
@@ -67,7 +67,7 @@ chrome.runtime.onInstalled.addListener(() => {
   // Add a context menu item for manual logging
   chrome.contextMenus.create({
     id: "logWorkContextMenu",
-    title: "Log Work",
+    title: "Log to WurkWurk",
     contexts: ["page"]
   });
 });
@@ -91,7 +91,7 @@ function checkTimerStateOnStartup() {
       console.log("Active task found on startup. Setting badge.");
       timerBadgeActive = true;
       chrome.action.setBadgeText({ text: 'ON' });
-      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green for timer state
+      chrome.action.setBadgeBackgroundColor({ color: '#52A2A0' }); // New: Teal for timer state
     }
   });
 }
@@ -106,7 +106,13 @@ function createWorkLogAlarm(initialDelayInMinutes = null) {
     if (wasCleared) console.log("Cleared all previous alarms.");
     
     chrome.storage.sync.get({ logInterval: 15 }, (data) => {
-      const logInterval = parseInt(data.logInterval, 10) || 15;
+      const logInterval = parseInt(data.logInterval, 10);
+      // If interval is 0 or NaN, don't create an alarm
+      if (!logInterval || logInterval <= 0) {
+        console.log("Log interval is 0 or invalid. Automatic alarms disabled.");
+        return;
+      }
+      
       const firstDelay = initialDelayInMinutes !== null ? initialDelayInMinutes : logInterval;
       
       console.log(`Creating 'workLogAlarm'. First run in ${firstDelay} min(s), then every ${logInterval} min(s).`);
@@ -253,7 +259,7 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
 
         // Set the alarm badge
         alarmBadgeActive = true;
-        chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
+        chrome.action.setBadgeBackgroundColor({ color: '#EEBD69' }); // New: Gold
         chrome.action.setBadgeText({ text: '!' });
 
       } catch (err) {
@@ -482,7 +488,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "startTimer":
       timerBadgeActive = true;
       chrome.action.setBadgeText({ text: 'ON' });
-      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green
+      chrome.action.setBadgeBackgroundColor({ color: '#52A2A0' }); // New: Teal
       sendResponse({ status: "timer_badge_on" });
       return true;
 
@@ -562,3 +568,4 @@ async function logToGoogleSheet(logData, webAppUrl) {
     throw new Error(errorMessage);
   }
 }
+
