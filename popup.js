@@ -142,12 +142,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Get the domain from the active tab to include in the log
     chrome.runtime.sendMessage({ action: "getActiveTabInfo" }, (tabInfo) => {
+      // --- NEW: Keyword Extraction ---
+      const keywords = (logText.match(/\[(.*?)\]/g) || [])
+        .map(keyword => keyword.slice(1, -1)) // Remove brackets
+        .join(', ');
+
       const logData = { 
         logText, 
         tag: tagSelect.value || "",
         drifted: driftedCheck.checked,
         reactive: reactiveCheck.checked,
-        domain: (tabInfo && tabInfo.domain) ? tabInfo.domain : ""
+        domain: (tabInfo && tabInfo.domain) ? tabInfo.domain : "",
+        keywords: keywords
       };
       
       // Send the completed log data to the background script

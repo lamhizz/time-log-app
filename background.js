@@ -603,7 +603,8 @@ async function logToGoogleSheet(logData, webAppUrl) {
     log: logData.logText,
     tag: logData.tag,
     drifted: logData.drifted,
-    reactive: logData.reactive
+    reactive: logData.reactive,
+    keywords: logData.keywords || ""
   };
   
   if (logData.domain !== undefined) {

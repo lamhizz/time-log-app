@@ -117,8 +117,8 @@ function createPopup(domainToLog, soundToPlay) {
   textGroup.className = "work-log-form-group";
   const textarea = document.createElement("textarea");
   textarea.id = "work-log-popup-input";
-  textarea.placeholder = "Enter a brief log...";
-  textarea.title = "What are you working on? Be specific!";
+  textarea.placeholder = "What are you working on? Use [Project] for keywords.";
+  textarea.title = "Enter a brief log entry. Wrap keywords in [brackets] to tag them.";
   textGroup.appendChild(textarea);
   
   // Checkboxes for 'Drifted' and 'Reactive'
@@ -216,13 +216,19 @@ function createPopup(domainToLog, soundToPlay) {
       showStatus("Please enter a log entry.", "error");
       return;
     }
+
+    // --- NEW: Keyword Extraction ---
+    const keywords = (logText.match(/\[(.*?)\]/g) || [])
+      .map(keyword => keyword.slice(1, -1)) // Remove brackets
+      .join(', ');
     
     const logData = {
       logText,
       tag: tagSelect.value || "",
       drifted: document.getElementById("work-log-drifted-check").checked,
       reactive: document.getElementById("work-log-reactive-check").checked,
-      domain: domainToLog || ""
+      domain: domainToLog || "",
+      keywords: keywords
     };
     
     setLoading(true, isLogAndSnooze ? "Logging & Snoozing..." : "Logging...");
