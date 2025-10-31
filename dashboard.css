@@ -1,0 +1,213 @@
+/* --- Dashboard Specific Styles --- */
+
+body {
+    background-color: #f9fafb; /* Lighter gray for the body background */
+}
+
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+}
+
+h1 {
+    color: var(--work-log-text);
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* --- Tab Navigation --- */
+.tab-navigation {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+}
+
+.tab-link {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #6b7280;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+.tab-link:hover {
+    color: var(--work-log-text);
+}
+
+.tab-link.active {
+    color: var(--work-log-accent-dark);
+    border-bottom: 2px solid var(--work-log-accent-dark);
+    font-weight: 600;
+}
+
+/* --- Tab Content --- */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* --- Today's Stats --- */
+#today {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.stat-card, .activity-card {
+    background-color: #f9fafb;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.stat-card h2, .activity-card h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.stat-card p {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--work-log-accent-dark);
+}
+
+.activity-card {
+    grid-column: 1 / -1; /* Span full width */
+}
+
+#recent-activity {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#recent-activity li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+}
+
+#recent-activity li:last-child {
+    border-bottom: none;
+}
+
+
+/* --- Weekly Review --- */
+.weekly-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    grid-column: 1 / -1;
+}
+
+.weekly-header p {
+    margin: 0;
+    color: #4b5563;
+}
+
+.button-primary {
+    background-color: var(--work-log-accent-dark);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.button-primary:hover {
+    background-color: #40807e;
+}
+
+.button-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+#weekly-charts-container {
+    display: contents; /* Inherit grid from parent */
+}
+
+.chart-card {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.chart-card h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-size: 1.2rem;
+    color: #374151;
+    text-align: center;
+}
+
+/* Status Messages */
+.status-message {
+    padding: 0.75rem;
+    border-radius: 6px;
+    text-align: center;
+    grid-column: 1 / -1;
+    display: none; /* Hidden by default */
+}
+
+.status-message.info {
+    display: block;
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+
+.status-message.success {
+    display: block;
+    background-color: #f0fdf4;
+    color: #166534;
+}
+
+.status-message.error {
+    display: block;
+    background-color: #fef2f2;
+    color: #991b1b;
+}

@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Links
   const aboutLink = document.getElementById("about-link");
   const setupLink = document.getElementById("setup-link");
+  const dashboardLink = document.getElementById("dashboard-link");
 
   /**
    * @description Gathers all values from the form inputs and saves them to `chrome.storage.sync`.
@@ -160,6 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
     testConnectionButton.addEventListener("click", testConnection);
     
     // Link listeners
+    dashboardLink.addEventListener("click", () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
+    });
     aboutLink.addEventListener("click", () => {
       chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
     });
