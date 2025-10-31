@@ -148,8 +148,27 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className="status-message"; }, 3000);
             refreshDataBtn.disabled = false;
 
+            // --- Defensive data handling ---
+            let weeklyData = response.data;
+
+            // If data is a string, try to parse it as JSON
+            if (typeof weeklyData === 'string') {
+                try {
+                    weeklyData = JSON.parse(weeklyData);
+                } catch (e) {
+                    console.error("Failed to parse weekly data:", e);
+                    weeklyData = []; // Default to empty array on parsing error
+                }
+            }
+
+            // Ensure the data is an array before proceeding
+            if (!Array.isArray(weeklyData)) {
+                console.warn("Received weekly data is not an array. Defaulting to empty.", weeklyData);
+                weeklyData = [];
+            }
+
             // Store the full dataset and render the dashboard
-            fullWeeklyData = response.data;
+            fullWeeklyData = weeklyData;
             renderWeeklyDashboard(fullWeeklyData);
         });
     });
