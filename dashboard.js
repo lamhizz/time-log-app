@@ -19,13 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const refreshDataBtn = document.getElementById("refresh-data-btn");
     const weeklyStatusEl = document.getElementById("weekly-status");
 
-    // Chart contexts
-    const tagPieChartCtx = document.getElementById("tag-pie-chart").getContext("2d");
-    const keywordBarChartCtx = document.getElementById("keyword-bar-chart").getContext("2d");
-    const focusLineChartCtx = document.getElementById("focus-line-chart").getContext("2d");
-
-    let tagPieChart, keywordBarChart, focusLineChart;
-
     // --- Event Listeners ---
 
     // Tab switching logic
@@ -58,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => weeklyStatusEl.textContent = "", 2000);
             refreshDataBtn.disabled = false;
 
-            renderWeeklyCharts(response.data);
         });
     });
 
@@ -95,75 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    /**
-     * @description Renders the charts for the "Weekly Review" tab using Chart.js.
-     * @param {object} data - The data fetched from the Google Sheet.
-     */
-    function renderWeeklyCharts(data) {
-        if (!data) return;
-
-        // Destroy existing charts to prevent duplicates
-        if (tagPieChart) tagPieChart.destroy();
-        if (keywordBarChart) keywordBarChart.destroy();
-        if (focusLineChart) focusLineChart.destroy();
-
-        // Tag Pie Chart
-        tagPieChart = new Chart(tagPieChartCtx, {
-            type: 'pie',
-            data: {
-                labels: data.tagData.labels,
-                datasets: [{
-                    data: data.tagData.values,
-                    backgroundColor: ['#52A2A0', '#EEBD69', '#315558', '#E5E7EB', '#F59E0B'],
-                }]
-            }
-        });
-
-        // Keyword Bar Chart
-        keywordBarChart = new Chart(keywordBarChartCtx, {
-            type: 'bar',
-            data: {
-                labels: data.keywordData.labels,
-                datasets: [{
-                    label: 'Frequency',
-                    data: data.keywordData.values,
-                    backgroundColor: '#52A2A0',
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        // Focus Over Time Line Chart
-        focusLineChart = new Chart(focusLineChartCtx, {
-            type: 'line',
-            data: {
-                labels: data.focusData.labels,
-                datasets: [{
-                    label: 'Focus Score (%)',
-                    data: data.focusData.values,
-                    borderColor: '#EEBD69',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }
-            }
-        });
-    }
-
 
     // --- Initial Load ---
     loadTodayStats();
