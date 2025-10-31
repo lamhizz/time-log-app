@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About WurkWurk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wurk-primary: #52A2A0;
+      --wurk-primary-hover: #428482;
+      --wurk-secondary: #F4F4F4;
+      --wurk-secondary-hover: #EAEAEA;
+      --wurk-accent: #EEBD69;
+      --wurk-text-dark: #315558;
+      --wurk-text-light: #6A8A8C;
+      --work-log-border: #D1D5DB;
+      --work-log-radius: 4px;
+      --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      font-family: var(--work-log-font);
+      margin: 0;
+      padding: 20px;
+      background-color: var(--wurk-secondary);
+      color: var(--wurk-text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .container {
+      max-width: 600px;
+      margin: 20px;
+      background-color: #fff;
+      padding: 24px 32px;
+      border-radius: var(--work-log-radius);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .header-logo {
+      width: 140px;
+      display: block;
+      margin: 0 auto 15px;
+    }
+    h1 {
+      margin: 0 0 16px 0;
+      font-size: 24px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--wurk-text-dark);
+    }
+    p, li {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--wurk-text-dark);
+    }
+    ul {
+      padding-left: 20px;
+      margin-bottom: 20px;
+    }
+    li {
+      margin-bottom: 8px;
+    }
+    .divider {
+      border-top: 1px solid var(--wurk-secondary-hover);
+      margin: 24px 0;
+    }
+    .button-group {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .button {
+      background-color: var(--wurk-primary);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--work-log-radius);
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-family: inherit;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .button:hover {
+      background-color: var(--wurk-primary-hover);
+    }
+    .button-secondary {
+      background-color: transparent;
+      border: 1px solid var(--wurk-primary);
+      color: var(--wurk-primary);
+      margin-left: 10px;
+    }
+    .button-secondary:hover {
+      background-color: var(--wurk-primary);
+      color: white;
+    }
+
+    .support-section {
+      text-align: center;
+      background-color: var(--wurk-secondary);
+      padding: 20px;
+      border-radius: var(--work-log-radius);
+    }
+    .support-button-img {
+      width: 180px;
+      height: 50px;
+      transition: opacity 0.2s ease;
+    }
+    .support-button-img:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="header-logo">
+    <h1>Welcome to WurkWurk!</h1>
+
+    <p>WurkWurk is a simple tool to help you keep a running log of what you're working on. It's designed to be private, simple, and all yours.</p>
+
+    <h3>How It Works</h3>
+    <ol>
+      <li><strong>It's Your Data:</strong> WurkWurk sends all logs to a private Google Sheet that you own and control.</li>
+      <li><strong>Periodic Popups:</strong> At an interval you set (e.g., every 15 minutes), a popup will appear asking what you're doing.</li>
+      <li><strong>Log Your Work:</strong> You type a short description, add an optional tag (like "Meeting" or "Focus"), and save it.</li>
+      <li><strong>Analyze Later:</strong> Over time, your Google Sheet becomes a powerful, detailed dashboard of how you spend your time.</li>
+    </ol>
+    
+    <p>That's it! No complex project management, no teams, just a simple log for you.</p>
+
+    <div class="button-group">
+      <a href="setup.html" class="button" title="Go to the step-by-step setup guide.">View Setup Guide</a>
+      <a href="options.html" class="button button-secondary" title="Configure your settings.">Open Settings</a>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="support-section">
+      <p style="font-size: 13px; color: var(--wurk-text-light); margin-bottom: 12px;">
+        If you find this tool helpful, consider supporting its development!
+      </p>
+      <!-- Buy Me A Coffee Embed -->
+      <a href="https://buymeacoffee.com/lamhizz" target="_blank" title="Support the developer!">
+        <img src="images/coffee-button.png" alt="Buy Me A Coffee" class="support-button-img">
+      </a>
+    </div>
+
+  </div>
+
+</body>
+</html>
+

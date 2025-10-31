@@ -18,18 +18,29 @@
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
 
     /*
-     * Styles for the Work Log Popup (v2.2)
+     * Styles for the WurkWurk Popup (v3.0)
      */
 
     :root {
-      --work-log-primary: #3B82F6; /* Blue 500 */
-      --work-log-primary-hover: #2563EB; /* Blue 600 */
-      --work-log-secondary: #F3F4F6; /* Gray 100 */
-      --work-log-secondary-hover: #E5E7EB; /* Gray 200 */
-      --work-log-text-dark: #1F2937; /* Gray 800 */
-      --work-log-text-light: #6B7280; /* Gray 500 */
-      --work-log-error: #EF4444; /* Red 500 */
-      --work-log-success: #10B981; /* Green 500 */
+      /* New Color Palette */
+      --wurk-primary: #52A2A0; /* Big Accent - Teal */
+      --wurk-primary-hover: #428482; /* Darker Teal */
+      --wurk-secondary: #F4F4F4; /* Light Gray */
+      --wurk-secondary-hover: #EAEAEA; /* Darker Light Gray */
+      --wurk-accent: #EEBD69; /* Small Accent - Gold */
+      --wurk-text-dark: #315558; /* Main Text */
+      --wurk-text-light: #6A8A8C; /* Lighter Text */
+      
+      --work-log-primary: var(--wurk-primary);
+      --work-log-primary-hover: var(--wurk-primary-hover);
+      --work-log-secondary: var(--wurk-secondary);
+      --work-log-secondary-hover: var(--wurk-secondary-hover);
+      --work-log-text-dark: var(--wurk-text-dark);
+      --work-log-text-light: var(--wurk-text-light);
+
+      /* Standard Colors */
+      --work-log-error: #EF4444; /* Red */
+      --work-log-success: #10B981; /* Green */
       --work-log-border: #D1D5DB; /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -73,6 +84,14 @@
       max-width: 420px !important;
       z-index: 2147483647 !important;
       box-sizing: border-box !important;
+    }
+
+    /* Logo (Removed from modal, but keeping for popup.html) */
+    #work-log-popup-logo {
+      width: 120px;
+      display: block;
+      margin: 0 auto 10px;
+      opacity: 0.8;
     }
 
     /* The close button (X) */
@@ -127,11 +146,12 @@
       font-family: inherit !important;
       box-sizing: border-box !important;
       resize: vertical !important;
+      color: var(--work-log-text-dark);
     }
     #work-log-popup-input:focus {
       border-color: var(--work-log-primary) !important;
       outline: none !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25) !important;
     }
     #work-log-popup-input:disabled {
       background-color: var(--work-log-secondary) !important;
@@ -152,8 +172,7 @@
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      /* Updated to avoid issues with host page CSS potentially overriding the icon */
-      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E') !important;
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236A8A8C%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E') !important;
       background-repeat: no-repeat !important;
       background-position: right 8px center !important;
       background-size: 18px !important;
@@ -161,7 +180,7 @@
     .work-log-popup-select:focus {
       border-color: var(--work-log-primary) !important;
       outline: none !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+      box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25) !important;
     }
     .work-log-popup-select:disabled {
       background-color: var(--work-log-secondary) !important;
@@ -181,7 +200,7 @@
       background-color: var(--work-log-secondary) !important;
       color: var(--work-log-text-dark) !important;
       border: 1px solid var(--work-log-border) !important;
-      border-radius: var(--work-log-radius) !important; /* Added border-radius for consistency */
+      border-radius: var(--work-log-radius) !important;
       padding: 4px 6px !important;
       font-weight: 500 !important;
     }
@@ -194,14 +213,13 @@
       display: flex !important;
       gap: 16px !important;
       margin-bottom: 16px !important;
-      /* Added align-items to ensure checkboxes and labels align vertically */
       align-items: center !important; 
     }
     .work-log-checkbox-group {
       display: flex !important;
       align-items: center !important;
       gap: 8px !important;
-      margin-bottom: 0 !important; /* Moved margin to container */
+      margin-bottom: 0 !important;
     }
     .work-log-checkbox-group input[type="checkbox"] {
       width: 16px !important;
@@ -267,7 +285,7 @@
       transition: background-color 0.2s ease, border-color 0.2s ease !important;
       box-sizing: border-box !important;
       color: var(--work-log-text-dark) !important;
-      background-color: #fff !important; /* Ensure a white background */
+      background-color: #fff !important;
     }
     .work-log-popup-button:disabled {
       opacity: 0.6 !important;
@@ -276,7 +294,6 @@
 
     /* Secondary buttons ("Doing Same") */
     .work-log-button-secondary {
-      /* Removed flex-grow: 1 as it caused issues with the snooze group */
       background-color: #fff !important;
       border-color: var(--work-log-border) !important;
       color: var(--work-log-text-light) !important;
@@ -288,7 +305,6 @@
     }
 
     /* --- [UX-13] Log & Snooze Button --- */
-    /* This ID is styled in style.css but was missing from content.js, added here */
     #work-log-log-and-snooze-btn {
       width: 100% !important;
       background-color: #fff !important;
@@ -333,6 +349,11 @@
       flex-grow: 0 !important;
       flex-shrink: 0 !important;
       padding: 4px 8px !important;
+      color: var(--wurk-accent) !important; /* Gold Icon */
+    }
+    #work-log-break-btn:hover {
+      border-color: var(--wurk-accent) !important;
+      color: var(--wurk-accent) !important;
     }
     #work-log-break-btn .material-symbols-outlined {
       font-size: 18px !important;
@@ -366,14 +387,15 @@
   <div id="work-log-popup-overlay">
     <div id="work-log-popup-modal">
       
+      <!-- Logo removed from here -->
+
       <button id="work-log-popup-close" title="Snooze 5 minutes">×</button>
       
-      <h2 id="work-log-popup-title">What are you working on?</h2>
+      <h2 id="work-log-popup-title">Log your Wurk!</h2>
       
       <div class="work-log-form-group">
         <label for="work-log-tag-select">Select a Tag (Optional):</label>
-        <!-- Added .work-log-popup-select class to match style.css -->
-        <select id="work-log-tag-select" class="work-log-popup-select">
+        <select id="work-log-tag-select" class="work-log-popup-select" title="Categorize your work entry.">
           <option value="" selected>-- No Tag --</option>
           <option value="Meeting">Meeting</option>
           <option value="Focus Time">Focus Time</option>
@@ -389,43 +411,37 @@
       </div>
 
       <div class="work-log-form-group">
-        <textarea id="work-log-popup-input" placeholder="Enter a brief log..."></textarea>
+        <textarea id="work-log-popup-input" placeholder="Enter a brief log..." title="What are you working on? Be specific!"></textarea>
       </div>
       
       <div class="work-log-checkbox-container">
         <div class="work-log-form-group work-log-checkbox-group">
           <input type="checkbox" id="work-log-drifted-check">
-          <label for="work-log-drifted-check">I drifted (off-task)</label>
+          <label for="work-log-drifted-check" title="Check this if you got distracted or went off-task.">I drifted (off-task)</label>
         </div>
         <div class="work-log-form-group work-log-checkbox-group">
           <input type="checkbox" id="work-log-reactive-check">
-          <label for="work-log-reactive-check">I reacted (ad-hoc)</label>
+          <label for="work-log-reactive-check" title="Check this if the work was unplanned or an interruption.">I reacted (ad-hoc)</label>
         </div>
       </div>
 
-      <button id="work-log-popup-submit">Log It (Ctrl+Enter)</button>
+      <button id="work-log-popup-submit" title="Submit this log entry (Ctrl+Enter)">Log It (Ctrl+Enter)</button>
       
-      <!-- 
-        This button is created in content.js without an ID, 
-        but style.css has an ID #work-log-log-and-snooze-btn.
-        I've added the ID here so it styles correctly for the preview.
-      -->
-      <button id="work-log-log-and-snooze-btn" class="work-log-popup-button work-log-button-secondary">Log & Snooze 30 min</button>
+      <button id="work-log-log-and-snooze-btn" class="work-log-popup-button work-log-button-secondary" title="Log this entry and snooze reminders for 30 minutes.">Log & Snooze 30 min</button>
       
       <div class="work-log-actions-wrapper">
         <div class="work-log-snooze-group">
-          <!-- Added .work-log-popup-select and .work-log-snooze-select classes -->
-          <select id="work-log-snooze-select" class="work-log-popup-select work-log-snooze-select">
+          <select id="work-log-snooze-select" class="work-log-popup-select work-log-snooze-select" title="Select snooze duration.">
             <option value="5" selected>Postpone 5 min</option>
             <option value="10">Snooze 10 min</option>
             <option value="30">Snooze 30 min</option>
             <option value="60">Snooze 1 hour</option>
             <option value="-1">Skip this log</option>
           </select>
-          <button id="work-log-snooze-button" class="work-log-popup-button work-log-button-secondary">Snooze</button>
+          <button id="work-log-snooze-button" class="work-log-popup-button work-log-button-secondary" title="Postpone or skip this reminder.">Snooze</button>
         </div>
         
-        <button class="work-log-popup-button work-log-button-secondary">Log 'Doing Same'</button>
+        <button class="work-log-popup-button work-log-button-secondary" title="Log 'Doing Same' as your last entry.">Log 'Doing Same'</button>
         
         <button id="work-log-break-btn" class="work-log-popup-button work-log-button-secondary" title="Log a 'Break'">
           <span class="material-symbols-outlined">local_cafe</span>
@@ -439,3 +455,4 @@
 
 </body>
 </html>
+

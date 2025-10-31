@@ -61,10 +61,7 @@ function createPopup(domainToLog, soundToPlay) {
   const modal = document.createElement("div");
   modal.id = "work-log-popup-modal";
   
-  // Add logo
-  const logoImg = document.createElement("img");
-  logoImg.id = "work-log-popup-logo";
-  logoImg.src = chrome.runtime.getURL("images/wurk-wurk-logo.png");
+  // **NOTE: Logo was removed from this popup as requested.**
   
   const title = document.createElement("h2");
   title.id = "work-log-popup-title";
@@ -161,6 +158,7 @@ function createPopup(domainToLog, soundToPlay) {
   const snoozeSelect = document.createElement("select");
   snoozeSelect.id = "work-log-snooze-select";
   snoozeSelect.className = "work-log-popup-select work-log-snooze-select"; // Add classes
+  snoozeSelect.title = "Select snooze duration.";
   snoozeSelect.innerHTML = `
     <option value="5" selected>Postpone 5 min</option>
     <option value="10">Snooze 10 min</option>
@@ -337,7 +335,6 @@ function createPopup(domainToLog, soundToPlay) {
   
   // --- Assemble and Inject Popup ---
   
-  modal.appendChild(logoImg); // Add logo at the top
   modal.appendChild(closeButton);
   modal.appendChild(title);
   modal.appendChild(tagGroup);

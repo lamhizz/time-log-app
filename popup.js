@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusMessage = document.getElementById("status-message");
 
   // Timer Elements
+  const pomodoroSection = document.getElementById("pomodoro-section");
   const startTaskContainer = document.getElementById("start-task-container");
   const taskNameInput = document.getElementById("task-name-input");
   const startTaskButton = document.getElementById("start-task-btn");
@@ -34,6 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const debugInfo = document.getElementById("debug-info");
   const debugUrl = document.getElementById("debug-url");
   const debugError = document.getElementById("debug-error");
+  const aboutLink = document.getElementById("about-link");
+  const setupLink = document.getElementById("setup-link");
+
 
   // --- Event Listener Setup ---
 
@@ -97,6 +101,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Open the options page
   settingsLink.addEventListener("click", () => chrome.runtime.openOptionsPage());
   
+  // --- NEW: Footer link listeners ---
+  aboutLink.addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
+  });
+  
+  setupLink.addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("setup.html") });
+  });
+
   // Toggle the visibility of the debug information section
   debugToggle.addEventListener("click", () => {
     const isVisible = debugInfo.style.display === "block";
@@ -169,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setLoading(isLoading) {
     const elements = [submitButton, logInput, tagSelect, driftedCheck, reactiveCheck];
     elements.forEach(el => el.disabled = isLoading);
-    submitButton.textContent = isLoading ? "Logging..." : "Log It (Ctrl+Enter)";
+    submitButton.textContent = isLoading ? "Logging..." : "Log It";
     if (isLoading) showStatus("", ""); // Clear status while loading
   }
 
@@ -235,6 +248,21 @@ document.addEventListener("DOMContentLoaded", () => {
       debugToggle.style.display = data.isDebugMode ? "inline" : "none";
     });
   }
+
+  /**
+   * @description Checks if the Pomodoro (Task Timer) feature is enabled.
+   */
+  function checkPomodoroSetting() {
+    chrome.storage.sync.get({ isPomodoroEnabled: true }, (data) => {
+      if (data.isPomodoroEnabled) {
+        pomodoroSection.style.display = "block";
+        formDivider.style.display = "block";
+      } else {
+        pomodoroSection.style.display = "none";
+        formDivider.style.display = "none";
+      }
+    });
+  }
   
   /**
    * @description Checks for an active task in storage and displays the appropriate UI.
@@ -257,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function showTimerUI(task) {
     logFormContainer.style.display = "none";
-    formDivider.style.display = "none";
+    // formDivider.style.display = "none"; // Handled by pomodoro setting
     startTaskContainer.style.display = "none";
     activeTaskContainer.style.display = "block";
     
@@ -273,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
    */
   function showLogUI() {
     logFormContainer.style.display = "block";
-    formDivider.style.display = "block";
+    // formDivider.style.display = "block"; // Handled by pomodoro setting
     startTaskContainer.style.display = "flex";
     activeTaskContainer.style.display = "none";
     
@@ -311,7 +339,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function initialize() {
     loadTagsAndMru();
     checkDebugMode();
-    checkActiveTimer();
+    checkPomodoroSetting(); // Check if pomodoro is enabled
+    checkActiveTimer();     // Check if a timer is already running
+    
     // Set focus to the log input if the log form is visible
     if (logFormContainer.style.display !== "none") {
       logInput.focus();
@@ -320,3 +350,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initialize();
 });
+

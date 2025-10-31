@@ -21,6 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const testConnectionButton = document.getElementById("test-connection");
   const testStatusEl = document.getElementById("test-status");
   const notificationSoundInput = document.getElementById("notification-sound");
+  const pomodoroEnabledInput = document.getElementById("pomodoro-enabled");
+
+  // Links
+  const aboutLink = document.getElementById("about-link");
+  const setupLink = document.getElementById("setup-link");
 
   /**
    * @description Gathers all values from the form inputs and saves them to `chrome.storage.sync`.
@@ -32,10 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const workingDays = Array.from(daysInputs)
       .filter(input => input.checked)
       .map(input => input.dataset.day);
+      
+    const logInterval = parseInt(intervalInput.value, 10);
+    if (isNaN(logInterval) || logInterval < 0) {
+      statusEl.textContent = "Log Interval must be 0 or greater.";
+      statusEl.style.color = "var(--work-log-error)";
+      return;
+    }
 
     // Prepare settings object
     const settings = {
-      logInterval: parseInt(intervalInput.value, 10) || 15,
+      logInterval: logInterval,
       logTags: tagsInput.value,
       isDebugMode: debugInput.checked,
       workingDays: workingDays,
@@ -44,13 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
       blockedDomains: blockedDomainsInput.value,
       webAppUrl: webAppUrlInput.value.trim(),
       isDomainLogEnabled: logDomainInput.checked,
-      notificationSound: notificationSoundInput.value
+      notificationSound: notificationSoundInput.value,
+      isPomodoroEnabled: pomodoroEnabledInput.checked
     };
 
     // Save to Chrome's sync storage
     chrome.storage.sync.set(settings, () => {
       // Display "Settings saved!" message temporarily
       statusEl.textContent = "Settings saved!";
+      statusEl.style.color = "var(--work-log-success)";
       setTimeout(() => {
         statusEl.textContent = "";
       }, 1500);
@@ -76,7 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
       webAppUrl: "",
       isDomainLogEnabled: false,
-      notificationSound: "ClickUp.wav"
+      notificationSound: "ClickUp.wav",
+      isPomodoroEnabled: true
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -88,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
       webAppUrlInput.value = items.webAppUrl;
       logDomainInput.checked = items.isDomainLogEnabled;
       notificationSoundInput.value = items.notificationSound;
+      pomodoroEnabledInput.checked = items.isPomodoroEnabled;
 
       // Set checked status for working days
       daysInputs.forEach(input => {
@@ -142,7 +158,16 @@ document.addEventListener("DOMContentLoaded", () => {
     restoreOptions();
     saveButton.addEventListener("click", saveOptions);
     testConnectionButton.addEventListener("click", testConnection);
+    
+    // Link listeners
+    aboutLink.addEventListener("click", () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
+    });
+    setupLink.addEventListener("click", () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL("setup.html") });
+    });
   }
 
   initialize();
 });
+

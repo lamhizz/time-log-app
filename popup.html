@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-R">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Log to WurkWurk</title>
+  <title>Log Work</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -73,7 +73,7 @@
       -webkit-appearance: none;
       -moz-appearance: none;
       appearance: none;
-      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%2D%2Dwidth%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236A8A8C%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
+      background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236A8A8C%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E');
       background-repeat: no-repeat;
       background-position: right 8px center;
       background-size: 16px;
@@ -88,7 +88,6 @@
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
     
-    /* Checkbox layout */
     .checkbox-container {
       display: flex;
       justify-content: space-between;
@@ -105,6 +104,7 @@
       height: 15px;
       margin: 0;
       flex-shrink: 0;
+      cursor: pointer;
     }
     .checkbox-group label {
       font-weight: 500;
@@ -112,9 +112,9 @@
       font-size: 13px;
       user-select: none;
       color: var(--wurk-text-dark);
+      cursor: pointer;
     }
     
-    /* MRU Tags */
     .mru-tags-container {
       display: flex;
       gap: 6px;
@@ -124,15 +124,15 @@
     .mru-tag-btn {
       flex: 1;
       font-size: 11px;
-      background-color: var(--work-log-secondary);
-      color: var(--work-log-text-dark);
+      background-color: var(--wurk-secondary);
+      color: var(--wurk-text-dark);
       border: 1px solid var(--work-log-border);
       padding: 4px 6px;
       font-weight: 500;
       border-radius: var(--work-log-radius);
     }
     .mru-tag-btn:hover {
-      background-color: var(--work-log-secondary-hover);
+      background-color: var(--wurk-secondary-hover);
     }
 
     button {
@@ -146,7 +146,6 @@
       transition: background-color 0.2s ease, border-color 0.2s ease;
       box-sizing: border-box;
       color: var(--work-log-text-dark);
-      background-color: #fff;
     }
     button#submit-log {
       width: 100%;
@@ -181,14 +180,18 @@
     }
     .footer-links {
       margin-top: 12px;
-      border-top: 1px solid #E5E7EB;
+      border-top: 1px solid var(--wurk-secondary-hover);
       padding-top: 10px;
       font-size: 11px;
       display: flex;
       justify-content: space-between;
     }
+    .footer-links-group {
+      display: flex;
+      gap: 8px;
+    }
     .footer-links a {
-      color: var(--work-log-primary);
+      color: var(--wurk-primary);
       text-decoration: none;
       cursor: pointer;
     }
@@ -197,8 +200,8 @@
     }
     #debug-info {
       margin-top: 8px;
-      background: var(--work-log-secondary);
-      border: 1px solid var(--work-log-secondary-hover);
+      background: var(--wurk-secondary);
+      border: 1px solid var(--wurk-secondary-hover);
       padding: 6px;
       border-radius: 4px;
       display: none;
@@ -210,7 +213,7 @@
     }
     
     .divider {
-      border-top: 1px solid #E5E7EB;
+      border-top: 1px solid var(--wurk-secondary-hover);
       margin: 12px 0;
     }
     .timer-container {
@@ -229,7 +232,7 @@
       border: none;
     }
     .active-task-display {
-      background-color: var(--work-log-secondary);
+      background-color: var(--wurk-secondary);
       padding: 10px;
       border-radius: var(--work-log-radius);
       text-align: center;
@@ -240,7 +243,7 @@
     }
     #active-task-name {
       font-weight: 600;
-      color: var(--work-log-primary);
+      color: var(--wurk-primary);
     }
     #active-task-timer {
       font-size: 16px;
@@ -259,64 +262,68 @@
   </style>
 </head>
 <body>
-  
-  <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" style="width: 100px; display: block; margin: -5px auto 5px; opacity: 0.8;">
 
   <!-- [UX-12] Timer Section -->
-  <div class="timer-container">
+  <div class="timer-container" id="pomodoro-section" style="display: none;">
     <div class="active-task-display" id="active-task-container" style="display: none;">
       <p>Active Task: <span id="active-task-name"></span></p>
       <span id="active-task-timer">00:00:00</span>
-      <button id="stop-task-btn" title="Stop the timer and pre-fill the log.">Stop Task & Log</button>
+      <button id="stop-task-btn" title="Stop this task and pre-fill the log form.">Stop Task & Log</button>
     </div>
     <div class="start-task-form" id="start-task-container">
-      <input type="text" id="task-name-input" placeholder="Enter task name..." title="Name of the task you are starting.">
+      <input type="text" id="task-name-input" placeholder="Enter task name..." title="Enter a task name and click 'Start' to begin the timer.">
       <button id="start-task-btn" title="Start a new task timer.">Start</button>
     </div>
   </div>
 
-  <div class="divider" id="form-divider"></div>
+  <div class="divider" id="form-divider" style="display: none;"></div>
 
   <!-- Main Log Form -->
   <div class="log-form-container" id="log-form-container">
-    <h3>Log your Wurk!</h3>
+    <img src="images/wurk-wurk-logo.png" alt="WurkWurk" style="width: 100px; display: block; margin: -5px auto 5px;">
+    <!-- <h3>Log Your Work</h3> -->
     
     <div class="form-group">
       <label for="tag-select">Tag:</label>
-      <select id="tag-select" title="Categorize your work entry.">
+      <select id="tag-select" title="Select a tag to categorize your work.">
         <!-- Tags will be injected here by popup.js -->
       </select>
     </div>
     
-    <div class="mru-tags-container" id="mru-tags-container">
+    <div class="mru-tags-container" id="mru-tags-container" title="Your 3 most recently used tags.">
       <!-- MRU tags injected here -->
     </div>
 
     <div class="form-group">
       <label for="log-input">Log:</label>
-      <textarea id="log-input" placeholder="What are you working on?" title="What are you working on?"></textarea>
+      <textarea id="log-input" placeholder="What are you working on?" title="Enter a brief log entry. (Ctrl+Enter to submit)"></textarea>
     </div>
     
-    <!-- [NEW] Checkbox Container -->
     <div class="checkbox-container">
       <div class="checkbox-group">
-        <input type="checkbox" id="drifted-check">
-        <label for="drifted-check" title="Check this if you got distracted or went off-task.">I drifted</label>
+        <input type="checkbox" id="drifted-check" title="Check this if you got distracted or were off-task.">
+        <label for="drifted-check">I drifted</label>
       </div>
       <div class="checkbox-group">
-        <input type="checkbox" id="reactive-check">
-        <label for="reactive-check" title="Check this if the work was unplanned or an interruption.">I reacted</label>
+        <input type="checkbox" id="reactive-check" title="Check this if the work was an unplanned interruption (e.g., an ad-hoc request).">
+        <label for="reactive-check">I reacted</label>
       </div>
     </div>
     
-    <button id="submit-log" title="Submit this log entry (Ctrl+Enter)">Log It (Ctrl+Enter)</button>
+    <button id="submit-log" title="Save this log to your Google Sheet. (Ctrl+Enter)">Log It</button>
     
     <p class="status" id="status-message"></p>
   </div>
   
   <div class="footer-links">
-    <a id="open-settings" title="Open the WurkWurk settings page.">Settings</a>
-    <a id="toggle-debug" title="Show/hide debug information.">Show Debug</a>
+    <div class="footer-links-group">
+      <a id="open-settings" title="Open settings page">Settings</a>
+      <a id="toggle-debug" title="Show/hide debug info">Show Debug</a>
+    </div>
+    <div class="footer-links-group">
+      <a id="about-link" title="About this extension">About</a>
+      <a id="setup-link" title="View setup guide">Setup</a>
+    </div>
   </div>
 
   <div id="debug-info">

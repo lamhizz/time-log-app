@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-R">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WurkWurk Settings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,11 +51,16 @@
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     h1 {
-      margin: 0 0 20px 0;
+      margin: 0 0 10px 0;
       font-size: 22px;
       font-weight: 600;
       text-align: center;
       color: var(--wurk-text-dark);
+    }
+    .header-logo {
+      width: 120px;
+      display: block;
+      margin: 0 auto 15px;
     }
     .form-group {
       margin-bottom: 16px;
@@ -103,15 +108,22 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      background-color: #fafafa;
+      padding: 10px;
+      border-radius: var(--work-log-radius);
+      border: 1px solid var(--work-log-border);
     }
     .form-group-checkbox label {
       font-weight: 500;
       font-size: 14px;
       margin: 0;
+      cursor: pointer;
     }
     .form-group-checkbox input[type="checkbox"] {
       width: 16px;
       height: 16px;
+      cursor: pointer;
+      flex-shrink: 0;
     }
     
     .working-days-group {
@@ -131,6 +143,7 @@
       margin: 0;
       user-select: none;
       cursor: pointer;
+      color: var(--wurk-text-dark);
     }
     .working-days-group input[type="checkbox"] {
        width: 16px;
@@ -150,6 +163,7 @@
       padding: 8px; /* Compact */
       font-size: 14px;
       width: 100px;
+      color: var(--wurk-text-dark);
     }
     .working-hours-group input[type="time"]:focus {
       border-color: var(--work-log-primary);
@@ -158,10 +172,9 @@
     }
     .working-hours-group span {
       font-size: 14px;
-      color: var(--work-log-text-light);
+      color: var(--wurk-text-light);
     }
     
-    /* --- [QOL-50] Test Button Styles --- */
     .form-group-flex {
       display: flex;
       gap: 8px;
@@ -172,9 +185,9 @@
     }
     .form-group-flex button {
       flex-shrink: 0;
-      background-color: var(--work-log-secondary);
+      background-color: var(--wurk-secondary);
       border: 1px solid var(--work-log-border);
-      color: var(--work-log-text-dark);
+      color: var(--wurk-text-dark);
       padding: 9px 16px;
       font-size: 14px;
       font-weight: 500;
@@ -183,7 +196,7 @@
       font-family: inherit;
     }
     .form-group-flex button:hover {
-      background-color: var(--work-log-secondary-hover);
+      background-color: var(--wurk-secondary-hover);
     }
     #test-status {
       font-size: 12px;
@@ -197,10 +210,9 @@
     #test-status.error {
       color: var(--work-log-error);
     }
-    /* --- End [QOL-50] --- */
     
     button#save {
-      background-color: var(--work-log-primary);
+      background-color: var(--wurk-primary);
       color: white;
       font-size: 15px;
       font-weight: 600;
@@ -214,7 +226,7 @@
       margin-top: 10px;
     }
     button#save:hover {
-      background-color: var(--work-log-primary-hover);
+      background-color: var(--wurk-primary-hover);
     }
     #status {
       margin-top: 15px;
@@ -223,39 +235,79 @@
       font-weight: 500;
       color: var(--work-log-success);
     }
+
+    .divider {
+      border-top: 1px solid var(--wurk-secondary-hover);
+      margin: 20px 0;
+    }
+
+    .links-section {
+      text-align: center;
+    }
+    .links-section button {
+      background-color: transparent;
+      border: 1px solid var(--wurk-primary);
+      color: var(--wurk-primary);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--work-log-radius);
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      margin: 4px;
+    }
+    .links-section button:hover {
+      background-color: var(--wurk-primary);
+      color: white;
+    }
+
+    /* --- NEW: Support Banner --- */
+    .support-banner {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .support-button-img {
+      width: 180px;
+      height: 50px;
+      transition: opacity 0.2s ease;
+    }
+    .support-button-img:hover {
+      opacity: 0.85;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" style="width: 120px; display: block; margin: 0 auto 10px; opacity: 0.8;">
-    <h1>WurkWurk Settings</h1>
+    <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="header-logo">
+    <h1>Settings</h1>
 
     <!-- --- [QOL-50] Web App URL --- -->
     <div class="form-group">
       <label for="web-app-url">Google Apps Script URL</label>
       <div class="form-group-flex">
-        <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the unique URL from your Google Apps Script deployment.">
-        <button id="test-connection" title="Click to test the connection to your Google Sheet.">Test</button>
+        <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the most important field. Paste your deployed 'Web app' URL from Google Apps Script here.">
+        <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test</button>
       </div>
       <div id="test-status"></div>
-      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> See the <strong>SETUP_GUIDE.txt</strong> file for instructions.</p>
+      <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the Apps Script code from the Setup Guide for this to work.</p>
     </div>
 
     <div class="form-group">
       <label for="log-interval">Log Interval (in minutes)</label>
-      <input type="number" id="log-interval" min="0" title="How often (in minutes) the popup will appear to log your work.">
-      <p class="description">How often the popup should appear. Default is 15. Set to 0 to disable automatic popups.</p>
+      <input type="number" id="log-interval" min="0" title="How often the popup should appear. Set to 0 to disable automatic popups. Default is 15.">
+      <p class="description">How often the popup should appear. Set to 0 to disable automatic popups and only log manually.</p>
     </div>
 
     <!-- --- [QOL-51] Notification Sound --- -->
     <div class="form-group">
       <label for="notification-sound">Notification Sound</label>
-      <select id="notification-sound" title="Play a sound when the automatic popup appears.">
+      <select id="notification-sound" title="Plays a sound when the log popup appears.">
         <option value="none">None</option>
         <option value="ClickUp.wav" selected>ClickUp (Default)</option>
-        <option value="Bell.wav">Bell</option>
         <option value="Bamboo.wav">Bamboo</option>
+        <option value="Bell.wav">Bell</option>
         <option value="Pop.wav">Pop</option>
       </select>
       <p class="description">Plays a sound when the log popup appears.</p>
@@ -263,72 +315,92 @@
     
     <div class="form-group">
       <label for="log-tags">Log Tags</label>
-      <textarea id="log-tags" rows="5" title="Create a list of common tasks or categories, one per line."></textarea>
+      <textarea id="log-tags" rows="5" title="Define your common tasks here, one per line. They will appear in the dropdown menu."></textarea>
       <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
     </div>
     
     <div class="form-group">
       <label for="blocked-domains">"Do Not Disturb" Domains</label>
-      <textarea id="blocked-domains" rows="4" title="List websites where the automatic popup should not appear (e.g., meet.google.com)."></textarea>
+      <textarea id="blocked-domains" rows="4" title="The automatic popup will be skipped on these websites. Manual logging (Ctrl+Shift+L) will still work."></textarea>
       <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
     </div>
     
     <div class="form-group">
       <label>Active Working Days</label>
-      <div class="working-days-group">
+      <div class="working-days-group" title="The automatic popup will only appear on these selected days.">
         <div>
           <input type="checkbox" id="day-0" data-day="0">
-          <label for="day-0" title="Log popups will only appear on these selected days.">Sun</label>
+          <label for="day-0">Sun</label>
         </div>
         <div>
           <input type="checkbox" id="day-1" data-day="1">
-          <label for="day-1" title="Log popups will only appear on these selected days.">Mon</label>
+          <label for="day-1">Mon</label>
         </div>
         <div>
           <input type="checkbox" id="day-2" data-day="2">
-          <label for="day-2" title="Log popups will only appear on these selected days.">Tue</label>
+          <label for="day-2">Tue</label>
         </div>
         <div>
           <input type="checkbox" id="day-3" data-day="3">
-          <label for="day-3" title="Log popups will only appear on these selected days.">Wed</label>
+          <label for="day-3">Wed</label>
         </div>
         <div>
           <input type="checkbox" id="day-4" data-day="4">
-          <label for="day-4" title="Log popups will only appear on these selected days.">Thu</label>
+          <label for="day-4">Thu</label>
         </div>
         <div>
           <input type="checkbox" id="day-5" data-day="5">
-          <label for="day-5" title="Log popups will only appear on these selected days.">Fri</label>
+          <label for="day-5">Fri</label>
         </div>
         <div>
           <input type="checkbox" id="day-6" data-day="6">
-          <label for="day-6" title="Log popups will only appear on these selected days.">Sat</label>
+          <label for="day-6">Sat</label>
         </div>
       </div>
     </div>
     
     <div class="form-group">
       <label>Active Working Hours</label>
-      <div class="working-hours-group">
-        <input type="time" id="work-start-hour" title="Log popups will only appear after this time.">
+      <div class="working-hours-group" title="The automatic popup will only appear between these hours.">
+        <input type="time" id="work-start-hour" title="Work Start Time">
         <span>to</span>
-        <input type="time" id="work-end-hour" title="Log popups will only appear before this time.">
+        <input type="time" id="work-end-hour" title="Work End Time">
       </div>
       <p class="description">Popup will only appear between these hours (24h format).</p>
     </div>
     
     <div class="form-group form-group-checkbox">
-      <input type="checkbox" id="log-domain">
-      <label for="log-domain" title="Check this to save the website domain (e.g., 'google.com') with your log entry.">Log active website domain</label>
+      <input type="checkbox" id="log-domain" title="If checked, the website domain you are on (e.g., 'github.com') will be added to a 'Domain' column in your Google Sheet.">
+      <label for="log-domain">Log active website domain</label>
+    </div>
+
+    <div class="form-group form-group-checkbox">
+      <input type="checkbox" id="pomodoro-enabled" title="If checked, the Task Timer (Pomodoro) feature will be visible in the extension popup.">
+      <label for="pomodoro-enabled">Enable Task Timer (Pomodoro)</label>
     </div>
     
     <div class="form-group form-group-checkbox">
-      <input type="checkbox" id="debug-mode" style="width: auto;">
-      <label for="debug-mode" style="margin: 0;" title="Show technical details in the popup footer for troubleshooting.">Enable Debug Mode</label>
+      <input type="checkbox" id="debug-mode" title="If checked, shows a 'Debug' link in the extension popup to help with troubleshooting.">
+      <label for="debug-mode">Enable Debug Mode</label>
     </div>
 
     <button id="save" title="Save all your settings.">Save Settings</button>
     <div id="status"></div>
+
+    <div class="divider"></div>
+
+    <div class="links-section">
+      <button id="about-link" title="Learn more about what this extension does.">About WurkWurk</button>
+      <button id="setup-link" title="View the step-by-step guide to connect your Google Sheet.">View Setup Guide</button>
+    </div>
+
+    <!-- --- NEW: Support Banner --- -->
+    <div class="support-banner">
+      <a href="https://buymeacoffee.com/lamhizz" target="_blank" title="Support the developer!">
+        <img src="images/coffee-button.png" alt="Buy Me A Coffee" class="support-button-img" >
+      </a>
+    </div>
+
   </div>
 
   <script src="options.js"></script>

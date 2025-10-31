@@ -1,5 +1,3 @@
-// The URL for the Google Apps Script web app is stored in chrome.storage.sync for security.
-
 /**
  * @file background.js
  * @description This is the service worker for the WurkWurk Chrome extension.
@@ -25,10 +23,10 @@ let alarmBadgeActive = false;
 
 /**
  * @description Initializes the extension on installation. Sets default settings,
- * creates a context menu item, and sets up an initial alarm.
+ * creates a context menu item, sets up an initial alarm, and opens the 'About' page.
  */
-chrome.runtime.onInstalled.addListener(() => {
-  console.log("WurkWurk extension installed (v2.2). Creating 1-min alarm...");
+chrome.runtime.onInstalled.addListener((details) => {
+  console.log("WurkWurk extension installed (v3.0).");
 
   // Set default values in storage if they don't exist
   chrome.storage.sync.get(null, (existingSettings) => {
@@ -40,9 +38,10 @@ chrome.runtime.onInstalled.addListener(() => {
       workStartHour: 9,
       workEndHour: 18,
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
-      webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
+      webAppUrl: "",
       isDomainLogEnabled: false,
-      notificationSound: "ClickUp.wav"
+      notificationSound: "ClickUp.wav",
+      isPomodoroEnabled: true
     };
     
     let newSettings = {};
@@ -59,10 +58,16 @@ chrome.runtime.onInstalled.addListener(() => {
     }
   });
   
-  chrome.action.setBadgeBackgroundColor({ color: '#EEBD69' }); // New: Gold for alarm state
+  chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red for alarm state
   
   checkTimerStateOnStartup();
-  createWorkLogAlarm(1); // Create a short-delay alarm on install
+  
+  // Only create an alarm if the interval is > 0
+  chrome.storage.sync.get({ logInterval: 15 }, (data) => {
+    if (data.logInterval > 0) {
+      createWorkLogAlarm(1); // Create a short-delay alarm on install
+    }
+  });
 
   // Add a context menu item for manual logging
   chrome.contextMenus.create({
@@ -70,15 +75,28 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Log to WurkWurk",
     contexts: ["page"]
   });
+
+  // Open the about page on first install
+  if (details.reason === "install") {
+    chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
+  }
 });
 
 /**
  * @description Re-initializes alarms when the browser starts up.
  */
 chrome.runtime.onStartup.addListener(() => {
-  console.log("Browser starting up. Creating 1-min alarm...");
+  console.log("Browser starting up. Checking alarm state...");
   checkTimerStateOnStartup();
-  createWorkLogAlarm(1);
+  
+  // Only create an alarm if the interval is > 0
+  chrome.storage.sync.get({ logInterval: 15 }, (data) => {
+    if (data.logInterval > 0) {
+      createWorkLogAlarm(1);
+    } else {
+      console.log("Log interval is 0, automatic alarms disabled.");
+    }
+  });
 });
 
 /**
@@ -91,7 +109,7 @@ function checkTimerStateOnStartup() {
       console.log("Active task found on startup. Setting badge.");
       timerBadgeActive = true;
       chrome.action.setBadgeText({ text: 'ON' });
-      chrome.action.setBadgeBackgroundColor({ color: '#52A2A0' }); // New: Teal for timer state
+      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green for timer state
     }
   });
 }
@@ -106,10 +124,11 @@ function createWorkLogAlarm(initialDelayInMinutes = null) {
     if (wasCleared) console.log("Cleared all previous alarms.");
     
     chrome.storage.sync.get({ logInterval: 15 }, (data) => {
-      const logInterval = parseInt(data.logInterval, 10);
-      // If interval is 0 or NaN, don't create an alarm
-      if (!logInterval || logInterval <= 0) {
-        console.log("Log interval is 0 or invalid. Automatic alarms disabled.");
+      const logInterval = parseInt(data.logInterval, 10) || 15;
+      
+      // Do not create an alarm if the interval is 0
+      if (logInterval <= 0) {
+        console.log("Log interval is 0, automatic alarms disabled.");
         return;
       }
       
@@ -214,6 +233,12 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
     return;
   }
   
+  // Don't show on other extension pages
+  if (tab.url.startsWith("chrome-extension://")) {
+    console.log("Popup skipped: Cannot inject into other extension pages.");
+    return;
+  }
+
   chrome.storage.sync.get({ 
     blockedDomains: "",
     isDomainLogEnabled: false,
@@ -259,7 +284,7 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
 
         // Set the alarm badge
         alarmBadgeActive = true;
-        chrome.action.setBadgeBackgroundColor({ color: '#EEBD69' }); // New: Gold
+        chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
         chrome.action.setBadgeText({ text: '!' });
 
       } catch (err) {
@@ -443,8 +468,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Case 4: Settings have been updated in the options page
     case "settingsUpdated":
-      console.log("Settings updated. Re-creating alarm (1-min delay).");
-      createWorkLogAlarm(1);
+      console.log("Settings updated. Re-creating alarm.");
+      // The createWorkLogAlarm function will read the new interval
+      createWorkLogAlarm(1); // Re-create with 1-min delay to test
       sendResponse({ status: "settings acknowledged" });
       return true;
 
@@ -488,7 +514,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "startTimer":
       timerBadgeActive = true;
       chrome.action.setBadgeText({ text: 'ON' });
-      chrome.action.setBadgeBackgroundColor({ color: '#52A2A0' }); // New: Teal
+      chrome.action.setBadgeBackgroundColor({ color: '#10B981' }); // Green
       sendResponse({ status: "timer_badge_on" });
       return true;
 

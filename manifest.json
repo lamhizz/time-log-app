@@ -42,7 +42,10 @@
     {
       "resources": [ 
         "sounds/*.wav",
-        "images/wurk-wurk-logo.png" 
+        "images/wurk-wurk-logo.png",
+        "images/coffee-button.png",
+        "about.html",
+        "setup.html"
       ],
       "matches": [ "<all_urls>" ]
     }
