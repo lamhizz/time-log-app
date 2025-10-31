@@ -80,6 +80,12 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
     chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
   }
+
+  // --- NEW: Daily Stats Alarm ---
+  chrome.alarms.create("midnightReset", {
+    when: new Date().setHours(24, 0, 0, 0), // Next midnight
+    periodInMinutes: 24 * 60 // Repeat every 24 hours
+  });
 });
 
 /**
@@ -159,6 +165,16 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     console.log("Snooze Alarm triggered.");
     checkDayAndTriggerPopup();
     createWorkLogAlarm(); // Re-create the main alarm after a snooze
+  }
+
+  if (alarm.name === "midnightReset") {
+    console.log("Midnight. Resetting daily stats.");
+    chrome.storage.local.set({
+      logsToday: 0,
+      tasksCompleted: 0,
+      driftedLogs: 0,
+      recentLogs: []
+    });
   }
 });
 
@@ -398,6 +414,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               lastError: ""
             });
             updateMruTags(request.data.tag);
+            updateDailyStats(request.data); // New function call
             // Clear the alarm badge, but leave the timer badge if it's active
             alarmBadgeActive = false;
             if (!timerBadgeActive) {
@@ -523,6 +540,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (!alarmBadgeActive) {
         chrome.action.setBadgeText({ text: '' });
       }
+      // NEW: Increment tasksCompleted
+      chrome.storage.local.get({ tasksCompleted: 0 }, (data) => {
+        chrome.storage.local.set({ tasksCompleted: data.tasksCompleted + 1 });
+      });
       sendResponse({ status: "timer_badge_off" });
       return true;
 
@@ -531,6 +552,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       testWebAppConnection(request.url)
         .then(response => sendResponse(response))
         .catch(error => sendResponse({ status: "error", message: error.message }));
+      return true;
+
+    // --- NEW: Dashboard weekly data request ---
+    case "getWeeklyData":
+      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
+        const WEB_APP_URL = data.webAppUrl;
+        if (!WEB_APP_URL) {
+          sendResponse({ status: "error", message: "Google Apps Script URL is not set." });
+          return;
+        }
+
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set("action", "getWeeklyData");
+
+        fetch(url.toString())
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === "success") {
+              sendResponse({ status: "success", data: data.data });
+            } else {
+              sendResponse({ status: "error", message: data.message });
+            }
+          })
+          .catch(error => {
+            sendResponse({ status: "error", message: error.message });
+          });
+      });
       return true;
   }
 });
@@ -595,3 +643,28 @@ async function logToGoogleSheet(logData, webAppUrl) {
   }
 }
 
+/**
+ * @description Updates and stores daily statistics in chrome.storage.local.
+ * @param {object} logData - The log data object from the log submission.
+ */
+function updateDailyStats(logData) {
+  chrome.storage.local.get({
+    logsToday: 0,
+    driftedLogs: 0,
+    recentLogs: []
+  }, (data) => {
+    const newLogsToday = data.logsToday + 1;
+    const newDriftedLogs = data.driftedLogs + (logData.drifted ? 1 : 0);
+
+    // Add the new log to the start of the recent logs list
+    let recentLogs = [logData.logText, ...data.recentLogs];
+    // Keep only the 5 most recent logs
+    recentLogs = recentLogs.slice(0, 5);
+
+    chrome.storage.local.set({
+      logsToday: newLogsToday,
+      driftedLogs: newDriftedLogs,
+      recentLogs: recentLogs
+    });
+  });
+}

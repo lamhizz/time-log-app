@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Footer Elements
   const settingsLink = document.getElementById("open-settings");
+  const dashboardLink = document.getElementById("dashboard-link");
   const debugToggle = document.getElementById("toggle-debug");
   const debugInfo = document.getElementById("debug-info");
   const debugUrl = document.getElementById("debug-url");
@@ -102,6 +103,10 @@ document.addEventListener("DOMContentLoaded", () => {
   settingsLink.addEventListener("click", () => chrome.runtime.openOptionsPage());
   
   // --- NEW: Footer link listeners ---
+  dashboardLink.addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
+  });
+
   aboutLink.addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
   });
