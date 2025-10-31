@@ -316,6 +316,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (logFormContainer.style.display !== "none") {
       logInput.focus();
     }
+
+    chrome.storage.sync.get({ pomodoroEnabled: false }, (settings) => {
+      if (settings.pomodoroEnabled) {
+        document.getElementById("pomodoro-container").style.display = "block";
+        updatePomodoroUI();
+      }
+    });
+
+    document.getElementById("pomodoro-start").addEventListener("click", () => {
+      chrome.runtime.sendMessage({ action: "startPomodoro", session: "focus" });
+    });
+  }
+
+  function updatePomodoroUI() {
+    chrome.storage.local.get({ pomodoroState: { session: "focus", sessionsCompleted: 0 } }, (data) => {
+      const { session, sessionsCompleted } = data.pomodoroState;
+      const title = document.getElementById("pomodoro-title");
+      const timer = document.getElementById("pomodoro-timer");
+
+      if (session === "focus") {
+        title.textContent = `Focus Session ${sessionsCompleted + 1}`;
+      } else if (session === "shortBreak") {
+        title.textContent = "Short Break";
+      } else {
+        title.textContent = "Long Break";
+      }
+      // Timer display would require more complex logic to sync with the background script's alarms.
+      // For now, we'll just show the state.
+      timer.textContent = "";
+    });
   }
 
   initialize();
