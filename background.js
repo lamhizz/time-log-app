@@ -42,15 +42,7 @@ chrome.runtime.onInstalled.addListener(() => {
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
       webAppUrl: "https://script.google.com/macros/s/AKfycbyHWeCBtEU1oW1RTnK-mtlXA2dvXJ6c-ULz221_HAIy_3QRDl_9s1v8YvOpzH99iipUCQ/exec",
       isDomainLogEnabled: false,
-      notificationSound: "ClickUp.wav",
-      pomodoroEnabled: false,
-      pomodoroFocusDuration: 20,
-      pomodoroShortBreakDuration: 5,
-      pomodoroLongBreakDuration: 15,
-      pomodoroSessions: 4,
-      pomodoroAutoStart: false,
-      pomodoroTickingSound: false,
-      pomodoroVolume: 0.5
+      notificationSound: "ClickUp.wav"
     };
     
     let newSettings = {};
@@ -75,7 +67,7 @@ chrome.runtime.onInstalled.addListener(() => {
   // Add a context menu item for manual logging
   chrome.contextMenus.create({
     id: "logWorkContextMenu",
-    title: "Log Work with WurkWurk",
+    title: "Log Work",
     contexts: ["page"]
   });
 });
@@ -143,73 +135,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     checkDayAndTriggerPopup();
     createWorkLogAlarm(); // Re-create the main alarm after a snooze
   }
-
-  if (alarm.name === "pomodoroFocus") {
-    handlePomodoroCompletion("focus");
-  }
-
-  if (alarm.name === "pomodoroBreak") {
-    handlePomodoroCompletion("break");
-  }
 });
-
-let pomodoroState = {
-  session: "focus", // "focus", "shortBreak", "longBreak"
-  sessionsCompleted: 0
-};
-
-function startPomodoro(session) {
-  chrome.storage.sync.get(null, (settings) => {
-    if (!settings.pomodoroEnabled) return;
-
-    let duration;
-    if (session === "focus") {
-      duration = settings.pomodoroFocusDuration;
-    } else if (session === "shortBreak") {
-      duration = settings.pomodoroShortBreakDuration;
-    } else if (session === "longBreak") {
-      duration = settings.pomodoroLongBreakDuration;
-    }
-
-    chrome.alarms.create(`pomodoro${session.charAt(0).toUpperCase() + session.slice(1)}`, { delayInMinutes: duration });
-    pomodoroState.session = session;
-    updateBadge();
-  });
-}
-
-function handlePomodoroCompletion(session) {
-  if (session === "focus") {
-    pomodoroState.sessionsCompleted++;
-    if (pomodoroState.sessionsCompleted >= 4) {
-      startPomodoro("longBreak");
-      pomodoroState.sessionsCompleted = 0;
-    } else {
-      startPomodoro("shortBreak");
-    }
-  } else {
-    startPomodoro("focus");
-  }
-}
-
-function updateBadge() {
-  chrome.storage.sync.get({ pomodoroEnabled: false }, (settings) => {
-    if (!settings.pomodoroEnabled) {
-      if (!timerBadgeActive && !alarmBadgeActive) {
-        chrome.action.setBadgeText({ text: '' });
-      }
-      return;
-    }
-
-    let text = "";
-    if (pomodoroState.session === "focus") {
-      text = "FOCUS";
-    } else {
-      text = "BREAK";
-    }
-    chrome.action.setBadgeText({ text });
-    chrome.action.setBadgeBackgroundColor({ color: pomodoroState.session === "focus" ? '#10B981' : '#3B82F6' });
-  });
-}
 
 // --- User Interaction Handlers ---
 

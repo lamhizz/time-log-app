@@ -38,9 +38,9 @@ function createPopup(domainToLog, soundToPlay) {
       const soundUrl = chrome.runtime.getURL(`sounds/${soundToPlay}`);
       const audio = new Audio(soundUrl);
       audio.volume = 0.5; // Set volume to 50% to be less intrusive
-      audio.play().catch(e => console.warn(`WurkWurk: Could not play notification sound: ${e.message}`));
+      audio.play().catch(e => console.warn(`Work Log: Could not play notification sound: ${e.message}`));
     } catch (e) {
-      console.error("WurkWurk: Error playing sound.", e);
+      console.error("Work Log: Error playing sound.", e);
     }
   }
   
@@ -65,14 +65,6 @@ function createPopup(domainToLog, soundToPlay) {
   title.id = "work-log-popup-title";
   title.textContent = "What are you working on?";
   
-  // Logo
-  const logo = document.createElement("img");
-  logo.src = chrome.runtime.getURL("icons/wurk-wurk-logo-48.png");
-  logo.style.height = "24px";
-  logo.style.width = "24px";
-  logo.style.marginRight = "8px";
-  title.prepend(logo);
-
   // Tag selection dropdown
   const tagGroup = document.createElement("div");
   tagGroup.className = "work-log-form-group";
@@ -141,11 +133,11 @@ function createPopup(domainToLog, soundToPlay) {
   reactiveLabel.textContent = "I reacted (ad-hoc)";
   
   checkboxContainer.innerHTML = `
-    <div class="work-log-form-group work-log-checkbox-group" data-tooltip="Did you get distracted or work on something unplanned?">
+    <div class="work-log-form-group work-log-checkbox-group">
       ${driftedCheck.outerHTML}
       ${driftedLabel.outerHTML}
     </div>
-    <div class="work-log-form-group work-log-checkbox-group" data-tooltip="Was this work a reaction to an unexpected request?">
+    <div class="work-log-form-group work-log-checkbox-group">
       ${reactiveCheck.outerHTML}
       ${reactiveLabel.outerHTML}
     </div>

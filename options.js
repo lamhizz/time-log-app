@@ -44,15 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       blockedDomains: blockedDomainsInput.value,
       webAppUrl: webAppUrlInput.value.trim(),
       isDomainLogEnabled: logDomainInput.checked,
-      notificationSound: notificationSoundInput.value,
-      pomodoroEnabled: document.getElementById("pomodoro-enabled").checked,
-      pomodoroFocusDuration: parseInt(document.getElementById("pomodoro-focus-duration").value, 10),
-      pomodoroShortBreakDuration: parseInt(document.getElementById("pomodoro-short-break-duration").value, 10),
-      pomodoroLongBreakDuration: parseInt(document.getElementById("pomodoro-long-break-duration").value, 10),
-      pomodoroSessions: parseInt(document.getElementById("pomodoro-sessions").value, 10),
-      pomodoroAutoStart: document.getElementById("pomodoro-auto-start").checked,
-      pomodoroTickingSound: document.getElementById("pomodoro-ticking-sound").checked,
-      pomodoroVolume: parseFloat(document.getElementById("pomodoro-volume").value)
+      notificationSound: notificationSoundInput.value
     };
 
     // Save to Chrome's sync storage
@@ -84,15 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
       blockedDomains: "meet.google.com\nzoom.us\nyoutube.com\ntwitch.tv",
       webAppUrl: "",
       isDomainLogEnabled: false,
-      notificationSound: "ClickUp.wav",
-      pomodoroEnabled: false,
-      pomodoroFocusDuration: 20,
-      pomodoroShortBreakDuration: 5,
-      pomodoroLongBreakDuration: 15,
-      pomodoroSessions: 4,
-      pomodoroAutoStart: false,
-      pomodoroTickingSound: false,
-      pomodoroVolume: 0.5
+      notificationSound: "ClickUp.wav"
     };
 
     chrome.storage.sync.get(defaults, (items) => {
@@ -113,19 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // Format and set time inputs
       startHourInput.value = items.workStartHour.toString().padStart(2, '0') + ':00';
       endHourInput.value = items.workEndHour.toString().padStart(2, '0') + ':00';
-
-      // Populate Pomodoro settings
-      document.getElementById("pomodoro-enabled").checked = items.pomodoroEnabled;
-      document.getElementById("pomodoro-focus-duration").value = items.pomodoroFocusDuration;
-      document.getElementById("pomodoro-short-break-duration").value = items.pomodoroShortBreakDuration;
-      document.getElementById("pomodoro-long-break-duration").value = items.pomodoroLongBreakDuration;
-      document.getElementById("pomodoro-sessions").value = items.pomodoroSessions;
-      document.getElementById("pomodoro-auto-start").checked = items.pomodoroAutoStart;
-      document.getElementById("pomodoro-ticking-sound").checked = items.pomodoroTickingSound;
-      document.getElementById("pomodoro-volume").value = items.pomodoroVolume;
-
-      // Show/hide Pomodoro settings based on enabled status
-      document.getElementById("pomodoro-settings").style.display = items.pomodoroEnabled ? "block" : "none";
     });
   }
   
@@ -171,25 +142,6 @@ document.addEventListener("DOMContentLoaded", () => {
     restoreOptions();
     saveButton.addEventListener("click", saveOptions);
     testConnectionButton.addEventListener("click", testConnection);
-
-    document.getElementById("pomodoro-enabled").addEventListener("change", (event) => {
-      document.getElementById("pomodoro-settings").style.display = event.target.checked ? "block" : "none";
-    });
-
-    const bmcContainer = document.getElementById("bmc-container");
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = "https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js";
-    script.dataset.name = "bmc-button";
-    script.dataset.slug = "lamhizz";
-    script.dataset.color = "#FFDD00";
-    script.dataset.emoji = "☕";
-    script.dataset.font = "Arial";
-    script.dataset.text = "Buy me a coffee";
-    script.dataset.outlineColor = "#000000";
-    script.dataset.fontColor = "#000000";
-    script.dataset.coffeeColor = "#ffffff";
-    bmcContainer.appendChild(script);
   }
 
   initialize();
