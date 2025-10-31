@@ -121,6 +121,99 @@ function checkTimerStateOnStartup() {
 }
 
 /**
+ * @description Runs a multi-step diagnostic check on the user's Google Apps Script setup.
+ * @param {string} url - The Google Apps Script URL to diagnose.
+ * @returns {Promise<object>} A promise that resolves to a detailed diagnostic report.
+ */
+async function runDiagnostics(url) {
+  // 1. URL Format Check
+  if (!url || !url.startsWith("https://script.google.com/")) {
+    return {
+      checks: {
+        url: { success: false, message: "Invalid URL format. Must be a https://script.google.com/... link." }
+      },
+      overallStatus: "error"
+    };
+  }
+  let diagnosticUrl;
+  try {
+    diagnosticUrl = new URL(url);
+    diagnosticUrl.searchParams.set("action", "diagnose");
+  } catch (e) {
+    return {
+      checks: {
+        url: { success: false, message: "Invalid URL format." }
+      },
+      overallStatus: "error"
+    };
+  }
+
+  const report = {
+    checks: {
+      url: { success: true, message: "Google Apps Script URL is valid." }
+    },
+    overallStatus: "pending"
+  };
+
+  // 2. Connection & Diagnostics Check
+  try {
+    const response = await fetch(diagnosticUrl.toString(), {
+      method: "GET",
+      cache: "no-cache",
+      redirect: "follow"
+    });
+
+    if (!response.ok) {
+      throw new Error(`Connection failed: ${response.status} - ${response.statusText}. Please ensure the script is deployed and permissions are set to 'Anyone'.`);
+    }
+
+    const json = await response.json();
+    if (json.status !== "success") {
+      throw new Error(`Google Script Error: ${json.message || 'Diagnostics failed'}`);
+    }
+
+    report.checks.connection = { success: true, message: "Successfully connected to the script." };
+
+    // 3. Script Version Check
+    const requiredVersion = "3.1";
+    if (json.version && json.version === requiredVersion) {
+      report.checks.version = { success: true, message: `Your Google Apps Script is up-to-date (v${json.version}).` };
+    } else {
+      report.checks.version = { success: false, message: `Outdated script version. Expected v${requiredVersion}, but found v${json.version || "unknown"}. Please update the script in SETUP_GUIDE.txt.` };
+    }
+
+    // 4. Sheet Header Check
+    const requiredHeaders = ["Date", "Time", "Log Entry", "Tag", "Drifted", "Mins Since Last", "FullTimestamp", "Domain", "Reactive", "Keywords"];
+    const actualHeaders = json.headers || [];
+    let headerErrors = [];
+
+    for (let i = 0; i < requiredHeaders.length; i++) {
+      if (i >= actualHeaders.length) {
+        headerErrors.push(`- Expected '${requiredHeaders[i]}' in Column ${String.fromCharCode(65 + i)}, but found nothing.`);
+      } else if (requiredHeaders[i] !== actualHeaders[i]) {
+        headerErrors.push(`- Expected '${requiredHeaders[i]}' in Column ${String.fromCharCode(65 + i)}, but found '${actualHeaders[i]}'.`);
+      }
+    }
+
+    if (headerErrors.length === 0) {
+      report.checks.headers = { success: true, message: "Found all 10 required columns in the correct order." };
+    } else {
+      report.checks.headers = { success: false, message: `Your Google Sheet headers are incorrect.\n${headerErrors.join("\n")}` };
+    }
+
+    // Determine overall status
+    const allChecksPassed = Object.values(report.checks).every(check => check.success);
+    report.overallStatus = allChecksPassed ? "success" : "error";
+
+  } catch (error) {
+    report.checks.connection = { success: false, message: error.message };
+    report.overallStatus = "error";
+  }
+
+  return report;
+}
+
+/**
  * @description Clears any existing alarms and creates a new periodic "workLogAlarm".
  * @param {number|null} initialDelayInMinutes - The delay for the first alarm trigger.
  * If null, defaults to the user's configured log interval.
@@ -550,6 +643,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Case 10: Options page requests a connection test
     case "testConnection":
       testWebAppConnection(request.url)
+        .then(response => sendResponse(response))
+        .catch(error => sendResponse({ status: "error", message: error.message }));
+      return true;
+
+    // --- NEW: Case 11: Options page requests diagnostics ---
+    case "runDiagnostics":
+      runDiagnostics(request.url)
         .then(response => sendResponse(response))
         .catch(error => sendResponse({ status: "error", message: error.message }));
       return true;

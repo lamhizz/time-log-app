@@ -179,7 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
       reactiveCheck.checked = false;
       setTimeout(() => window.close(), 1000); // Close popup after a short delay
     } else {
-      showStatus(response.message || "An unknown error occurred.", "error");
+      const errorMessage = "Log failed. This is usually a setup problem. Please go to the Options Page and run the \"Test Connection\" diagnostic to find the fix.";
+      showStatus(errorMessage, "error");
     }
     setLoading(false);
   }

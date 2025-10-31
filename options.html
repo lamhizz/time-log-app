@@ -288,9 +288,18 @@
       <label for="web-app-url">Google Apps Script URL</label>
       <div class="form-group-flex">
         <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the most important field. Paste your deployed 'Web app' URL from Google Apps Script here.">
-        <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test</button>
+        <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test Connection</button>
       </div>
-      <div id="test-status"></div>
+      <div id="diagnostic-results" style="display: none; margin-top: 10px;">
+        <p><strong>Diagnostic Results:</strong></p>
+        <ul style="list-style-type: none; padding-left: 10px;">
+          <li id="diag-step-1-url"><strong>1. URL Format:</strong> <span>Pending...</span></li>
+          <li id="diag-step-2-connection"><strong>2. Connection:</strong> <span>Pending...</span></li>
+          <li id="diag-step-3-version"><strong>3. Script Version:</strong> <span>Pending...</span></li>
+          <li id="diag-step-4-headers"><strong>4. Sheet Headers:</strong> <span>Pending...</span></li>
+        </ul>
+        <div id="diagnostic-summary" style="font-weight: bold; margin-top: 10px;"></div>
+      </div>
       <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the Apps Script code from the Setup Guide for this to work.</p>
     </div>
 

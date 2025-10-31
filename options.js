@@ -19,9 +19,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const webAppUrlInput = document.getElementById("web-app-url");
   const logDomainInput = document.getElementById("log-domain");
   const testConnectionButton = document.getElementById("test-connection");
-  const testStatusEl = document.getElementById("test-status");
   const notificationSoundInput = document.getElementById("notification-sound");
   const pomodoroEnabledInput = document.getElementById("pomodoro-enabled");
+
+  // --- NEW: Diagnostic UI Elements ---
+  const diagnosticResultsEl = document.getElementById("diagnostic-results");
+  const diagStep1 = document.getElementById("diag-step-1-url").querySelector("span");
+  const diagStep2 = document.getElementById("diag-step-2-connection").querySelector("span");
+  const diagStep3 = document.getElementById("diag-step-3-version").querySelector("span");
+  const diagStep4 = document.getElementById("diag-step-4-headers").querySelector("span");
+  const diagnosticSummaryEl = document.getElementById("diagnostic-summary");
 
   // Links
   const aboutLink = document.getElementById("about-link");
@@ -118,34 +125,70 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   /**
-   * @description Sends the Google Apps Script URL to the background script for a live connection test.
-   * Updates the UI with the result of the test (success or failure).
+   * @description Resets the diagnostic UI to its initial "Pending..." state.
    */
-  function testConnection() {
-    const url = webAppUrlInput.value.trim();
-    if (!url) {
-      testStatusEl.textContent = "Please enter a URL first.";
-      testStatusEl.className = "error";
+  function resetDiagnosticsUI() {
+    diagnosticResultsEl.style.display = "block";
+    diagnosticSummaryEl.textContent = "";
+    diagnosticSummaryEl.className = "";
+
+    const steps = [diagStep1, diagStep2, diagStep3, diagStep4];
+    steps.forEach(step => {
+      step.textContent = "Pending...";
+      step.className = "";
+    });
+  }
+
+  /**
+   * @description Updates a single step in the diagnostic UI with a success or error status.
+   * @param {HTMLElement} el - The DOM element for the step's status.
+   * @param {object} result - The result object for that step.
+   * @param {boolean} result.success - Whether the check was successful.
+   * @param {string} result.message - The message to display.
+   */
+  function updateDiagStep(el, result) {
+    if (!result) {
+      el.textContent = "Skipped.";
+      el.className = "";
       return;
     }
+    el.textContent = result.message;
+    el.className = result.success ? "success" : "error";
+  }
+
+  /**
+   * @description Initiates the diagnostic process when the "Test Connection" button is clicked.
+   */
+  function runDiagnostics() {
+    const url = webAppUrlInput.value.trim();
     
-    // Update UI to show testing is in progress
-    testStatusEl.textContent = "Testing...";
-    testStatusEl.className = "";
+    resetDiagnosticsUI();
     testConnectionButton.disabled = true;
-    
-    // Send message to background script to perform the fetch test
-    chrome.runtime.sendMessage({ action: "testConnection", url: url }, (response) => {
+
+    // Send message to background script to perform the diagnostics
+    chrome.runtime.sendMessage({ action: "runDiagnostics", url: url }, (report) => {
       if (chrome.runtime.lastError) {
-        testStatusEl.textContent = `Error: ${chrome.runtime.lastError.message}`;
-        testStatusEl.className = "error";
-      } else if (response.status === "success") {
-        testStatusEl.textContent = `Success! ${response.message}`;
-        testStatusEl.className = "success";
-      } else {
-        testStatusEl.textContent = `Failed: ${response.message || "Unknown error"}`;
-        testStatusEl.className = "error";
+        diagnosticSummaryEl.textContent = `Critical Error: ${chrome.runtime.lastError.message}`;
+        diagnosticSummaryEl.className = "error";
+        testConnectionButton.disabled = false;
+        return;
       }
+
+      // Update UI based on the report
+      updateDiagStep(diagStep1, report.checks.url);
+      updateDiagStep(diagStep2, report.checks.connection);
+      updateDiagStep(diagStep3, report.checks.version);
+      updateDiagStep(diagStep4, report.checks.headers);
+
+      // Display the final summary message
+      if (report.overallStatus === "success") {
+        diagnosticSummaryEl.textContent = "Success! Your setup is complete and ready to log.";
+        diagnosticSummaryEl.className = "success";
+      } else {
+        diagnosticSummaryEl.textContent = "Error: Your setup has problems. Please fix the failed steps and try again.";
+        diagnosticSummaryEl.className = "error";
+      }
+
       testConnectionButton.disabled = false; // Re-enable button
     });
   }
@@ -158,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function initialize() {
     restoreOptions();
     saveButton.addEventListener("click", saveOptions);
-    testConnectionButton.addEventListener("click", testConnection);
+    testConnectionButton.addEventListener("click", runDiagnostics);
     
     // Link listeners
     dashboardLink.addEventListener("click", () => {

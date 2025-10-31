@@ -91,12 +91,18 @@ Delete any placeholder code in the Code.gs file (e.g., function myFunction() { .
 Copy the entire script below and paste it into the empty Code.gs editor.
 
 /**
- * @file Google Apps Script for WurkWurk Chrome Extension (v3.0 with Dashboard Support)
+ * @file Google Apps Script for WurkWurk Chrome Extension (v3.1 with Connection Doctor)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
- * It also provides data for the dashboard's "Weekly Review" tab.
+ * It also provides data for the dashboard and connection diagnostics.
  */
 
 // --- CONFIGURATION ---
+
+/**
+ * @const {string}
+ * @description The current version of this Google Apps Script.
+ */
+const SCRIPT_VERSION = "3.1";
 
 /**
  * @const {string}
@@ -117,19 +123,38 @@ const SHEET_NAME = "Sheet1";
 
 
 /**
- * @description Handles GET requests for both connection testing and fetching dashboard data.
+ * @description Handles GET requests for connection testing, diagnostics, and dashboard data.
  * @param {object} e - The event parameter containing the request details.
  * @returns {ContentService.TextOutput} A JSON response.
  */
 function doGet(e) {
   try {
-    // Action: Test Connection
+    // Action: Basic Test Connection
     if (e.parameter.action === "test") {
       Logger.log("WurkWurk: Received successful test ping.");
       return ContentService.createTextOutput(
         JSON.stringify({
           status: "success",
           message: "Connection successful!",
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Action: Advanced Connection Diagnostics
+    if (e.parameter.action === "diagnose") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      // Get only the columns that have content in the first row
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+      Logger.log("WurkWurk: Received successful diagnose ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          version: SCRIPT_VERSION,
+          headers: headers
         })
       ).setMimeType(ContentService.MimeType.JSON);
     }
@@ -269,7 +294,7 @@ function doPost(e) {
     }
 
     const newRow = [
-      dateFormatted, dateFormatted, logEntry, tag, drifted,
+      dateFormatted, timeFormatted, logEntry, tag, drifted,
       minsSinceLast, fullTimestamp, domain, reactive, keywords
     ];
     
