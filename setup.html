@@ -154,20 +154,21 @@
     </ol>
 
     <h2>Step 2: Add Headers to the Sheet</h2>
-    <p>This is a critical step. The script requires nine specific headers in the first row, in this exact order, to function correctly.</p>
+    <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.</p>
 
     <table>
       <thead>
         <tr>
           <th>A1</th>
           <th>B1</th>
-          <th>C1</th>
+                    <th>C1</th>
           <th>D1</th>
           <th>E1</th>
           <th>F1</th>
           <th>G1</th>
           <th>H1</th>
           <th>I1</th>
+          <th>J1</th>
         </tr>
       </thead>
       <tbody>
@@ -181,6 +182,7 @@
           <td>FullTimestamp</td>
           <td>Domain</td>
           <td>Reactive</td>
+          <td>Keywords</td>
         </tr>
       </tbody>
     </table>
@@ -195,6 +197,7 @@
       <li>In cell <strong>G1</strong>, type: <code>FullTimestamp</code></li>
       <li>In cell <strong>H1</strong>, type: <code>Domain</code></li>
       <li>In cell <strong>I1</strong>, type: <code>Reactive</code></li>
+      <li>In cell <strong>J1</strong>, type: <code>Keywords</code></li>
     </ol>
 
     <h2>Step 3: Create the Google Apps Script</h2>
@@ -280,6 +283,7 @@ function doPost(e) {
     const drifted = data.drifted ? "Yes" : "No";
     const domain = data.domain || "";
     const reactive = data.reactive ? "Yes" : "No";
+    const keywords = data.keywords || "";
     
     // 2. Get the target sheet and current time
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
@@ -307,7 +311,7 @@ function doPost(e) {
     }
 
     // 4. Prepare and append the new row
-    // The order MUST match your 9-column header setup in the sheet.
+    // The order MUST match your 10-column header setup in the sheet.
     const newRow = [
       dateFormatted,    // A: Date
       timeFormatted,    // B: Time
@@ -317,7 +321,8 @@ function doPost(e) {
       minsSinceLast,    // F: Mins Since Last
       fullTimestamp,    // G: FullTimestamp
       domain,           // H: Domain
-      reactive          // I: Reactive
+      reactive,         // I: Reactive
+      keywords          // J: Keywords
     ];
     
     sheet.appendRow(newRow);

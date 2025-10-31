@@ -12,7 +12,7 @@ Give the spreadsheet a name you'll remember, like "My WurkWurk Logs."
 
 Step 2: Add Headers to the Sheet
 
-This is a critical step. The script requires nine specific headers in the first row, in this exact order, to function correctly.
+This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.
 
 In cell A1, type: Date
 
@@ -31,6 +31,8 @@ In cell G1, type: FullTimestamp
 In cell H1, type: Domain
 
 In cell I1, type: Reactive
+
+In cell J1, type: Keywords
 
 Your sheet's first row should look like this:
 
@@ -52,6 +54,8 @@ H
 
 I
 
+J
+
 Date
 
 Time
@@ -69,6 +73,8 @@ FullTimestamp
 Domain
 
 Reactive
+
+Keywords
 
 Step 3: Create the Google Apps Script
 
@@ -238,6 +244,7 @@ function doPost(e) {
     const drifted = data.drifted ? "Yes" : "No";
     const domain = data.domain || "";
     const reactive = data.reactive ? "Yes" : "No";
+    const keywords = data.keywords || "";
     
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
@@ -263,7 +270,7 @@ function doPost(e) {
 
     const newRow = [
       dateFormatted, dateFormatted, logEntry, tag, drifted,
-      minsSinceLast, fullTimestamp, domain, reactive
+      minsSinceLast, fullTimestamp, domain, reactive, keywords
     ];
     
     sheet.appendRow(newRow);
