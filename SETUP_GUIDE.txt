@@ -85,9 +85,9 @@ Delete any placeholder code in the Code.gs file (e.g., function myFunction() { .
 Copy the entire script below and paste it into the empty Code.gs editor.
 
 /**
- * @file Google Apps Script for WurkWurk Chrome Extension (v2.2)
+ * @file Google Apps Script for WurkWurk Chrome Extension (v3.0 with Dashboard Support)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
- * It handles a 9-column layout and includes a test function.
+ * It also provides data for the dashboard's "Weekly Review" tab.
  */
 
 // --- CONFIGURATION ---
@@ -111,12 +111,13 @@ const SHEET_NAME = "Sheet1";
 
 
 /**
- * @description Handles GET requests. This is used by the extension's "Test Connection" button.
+ * @description Handles GET requests for both connection testing and fetching dashboard data.
  * @param {object} e - The event parameter containing the request details.
- * @returns {ContentService.TextOutput} A JSON response indicating success or failure.
+ * @returns {ContentService.TextOutput} A JSON response.
  */
 function doGet(e) {
   try {
+    // Action: Test Connection
     if (e.parameter.action === "test") {
       Logger.log("WurkWurk: Received successful test ping.");
       return ContentService.createTextOutput(
@@ -126,6 +127,90 @@ function doGet(e) {
         })
       ).setMimeType(ContentService.MimeType.JSON);
     }
+
+    // Action: Get Weekly Data for Dashboard
+    if (e.parameter.action === "getWeeklyData") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      const data = sheet.getDataRange().getValues();
+      const header = data.shift(); // Remove header row
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentData = data.filter(row => new Date(row[6]) >= thirtyDaysAgo);
+
+      // --- Calculate Stats ---
+
+      // 1. Tag Pie Chart Data (Count occurrences)
+      const tagCounts = recentData.reduce((acc, row) => {
+        const tag = row[3] || "Untagged"; // Column D
+        acc[tag] = (acc[tag] || 0) + 1;
+        return acc;
+      }, {});
+      const tagData = {
+        labels: Object.keys(tagCounts),
+        values: Object.values(tagCounts)
+      };
+
+      // 2. Keyword Bar Chart Data
+      const stopWords = new Set(["a", "an", "the", "and", "in", "on", "for", "with", "to", "is", "of", "it", "i", "was"]);
+      const keywordCounts = recentData.reduce((acc, row) => {
+        const log = (row[2] || "").toLowerCase(); // Column C
+        const words = log.match(/\b(\w+)\b/g) || [];
+        words.forEach(word => {
+          if (word.length > 3 && !stopWords.has(word) && !/\d+/.test(word)) {
+            acc[word] = (acc[word] || 0) + 1;
+          }
+        });
+        return acc;
+      }, {});
+      const sortedKeywords = Object.entries(keywordCounts).sort(([,a],[,b]) => b-a).slice(0, 10);
+      const keywordData = {
+        labels: sortedKeywords.map(item => item[0]),
+        values: sortedKeywords.map(item => item[1])
+      };
+
+      // 3. Focus Over Time Data (Last 7 days)
+      const focusByDay = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dayString = d.toLocaleDateString('en-US', { weekday: 'short' });
+        focusByDay[dayString] = { total: 0, drifted: 0 };
+      }
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const last7DaysData = recentData.filter(row => new Date(row[6]) >= sevenDaysAgo);
+
+      last7DaysData.forEach(row => {
+          const date = new Date(row[6]); // Column G
+          const dayString = date.toLocaleDateString('en-US', { weekday: 'short' });
+          if (focusByDay[dayString]) {
+            focusByDay[dayString].total++;
+            if (row[4] === "Yes") { // Column E is Drifted
+              focusByDay[dayString].drifted++;
+            }
+          }
+      });
+
+      const focusData = {
+        labels: Object.keys(focusByDay),
+        values: Object.values(focusByDay).map(day => {
+          if (day.total === 0) return 0;
+          return Math.round(((day.total - day.drifted) / day.total) * 100);
+        })
+      };
+
+      // --- Assemble Response ---
+      const responseData = { tagData, keywordData, focusData };
+      return ContentService.createTextOutput(
+        JSON.stringify({ status: "success", data: responseData })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
   } catch (err) {
     Logger.log("WurkWurk: doGet Error - " + err.message);
     return ContentService.createTextOutput(
@@ -133,7 +218,6 @@ function doGet(e) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
   
-  // Return an error for any other GET request
   return ContentService.createTextOutput(
     JSON.stringify({ status: "error", message: "Invalid request. Use POST to log data." })
   ).setMimeType(ContentService.MimeType.JSON);
@@ -148,7 +232,6 @@ function doGet(e) {
 function doPost(e) {
   let sheet;
   try {
-    // 1. Parse incoming data from the extension
     const data = JSON.parse(e.postData.contents);
     const logEntry = data.log || "";
     const tag = data.tag || "";
@@ -156,54 +239,40 @@ function doPost(e) {
     const domain = data.domain || "";
     const reactive = data.reactive ? "Yes" : "No";
     
-    // 2. Get the target sheet and current time
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
       throw new Error(`Sheet not found. Please ensure a sheet named "${SHEET_NAME}" exists.`);
     }
     
     const now = new Date();
-    const fullTimestamp = now.toISOString(); // ISO format for accurate calculations
+    const fullTimestamp = now.toISOString();
     const dateFormatted = Utilities.formatDate(now, TIME_ZONE, "yyyy-MM-dd");
     const timeFormatted = Utilities.formatDate(now, TIME_ZONE, "HH:mm:ss");
 
-    // 3. Calculate the time difference since the last log
     let minsSinceLast = "N/A";
     const lastRow = sheet.getLastRow();
     
     if (lastRow >= 1) {
-      // Column G (index 7) is FullTimestamp
       const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); 
       if (lastTimestampStr) {
         const lastTimestamp = new Date(lastTimestampStr);
         const diffMs = now.getTime() - lastTimestamp.getTime();
-        minsSinceLast = Math.round(diffMs / 60000); // Convert milliseconds to minutes
+        minsSinceLast = Math.round(diffMs / 60000);
       }
     }
 
-    // 4. Prepare and append the new row
-    // The order MUST match your 9-column header setup in the sheet.
     const newRow = [
-      dateFormatted,    // A: Date
-      timeFormatted,    // B: Time
-      logEntry,         // C: Log Entry
-      tag,              // D: Tag
-      drifted,          // E: Drifted
-      minsSinceLast,    // F: Mins Since Last
-      fullTimestamp,    // G: FullTimestamp
-      domain,           // H: Domain
-      reactive          // I: Reactive
+      dateFormatted, dateFormatted, logEntry, tag, drifted,
+      minsSinceLast, fullTimestamp, domain, reactive
     ];
     
     sheet.appendRow(newRow);
 
-    // 5. Return a success response to the extension
     return ContentService.createTextOutput(
       JSON.stringify({ status: "success", row: sheet.getLastRow() })
     ).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
-    // 6. Log the error and return an error response
     Logger.log("WurkWurk: doPost Error - " + err.message);
     return ContentService.createTextOutput(
       JSON.stringify({ status: "error", message: err.message, sheetName: SHEET_NAME })
@@ -220,9 +289,11 @@ Step 5: Deploy the Script as a Web App
 
 This step creates the secret URL the extension will use to send data to your sheet.
 
+***IF YOU ARE UPDATING FROM A PREVIOUS VERSION, YOU MUST RE-DEPLOY TO APPLY THE CHANGES.***
+
 In the Apps Script editor, click the blue Deploy button in the top-right corner.
 
-Select New deployment.
+Select New deployment. (If you are re-deploying, select 'Manage Deployments', choose your deployment, and click the pencil icon to edit it. Set the version to 'New version'.)
 
 Click the gear icon (⚙️) next to "Select type" and choose Web app.
 
