@@ -127,6 +127,7 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  /* Updated to avoid issues with host page CSS potentially overriding the icon */
   background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236B7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%20%2F%3E%3C%2Fsvg%3E') !important;
   background-repeat: no-repeat !important;
   background-position: right 8px center !important;
@@ -155,6 +156,7 @@
   background-color: var(--work-log-secondary) !important;
   color: var(--work-log-text-dark) !important;
   border: 1px solid var(--work-log-border) !important;
+  border-radius: var(--work-log-radius) !important; /* Added border-radius for consistency */
   padding: 4px 6px !important;
   font-weight: 500 !important;
 }
@@ -167,6 +169,8 @@
   display: flex !important;
   gap: 16px !important;
   margin-bottom: 16px !important;
+  /* Added align-items to ensure checkboxes and labels align vertically */
+  align-items: center !important; 
 }
 .work-log-checkbox-group {
   display: flex !important;
@@ -238,6 +242,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease !important;
   box-sizing: border-box !important;
   color: var(--work-log-text-dark) !important;
+  background-color: #fff !important; /* Ensure a white background */
 }
 .work-log-popup-button:disabled {
   opacity: 0.6 !important;
@@ -246,7 +251,7 @@
 
 /* Secondary buttons ("Doing Same") */
 .work-log-button-secondary {
-  flex-grow: 1 !important;
+  /* Removed flex-grow: 1 as it caused issues with the snooze group */
   background-color: #fff !important;
   border-color: var(--work-log-border) !important;
   color: var(--work-log-text-light) !important;
@@ -326,4 +331,3 @@
 .work-log-status-success {
   color: var(--work-log-success) !important;
 }
-
