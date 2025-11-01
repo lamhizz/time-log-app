@@ -20,6 +20,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       createPopup(request.domain, request.sound); 
     }
     sendResponse({ status: "popup shown" });
+  } else if (request.action === "dismissPopup") {
+    closePopup();
+    sendResponse({ status: "popup dismissed" });
   }
   return true;
 });
