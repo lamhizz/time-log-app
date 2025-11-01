@@ -19,6 +19,12 @@ let timerBadgeActive = false;
  */
 let alarmBadgeActive = false;
 
+/**
+ * @type {number|null}
+ * @description Stores the ID of the tab where the log prompt is currently active.
+ */
+let logPromptTabId = null;
+
 // --- Extension Lifecycle & Alarm Management ---
 
 /**
@@ -80,6 +86,13 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
     chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
   }
+
+  // Request notification permission on first install
+  chrome.notifications.getPermissionLevel((level) => {
+    if (level === "denied") {
+      console.warn("Notification permission has been denied by the user.");
+    }
+  });
 
   // --- NEW: Daily Stats Alarm ---
   chrome.alarms.create("midnightReset", {
@@ -274,6 +287,30 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // --- User Interaction Handlers ---
 
 /**
+ * @description Listens for clicks on the notification buttons.
+ */
+chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+  if (notificationId === "workLogNotification") {
+    if (buttonIndex === 0) { // "Log Now" button
+      console.log("Notification 'Log Now' clicked.");
+      if (logPromptTabId) {
+        chrome.tabs.update(logPromptTabId, { active: true }, (tab) => {
+          if (tab) chrome.windows.update(tab.windowId, { focused: true });
+        });
+      }
+    } else if (buttonIndex === 1) { // "Snooze 5 Min" button
+      console.log("Notification 'Snooze 5 Min' clicked.");
+      chrome.alarms.create("snoozeAlarm", { delayInMinutes: 5 });
+      if (logPromptTabId) {
+        chrome.tabs.sendMessage(logPromptTabId, { action: "dismissPopup" });
+      }
+    }
+    chrome.notifications.clear("workLogNotification");
+    logPromptTabId = null;
+  }
+});
+
+/**
  * @description Handles clicks on the context menu item to manually trigger the log popup.
  */
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -384,8 +421,12 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
         
         const domainToLog = data.isDomainLogEnabled ? urlHostname : "";
         
+        // --- NEW: Show desktop notification first ---
+        showDesktopNotification();
+        logPromptTabId = tab.id; // Store the tab ID
+
         // Send a message to the content script to show the popup
-        chrome.tabs.sendMessage(tab.id, { 
+        chrome.tabs.sendMessage(tab.id, {
           action: "showLogPopup",
           domain: domainToLog,
           sound: data.notificationSound
@@ -400,6 +441,29 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
         console.error(`Failed to inject scripts into tab ${tab.id} (${tab.url}): ${err.message}. This might be a protected page.`);
       }
     })();
+  });
+}
+
+/**
+ * @description Displays a desktop notification to the user.
+ */
+function showDesktopNotification() {
+  chrome.notifications.create("workLogNotification", {
+    type: "basic",
+    iconUrl: chrome.runtime.getURL("icons/wurk-wurk-logo-128.png"),
+    title: "WurkWurk: Time to Log Your Work",
+    message: "Click to quickly log your last task and keep your streak going.",
+    buttons: [
+      { title: "Log Now" },
+      { title: "Snooze 5 Min" }
+    ],
+    requireInteraction: true // Keep the notification open until user interaction
+  }, (notificationId) => {
+    if (chrome.runtime.lastError) {
+      console.error("Notification creation failed:", chrome.runtime.lastError.message);
+    } else {
+      console.log("Desktop notification created:", notificationId);
+    }
   });
 }
 
@@ -490,6 +554,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Case 1: A new log is submitted from the content script or popup
     case "logWork":
       console.log("Received log object:", request.data);
+      chrome.notifications.clear("workLogNotification");
+      logPromptTabId = null;
       chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
         const WEB_APP_URL = data.webAppUrl;
         if (!WEB_APP_URL) {
@@ -524,6 +590,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Case 2: User snoozes or skips a log
     case "snoozeLog":
+      chrome.notifications.clear("workLogNotification");
+      logPromptTabId = null;
       alarmBadgeActive = false;
       if (!timerBadgeActive) {
         chrome.action.setBadgeText({ text: '' });
@@ -543,6 +611,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Case 3: User logs and then snoozes
     case "logAndSnooze":
+	  chrome.notifications.clear("workLogNotification");
+      logPromptTabId = null;
       console.log(`Received logAndSnooze for ${request.minutes} min:`, request.data);
       chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
         const WEB_APP_URL = data.webAppUrl;
