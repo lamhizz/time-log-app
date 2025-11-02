@@ -1,0 +1,56 @@
+**Frequently Asked Questions (FAQ)**
+
+**About the App & Purpose**
+
+**Q: Is this just another time tracker?** No. Most time trackers are for billing clients or reporting to a manager. **Wurk Wurk is a private reflection tool built for *you*.** The goal isn't just to *track* hours, but to *understand* where your time goes so you can improve your focus and effectiveness.
+
+**Q: What's the main benefit of using this?** Clarity. Wurk Wurk helps you see the unfiltered truth of your workday. By reviewing your log, you can spot patterns—like how much time is lost to interruptions or low-value tasks—and get the evidence you need to take back control of your schedule.
+
+**Q: Why does it send data to a Google Sheet?** To put you in 100% control of your own data. You own the sheet, you own the log. This is the core of our privacy promise.
+
+**Privacy & Data Security**
+
+**Q: Who can see my work logs?** **Only you.** Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of Wurk Wurk) never see, store, analyze, or have access to your log data. Period.
+
+**Q: How do I know my data is secure?** We use Google's own secure Apps Script as the bridge between the extension and your sheet. The entire process happens within your own Google account, protected by Google's security.
+
+**Q: Is Wurk Wurk free?** Yes, Wurk Wurk is free to add to Chrome and use.
+
+**How It Works**
+
+**Q: How do I set it up?** It takes about 2 minutes. After adding the extension, you'll be guided to:
+
+1.  Create a copy of our official Google Sheet template.
+2.  Authorize the extension to connect to *your* new sheet.
+3.  Configure your settings (like prompt interval) and start logging!
+
+**Q: Will the popup interrupt me during meetings?** No! You can (and should) use the "Do Not Disturb" feature. In the options, add domains like **meet.google.com** or **zoom.us**. The extension will not show a prompt when a tab with that domain is active.
+
+**Q: What if I'm in the middle of deep work when the prompt appears?** We designed for this! You have two simple options:
+
+1.  **Snooze:** Postpones the prompt for a short, configurable time.
+2.  **Skip:** Dismisses this prompt entirely. No log is made, and the timer resets.
+
+**Q: How do the "Quick Actions" work?** They are shortcuts for your most common logs.
+
+1.  **"Doing Same"** instantly logs the *exact same thing* you logged last time. Perfect for long focus blocks.
+2.  **"Break"** instantly logs "Break" so you can step away without breaking your log.
+3.  The app also shows your **three most recently used tags** for one-click logging.
+
+**Q: What's the point of the built-in timer?** It's for "active" logging. If you're about to start a new task, you can open the prompt, start the timer, and work. When you stop it, the task name and duration are pre-filled, ready to log. It's great for measuring tasks you *think* will be quick.
+
+**Getting Value from Your Log**
+
+**Q: I have a week of data. Now what?** This is the most important part! Block 15-20 minutes on your calendar for a "Weekly Review." Open your Google Sheet and look for patterns. Ask yourself:
+
+1.  How much time went to "Meetings" vs. "Focus Time"?
+2.  Was my most productive day Tuesday? Why? What was different?
+3.  How often was I interrupted? (Look for fractured logs: Coding -> Email -> Coding)
+4.  Did my work align with my goals for the week?
+
+**Q: This seems like a lot of data. How do I analyze it?** Your Google Sheet makes this easy.
+
+1.  **Filter by Tag:** See exactly how much time you spent on "Admin" or "Project X."
+2.  **Pivot Tables:** (Optional) If you're savvy with Google Sheets, you can create a simple pivot table to see a high-level summary of "Hours per Tag" in seconds.
+
+#
