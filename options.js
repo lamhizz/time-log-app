@@ -103,6 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeInput = document.getElementById("notification-volume");
   const volumeDisplay = document.getElementById("volume-display");
   const saveUrlButton = document.getElementById("save-url-btn");
+  const testSoundButton = document.getElementById("test-sound"); // Added
+  const copyScriptButton = document.getElementById("copy-script-btn"); // Added
+  const appsScriptCodeEl = document.getElementById("apps-script-code"); // Added
 
   // Diagnostic UI Elements
   const diagnosticResultsEl = document.getElementById("diagnostic-results");
@@ -294,6 +297,66 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- NEW: Sound and Clipboard Functions ---
+
+  /**
+   * @description Plays the selected notification sound at the selected volume.
+   */
+  function playTestSound() {
+    const soundFile = notificationSoundInput.value;
+    const volume = parseFloat(volumeInput.value);
+
+    if (soundFile && soundFile !== "none") {
+      try {
+        const soundUrl = chrome.runtime.getURL(`sounds/${soundFile}`);
+        const audio = new Audio(soundUrl);
+        audio.volume = isNaN(volume) ? 0.5 : volume;
+        audio.play().catch(e => console.warn(`Could not play sound: ${e.message}`));
+      } catch (e) {
+        console.error("Error playing test sound.", e);
+      }
+    }
+  }
+
+  /**
+   * @description Copies the Apps Script code from the <pre> block to the clipboard.
+   */
+  function copyScriptToClipboard() {
+    if (!appsScriptCodeEl) return;
+
+    const code = appsScriptCodeEl.innerText;
+    
+    // Use a temporary textarea to securely copy to clipboard
+    const textArea = document.createElement("textarea");
+    textArea.value = code;
+    textArea.style.position = "fixed";  // Avoid scrolling to bottom
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        copyScriptButton.textContent = "Copied!";
+        setTimeout(() => {
+          copyScriptButton.innerHTML = `<svg aria-hidden="true"><use href="#icon-copy"></use></svg> Copy Script`;
+        }, 2000);
+      } else {
+        copyScriptButton.textContent = "Failed to copy";
+      }
+    } catch (err) {
+      console.error('Failed to copy script: ', err);
+      copyScriptButton.textContent = "Failed to copy";
+    }
+
+    document.body.removeChild(textArea);
+  }
+
+
   // --- Initial Setup & Event Listeners ---
   
   handlePageLoadRouting(); // Show the correct page on load
@@ -303,6 +366,14 @@ document.addEventListener("DOMContentLoaded", () => {
   testConnectionButton.addEventListener("click", runDiagnostics);
   saveUrlButton.addEventListener("click", quickSaveUrl);
   
+  // Add listeners for new buttons
+  if (testSoundButton) {
+    testSoundButton.addEventListener("click", playTestSound);
+  }
+  if (copyScriptButton) {
+    copyScriptButton.addEventListener("click", copyScriptToClipboard);
+  }
+
   volumeInput.addEventListener("input", () => {
     volumeDisplay.textContent = `${Math.round(volumeInput.value * 100)}%`;
   });

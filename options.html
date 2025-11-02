@@ -140,6 +140,11 @@
     }
 
     /* --- Page-Specific & Re-usable Styles --- */
+    .page-logo {
+      width: 140px;
+      display: block;
+      margin: 0 auto 15px;
+    }
     h1 {
       margin: 0 0 20px 0;
       font-size: 24px;
@@ -323,7 +328,7 @@
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
-      border-color: var(--wurk-primary);
+      border-color: var(--work-log-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
@@ -392,7 +397,7 @@
       color: var(--wurk-text-dark);
     }
     .working-hours-group input[type="time"]:focus {
-      border-color: var(--wurk-primary);
+      border-color: var(--work-log-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
@@ -659,15 +664,13 @@
   <!-- Icons for Sidebar -->
   <svg width="0" height="0" style="display: none;">
     <symbol id="icon-settings" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M11.49 3.17c.12-.22.04-.5-.18-.62l-1.92-1.04a.5.5 0 00-.58.05L7.04 3.22a.5.5 0 00-.04.58l1.04 1.92c.12.22.4.3.62.18L10.5 4.88c.22-.12.3-.4.18-.62zM8.51 3.17c-.12-.22-.4-.3-.62-.18L6.02 4.03a.5.5 0 00-.18.62l1.04 1.92c.12.22.4.3.62.18l1.92-1.04a.5.5 0 00.05-.58L8.51 3.17zM10 5.5A4.5 4.5 0 1010 14a4.5 4.5 0 000-8.5zM6.02 15.97c-.22.12-.3.4-.18.62l1.04 1.92a.5.5 0 00.58.05l1.77-1.66a.5.5 0 00-.58-.04l-1.92 1.04a.5.5 0 00-.62-.18zM13.98 15.97c.22.12.3.4.18.62l-1.04 1.92a.5.5 0 01-.58.05l-1.77-1.66a.5.5 0 01.58-.04l1.92 1.04a.5.5 0 01.62-.18zM3.17 8.51c-.22-.12-.3-.4-.18-.62l1.04-1.92a.5.5 0 01.58-.05l1.77 1.66a.5.5 0 01-.58.04L4.03 6.02a.5.5 0 01-.62.18zM16.83 8.51c.22-.12.3-.4.18-.62l-1.04-1.92a.5.5 0 00-.58-.05l-1.77 1.66a.5.5 0 00.58.04l1.92-1.04a.5.5 0 00.62.18z" clip-rule="evenodd" />
-      <path d="M10 16a6 6 0 100-12 6 6 0 000 12zM8 10a2 2 0 114 0 2 2 0 01-4 0z" />
+      <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v2a1 1 0 01-1 1h-.5a1 1 0 00-1 .75a1.5 1.5 0 01-3 0 1 1 0 00-1-.75H6a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5zM4 11a1 1 0 011-1h10a1 1 0 011 1v2a1 1 0 01-1 1h-1.5a1 1 0 00-1 .75a1.5 1.5 0 01-3 0A1 1 0 008.5 14H7a1 1 0 01-1-1v-2z" />
     </symbol>
     <symbol id="icon-about" viewBox="0 0 20 20" fill="currentColor">
       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
     </symbol>
     <symbol id="icon-setup" viewBox="0 0 20 20" fill="currentColor">
-      <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v2a1 1 0 01-1 1h-.5a1 1 0 00-1 .75a1.5 1.5 0 01-3 0 1 1 0 00-1-.75H6a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-      <path d="M4 11a1 1 0 011-1h10a1 1 0 011 1v2a1 1 0 01-1 1h-1.5a1 1 0 00-1 .75a1.5 1.5 0 01-3 0A1 1 0 008.5 14H7a1 1 0 01-1-1v-2z" />
+       <path fill-rule="evenodd" d="M11.49 3.17c.12-.22.04-.5-.18-.62l-1.92-1.04a.5.5 0 00-.58.05L7.04 3.22a.5.5 0 00-.04.58l1.04 1.92c.12.22.4.3.62.18L10.5 4.88c.22-.12.3-.4.18-.62zM8.51 3.17c-.12-.22-.4-.3-.62-.18L6.02 4.03a.5.5 0 00-.18.62l1.04 1.92c.12.22.4.3.62.18l1.92-1.04a.5.5 0 00.05-.58L8.51 3.17zM10 5.5A4.5 4.5 0 1010 14a4.5 4.5 0 000-8.5zM6.02 15.97c-.22.12-.3.4-.18.62l1.04 1.92a.5.5 0 00.58.05l1.77-1.66a.5.5 0 00-.58-.04l-1.92 1.04a.5.5 0 00-.62-.18zM13.98 15.97c.22.12.3.4.18.62l-1.04 1.92a.5.5 0 01-.58.05l-1.77-1.66a.5.5 0 01.58-.04l1.92 1.04a.5.5 0 01.62-.18zM3.17 8.51c-.22-.12-.3-.4-.18-.62l1.04-1.92a.5.5 0 01.58-.05l1.77 1.66a.5.5 0 01-.58.04L4.03 6.02a.5.5 0 01-.62.18zM16.83 8.51c.22-.12.3-.4.18-.62l-1.04-1.92a.5.5 0 00-.58-.05l-1.77 1.66a.5.5 0 00.58.04l1.92-1.04a.5.5 0 00.62.18z" clip-rule="evenodd" />
     </symbol>
     <symbol id="icon-faq" viewBox="0 0 20 20" fill="currentColor">
       <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-1 1v1a1 1 0 102 0V8a1 1 0 00-1-1zm0 4a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
@@ -955,7 +958,7 @@
     <!-- Page: About -->
     <div id="page-about" class="page-content">
       <div class="container">
-        <!-- This page intentionally does not have a logo inside, only the sidebar -->
+        <img src="images/wurk-wurk-logo-dark.png" alt="WurkWurk Logo" class="page-logo">
         <h1>Stop Guessing. Start Seeing.</h1>
         <p>WurkWurk is a mindful work logger that helps you understand where your time *really* goes. It's not another complex tracker. It's a simple extension that sends your activity logs to a **100% private Google Sheet that you own.**</p>
     
@@ -1360,7 +1363,7 @@ function doPost(e) {
         <h2>Privacy & Data Security</h2>
         <div class="faq-item">
           <strong>Q: Who can see my work logs?</strong>
-          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of WurkWurk) never see, store, analyze, or have access to your log data. Period.</p>
+          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of Wurk Wurk) never see, store, analyze, or have access to your log data. Period.</p>
         </div>
         <div class="faq-item">
           <strong>Q: How do I know my data is secure?</strong>
