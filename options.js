@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const navLinks = document.querySelectorAll(".nav-link");
   const pages = document.querySelectorAll(".page-content");
   const dashboardLink = document.getElementById("nav-dashboard-link");
+  const privacyLink = document.querySelector('.nav-link[data-page="privacy"]'); // Get privacy link
 
   /**
    * @description Handles navigation between pages within the options.html file.
@@ -44,8 +45,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Add click listeners to nav links
+  // Add click listeners to nav links (excluding privacy)
   navLinks.forEach(link => {
+    if (link.dataset.page === 'privacy') return; // Skip privacy link
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const pageName = link.getAttribute("data-page");
@@ -56,6 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+  
+  // Add separate listener for Privacy link to open in new tab
+  if (privacyLink) {
+    privacyLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      chrome.tabs.create({ url: chrome.runtime.getURL("privacy_policy.html") });
+    });
+  }
 
   // Open dashboard in a new tab
   dashboardLink.addEventListener("click", (e) => {
@@ -82,6 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.hash = pageName;
       }
     }
+
+    // Don't show privacy page inline
+    if (pageName === 'privacy') {
+      pageName = 'settings';
+      window.location.hash = 'settings';
+    }
     showPage(pageName);
   }
 
@@ -104,8 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const volumeDisplay = document.getElementById("volume-display");
   const saveUrlButton = document.getElementById("save-url-btn");
   const testSoundButton = document.getElementById("test-sound"); // Added
-  const copyScriptButton = document.getElementById("copy-script-btn"); // Added
-  const appsScriptCodeEl = document.getElementById("apps-script-code"); // Added
+  const openScriptPageButton = document.getElementById("open-script-page-btn"); // Renamed
 
   // Diagnostic UI Elements
   const diagnosticResultsEl = document.getElementById("diagnostic-results");
@@ -318,45 +333,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  /**
-   * @description Copies the Apps Script code from the <pre> block to the clipboard.
-   */
-  function copyScriptToClipboard() {
-    if (!appsScriptCodeEl) return;
-
-    const code = appsScriptCodeEl.innerText;
-    
-    // Use a temporary textarea to securely copy to clipboard
-    const textArea = document.createElement("textarea");
-    textArea.value = code;
-    textArea.style.position = "fixed";  // Avoid scrolling to bottom
-    textArea.style.top = "0";
-    textArea.style.left = "0";
-    textArea.style.opacity = "0";
-    document.body.appendChild(textArea);
-    
-    textArea.focus();
-    textArea.select();
-
-    try {
-      const successful = document.execCommand('copy');
-      if (successful) {
-        copyScriptButton.textContent = "Copied!";
-        setTimeout(() => {
-          copyScriptButton.innerHTML = `<svg aria-hidden="true"><use href="#icon-copy"></use></svg> Copy Script`;
-        }, 2000);
-      } else {
-        copyScriptButton.textContent = "Failed to copy";
-      }
-    } catch (err) {
-      console.error('Failed to copy script: ', err);
-      copyScriptButton.textContent = "Failed to copy";
-    }
-
-    document.body.removeChild(textArea);
-  }
-
-
   // --- Initial Setup & Event Listeners ---
   
   handlePageLoadRouting(); // Show the correct page on load
@@ -370,8 +346,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (testSoundButton) {
     testSoundButton.addEventListener("click", playTestSound);
   }
-  if (copyScriptButton) {
-    copyScriptButton.addEventListener("click", copyScriptToClipboard);
+  
+  // Renamed button listener
+  if (openScriptPageButton) {
+    openScriptPageButton.addEventListener("click", () => {
+      chrome.tabs.create({ url: chrome.runtime.getURL("app_script_viewer.html") });
+    });
   }
 
   volumeInput.addEventListener("input", () => {
@@ -381,7 +361,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle hash changes if the user uses browser back/forward
   window.addEventListener("hashchange", () => {
     const pageName = window.location.hash.substring(1);
-    showPage(pageName || "settings");
+    if (pageName !== 'privacy') {
+      showPage(pageName || "settings");
+    }
   });
 });
 
