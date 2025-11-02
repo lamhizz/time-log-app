@@ -1,12 +1,91 @@
 /**
  * @file options.js
  * @description This script manages the extension's options page (options.html).
- * It handles saving and restoring user settings to and from chrome.storage.sync,
- * and provides a connection test for the Google Apps Script URL.
+ * It handles page navigation, saving/restoring settings, and connection diagnostics.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // --- DOM Element Selections ---
+  
+  // --- Page Navigation ---
+  const navLinks = document.querySelectorAll(".nav-link");
+  const pages = document.querySelectorAll(".page-content");
+  const dashboardLink = document.getElementById("nav-dashboard-link");
+
+  /**
+   * @description Handles navigation between pages within the options.html file.
+   * @param {string} pageName - The name of the page to show (e.g., "settings", "about").
+   */
+  function showPage(pageName) {
+    // Hide all pages
+    pages.forEach(page => {
+      page.classList.remove("active");
+    });
+    // Deactivate all nav links
+    navLinks.forEach(link => {
+      link.classList.remove("active");
+    });
+
+    // Show the target page
+    const targetPage = document.getElementById(`page-${pageName}`);
+    const targetLink = document.querySelector(`.nav-link[data-page="${pageName}"]`);
+    
+    if (targetPage) {
+      targetPage.classList.add("active");
+    } else {
+      // Default to settings if page not found
+      document.getElementById("page-settings").classList.add("active");
+    }
+
+    if (targetLink) {
+      targetLink.classList.add("active");
+    } else {
+      // Default to settings link
+      document.querySelector('.nav-link[data-page="settings"]').classList.add("active");
+    }
+  }
+
+  // Add click listeners to nav links
+  navLinks.forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const pageName = link.getAttribute("data-page");
+      if (pageName) {
+        // Update URL hash for simple routing
+        window.location.hash = pageName;
+        showPage(pageName);
+      }
+    });
+  });
+
+  // Open dashboard in a new tab
+  dashboardLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
+  });
+
+  /**
+   * @description Checks the URL hash or query parameters to show the correct page on load.
+   */
+  function handlePageLoadRouting() {
+    let pageName = "settings"; // Default page
+    
+    // Check hash (e.g., #about)
+    if (window.location.hash) {
+      pageName = window.location.hash.substring(1);
+    } else {
+      // Check query param (e.g., ?page=about)
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageQuery = urlParams.get('page');
+      if (pageQuery) {
+        pageName = pageQuery;
+        // Add to hash so reloads work as expected
+        window.location.hash = pageName;
+      }
+    }
+    showPage(pageName);
+  }
+
+  // --- Settings Form ---
   const saveButton = document.getElementById("save");
   const statusEl = document.getElementById("status");
   const intervalInput = document.getElementById("log-interval");
@@ -21,15 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const testConnectionButton = document.getElementById("test-connection");
   const notificationSoundInput = document.getElementById("notification-sound");
   const pomodoroEnabledInput = document.getElementById("pomodoro-enabled");
-
-  // --- NEW: Volume Slider Elements ---
   const volumeInput = document.getElementById("notification-volume");
   const volumeDisplay = document.getElementById("volume-display");
-
-  // --- NEW: Quick Save URL Button ---
   const saveUrlButton = document.getElementById("save-url-btn");
 
-  // --- NEW: Diagnostic UI Elements ---
+  // Diagnostic UI Elements
   const diagnosticResultsEl = document.getElementById("diagnostic-results");
   const diagStep1 = document.getElementById("diag-step-1-url");
   const diagStep2 = document.getElementById("diag-step-2-connection");
@@ -37,18 +112,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const diagStep4 = document.getElementById("diag-step-4-headers");
   const diagnosticSummaryEl = document.getElementById("diagnostic-summary");
 
-  // Links
-  const aboutLink = document.getElementById("about-link");
-  const setupLink = document.getElementById("setup-link");
-  const dashboardLink = document.getElementById("dashboard-link");
-
   /**
-   * @description Gathers all values from the form inputs and saves them to `chrome.storage.sync`.
-   * After saving, it displays a confirmation message and notifies the background script
-   * that settings have been updated so it can recreate the alarm.
+   * @description Gathers all values from the form and saves them to chrome.storage.sync.
    */
   function saveOptions() {
-    // Collect working days from checkboxes
     const workingDays = Array.from(daysInputs)
       .filter(input => input.checked)
       .map(input => input.dataset.day);
@@ -60,7 +127,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Prepare settings object
     const settings = {
       logInterval: logInterval,
       logTags: tagsInput.value,
@@ -72,28 +138,23 @@ document.addEventListener("DOMContentLoaded", () => {
       webAppUrl: webAppUrlInput.value.trim(),
       isDomainLogEnabled: logDomainInput.checked,
       notificationSound: notificationSoundInput.value,
-      notificationVolume: parseFloat(volumeInput.value), // Save volume
+      notificationVolume: parseFloat(volumeInput.value),
       isPomodoroEnabled: pomodoroEnabledInput.checked
     };
 
-    // Save to Chrome's sync storage
     chrome.storage.sync.set(settings, () => {
-      // Display "Settings saved!" message temporarily
       statusEl.textContent = "Settings saved!";
       statusEl.style.color = "var(--work-log-success)";
       setTimeout(() => {
         statusEl.textContent = "";
       }, 1500);
 
-      // Notify the background script to update its alarms
       chrome.runtime.sendMessage({ action: "settingsUpdated" });
     });
   }
 
   /**
-   * @description Restores the user's saved settings from `chrome.storage.sync`
-   * and populates the form fields with those values. It uses default values
-   * if no settings are found.
+   * @description Restores saved settings from chrome.storage.sync.
    */
   function restoreOptions() {
     const defaults = {
@@ -107,12 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
       webAppUrl: "",
       isDomainLogEnabled: false,
       notificationSound: "ClickUp.wav",
-      notificationVolume: 0.5, // Default volume
+      notificationVolume: 0.5,
       isPomodoroEnabled: true
     };
 
     chrome.storage.sync.get(defaults, (items) => {
-      // Populate input fields with stored values
       intervalInput.value = items.logInterval;
       tagsInput.value = items.logTags;
       debugInput.checked = items.isDebugMode;
@@ -121,24 +181,20 @@ document.addEventListener("DOMContentLoaded", () => {
       logDomainInput.checked = items.isDomainLogEnabled;
       notificationSoundInput.value = items.notificationSound;
       pomodoroEnabledInput.checked = items.isPomodoroEnabled;
-
-      // Set volume slider and display
       volumeInput.value = items.notificationVolume;
       volumeDisplay.textContent = `${Math.round(items.notificationVolume * 100)}%`;
 
-      // Set checked status for working days
       daysInputs.forEach(input => {
         input.checked = items.workingDays.includes(input.dataset.day);
       });
 
-      // Format and set time inputs
       startHourInput.value = items.workStartHour.toString().padStart(2, '0') + ':00';
       endHourInput.value = items.workEndHour.toString().padStart(2, '0') + ':00';
     });
   }
   
   /**
-   * @description Resets the diagnostic UI to its initial "Pending..." state.
+   * @description Resets the diagnostic UI to its "Pending..." state.
    */
   function resetDiagnosticsUI() {
     diagnosticResultsEl.style.display = "block";
@@ -157,11 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * @description Updates a single step in the diagnostic UI with a success or error status.
-   * @param {HTMLElement} el - The DOM element (li) for the step.
+   * @description Updates a single step in the diagnostic UI.
+   * @param {HTMLElement} el - The <li> element for the step.
    * @param {object} result - The result object for that step.
-   * @param {boolean} result.success - Whether the check was successful.
-   * @param {string} result.message - The message to display.
    */
   function updateDiagStep(el, result) {
     const icon = el.querySelector("svg use");
@@ -185,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /**
-   * @description Initiates the diagnostic process when the "Test Connection" button is clicked.
+   * @description Runs the connection diagnostic test.
    */
   function runDiagnostics() {
     const url = webAppUrlInput.value.trim();
@@ -194,7 +248,6 @@ document.addEventListener("DOMContentLoaded", () => {
     testConnectionButton.disabled = true;
     saveUrlButton.disabled = true;
 
-    // Send message to background script to perform the diagnostics
     chrome.runtime.sendMessage({ action: "runDiagnostics", url: url }, (report) => {
       if (chrome.runtime.lastError) {
         diagnosticSummaryEl.textContent = `Critical Error: ${chrome.runtime.lastError.message}`;
@@ -204,13 +257,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Update UI based on the report
       updateDiagStep(diagStep1, report.checks.url);
       updateDiagStep(diagStep2, report.checks.connection);
       updateDiagStep(diagStep3, report.checks.version);
       updateDiagStep(diagStep4, report.checks.headers);
 
-      // Display the final summary message
       if (report.overallStatus === "success") {
         diagnosticSummaryEl.textContent = "Success! Your setup is complete and ready to log.";
         diagnosticSummaryEl.className = "success";
@@ -219,8 +270,8 @@ document.addEventListener("DOMContentLoaded", () => {
         diagnosticSummaryEl.className = "error";
       }
 
-      testConnectionButton.disabled = false; // Re-enable button
-      saveUrlButton.disabled = false; // Re-enable button
+      testConnectionButton.disabled = false;
+      saveUrlButton.disabled = false;
     });
   }
 
@@ -230,12 +281,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function quickSaveUrl() {
     const url = webAppUrlInput.value.trim();
     chrome.storage.sync.set({ webAppUrl: url }, () => {
-      // Notify user of save
       diagnosticSummaryEl.textContent = "URL saved!";
-      diagnosticSummaryEl.className = "success"; // Use success style for feedback
-      diagnosticResultsEl.style.display = "block"; // Ensure it's visible
+      diagnosticSummaryEl.className = "success";
+      diagnosticResultsEl.style.display = "block";
       
-      // Clear the message after a moment
       setTimeout(() => {
         if (diagnosticSummaryEl.textContent === "URL saved!") {
           diagnosticSummaryEl.textContent = "";
@@ -246,32 +295,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Initial Setup & Event Listeners ---
+  
+  handlePageLoadRouting(); // Show the correct page on load
+  restoreOptions(); // Load settings into the form
+  
+  saveButton.addEventListener("click", saveOptions);
+  testConnectionButton.addEventListener("click", runDiagnostics);
+  saveUrlButton.addEventListener("click", quickSaveUrl);
+  
+  volumeInput.addEventListener("input", () => {
+    volumeDisplay.textContent = `${Math.round(volumeInput.value * 100)}%`;
+  });
 
-  /**
-   * @description Initializes the options page by restoring settings and setting up event listeners.
-   */
-  function initialize() {
-    restoreOptions();
-    saveButton.addEventListener("click", saveOptions);
-    testConnectionButton.addEventListener("click", runDiagnostics);
-    saveUrlButton.addEventListener("click", quickSaveUrl); // Add listener for quick save
-
-    // Add listener for volume slider
-    volumeInput.addEventListener("input", () => {
-      volumeDisplay.textContent = `${Math.round(volumeInput.value * 100)}%`;
-    });
-    
-    // Link listeners
-    dashboardLink.addEventListener("click", () => {
-      chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
-    });
-    aboutLink.addEventListener("click", () => {
-      chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
-    });
-    setupLink.addEventListener("click", () => {
-      chrome.tabs.create({ url: chrome.runtime.getURL("setup.html") });
-    });
-  }
-
-  initialize();
+  // Handle hash changes if the user uses browser back/forward
+  window.addEventListener("hashchange", () => {
+    const pageName = window.location.hash.substring(1);
+    showPage(pageName || "settings");
+  });
 });
+

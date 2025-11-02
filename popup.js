@@ -99,20 +99,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Open the options page
-  settingsLink.addEventListener("click", () => chrome.runtime.openOptionsPage());
+  // Open the options page (now routed)
+  settingsLink.addEventListener("click", () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL("options.html?page=settings") });
+  });
   
-  // --- NEW: Footer link listeners ---
+  // --- Footer link listeners ---
   dashboardLink.addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
   });
 
   aboutLink.addEventListener("click", () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL("about.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("options.html?page=about") });
   });
   
   setupLink.addEventListener("click", () => {
-    chrome.tabs.create({ url: chrome.runtime.getURL("setup.html") });
+    chrome.tabs.create({ url: chrome.runtime.getURL("options.html?page=setup") });
   });
 
   // Toggle the visibility of the debug information section
@@ -362,4 +364,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initialize();
 });
-

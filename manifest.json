@@ -44,12 +44,9 @@
       "resources": [ 
         "sounds/*.wav",
         "images/wurk-wurk-logo.png",
-        "images/coffee-button.png",
-        "about.html",
-        "setup.html"
+        "images/coffee-button.png"
       ],
       "matches": [ "<all_urls>" ]
     }
   ]
 }
-
