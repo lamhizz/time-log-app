@@ -1,94 +1,4 @@
-WurkWurk - Detailed Setup Guide
-
-This guide provides step-by-step instructions to connect the WurkWurk Chrome extension to your own private Google Sheet.
-
-Step 1: Create Your Google Sheet
-
-Go to sheets.google.com.
-
-Click on Blank to create a new spreadsheet.
-
-Give the spreadsheet a name you'll remember, like "My WurkWurk Logs."
-
-Step 2: Add Headers to the Sheet
-
-This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.
-
-In cell A1, type: Date
-
-In cell B1, type: Time
-
-In cell C1, type: Log Entry
-
-In cell D1, type: Tag
-
-In cell E1, type: Drifted
-
-In cell F1, type: Mins Since Last
-
-In cell G1, type: FullTimestamp
-
-In cell H1, type: Domain
-
-In cell I1, type: Reactive
-
-In cell J1, type: Keywords
-
-Your sheet's first row should look like this:
-
-A
-
-B
-
-C
-
-D
-
-E
-
-F
-
-G
-
-H
-
-I
-
-J
-
-Date
-
-Time
-
-Log Entry
-
-Tag
-
-Drifted
-
-Mins Since Last
-
-FullTimestamp
-
-Domain
-
-Reactive
-
-Keywords
-
-Step 3: Create the Google Apps Script
-
-This script will act as the secure bridge between the Chrome extension and your Google Sheet.
-
-In your Google Sheet, click Extensions > Apps Script.
-
-A new browser tab will open with the Apps Script editor.
-
-Step 4: Paste the Script Code
-
-Delete any placeholder code in the Code.gs file (e.g., function myFunction() { ... }).
-
-Copy the entire script below and paste it into the empty Code.gs editor.
+Here is the Google Apps Script code to paste into your Code.gs file.
 
 /**
  * @file Google Apps Script for WurkWurk Chrome Extension (v3.1 with Connection Doctor)
@@ -129,8 +39,10 @@ const SHEET_NAME = "Sheet1";
  */
 function doGet(e) {
   try {
+    const action = e.parameter.action;
+
     // Action: Basic Test Connection
-    if (e.parameter.action === "test") {
+    if (action === "test") {
       Logger.log("WurkWurk: Received successful test ping.");
       return ContentService.createTextOutput(
         JSON.stringify({
@@ -141,7 +53,7 @@ function doGet(e) {
     }
 
     // Action: Advanced Connection Diagnostics
-    if (e.parameter.action === "diagnose") {
+    if (action === "diagnose") {
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
       if (!sheet) {
         throw new Error(`Sheet not found: ${SHEET_NAME}`);
@@ -160,7 +72,7 @@ function doGet(e) {
     }
 
     // Action: Get Weekly Data for Dashboard
-    if (e.parameter.action === "getWeeklyData") {
+    if (action === "getWeeklyData") {
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
       if (!sheet) {
         throw new Error(`Sheet not found: ${SHEET_NAME}`);
@@ -241,6 +153,11 @@ function doGet(e) {
         JSON.stringify({ status: "success", data: responseData })
       ).setMimeType(ContentService.MimeType.JSON);
     }
+    
+    // Fallback for unknown GET requests (like a redirect)
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: "Invalid GET request. Use POST to log data." })
+    ).setMimeType(ContentService.MimeType.JSON);
 
   } catch (err) {
     Logger.log("WurkWurk: doGet Error - " + err.message);
@@ -248,10 +165,6 @@ function doGet(e) {
       JSON.stringify({ status: "error", message: err.message })
     ).setMimeType(ContentService.MimeType.JSON);
   }
-  
-  return ContentService.createTextOutput(
-    JSON.stringify({ status: "error", message: "Invalid request. Use POST to log data." })
-  ).setMimeType(ContentService.MimeType.JSON);
 }
 
 
@@ -264,6 +177,33 @@ function doPost(e) {
   let sheet;
   try {
     const data = JSON.parse(e.postData.contents);
+    
+    // --- [FIX] Handle POST-based diagnostic actions ---
+    if (data.action === "test") {
+      Logger.log("WurkWurk: Received successful test POST ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({ status: "success", message: "Connection successful!" })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === "diagnose") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      Logger.log("WurkWurk: Received successful diagnose POST ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          version: SCRIPT_VERSION,
+          headers: headers
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+    // --- [END FIX] ---
+
+    // Original logging logic starts here
     const logEntry = data.log || "";
     const tag = data.tag || "";
     const drifted = data.drifted ? "Yes" : "No";
@@ -311,66 +251,3 @@ function doPost(e) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
 }
-
-
-IMPORTANT: Find the line const TIME_ZONE = "Europe/Vilnius"; and change the time zone to your own if it's incorrect (e.g., "America/New_York").
-
-Save the script by clicking the floppy disk icon or pressing Ctrl+S.
-
-Step 5: Deploy the Script as a Web App
-
-This step creates the secret URL the extension will use to send data to your sheet.
-
-***IF YOU ARE UPDATING FROM A PREVIOUS VERSION, YOU MUST RE-DEPLOY TO APPLY THE CHANGES.***
-
-In the Apps Script editor, click the blue Deploy button in the top-right corner.
-
-Select New deployment. (If you are re-deploying, select 'Manage Deployments', choose your deployment, and click the pencil icon to edit it. Set the version to 'New version'.)
-
-Click the gear icon (⚙️) next to "Select type" and choose Web app.
-
-In the dialog box, enter the following settings:
-
-Description: WurkWurk Log Receiver (Optional)
-
-Execute as: Me (This is very important).
-
-Who has access: Anyone (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).
-
-Click Deploy.
-
-Step 6: Authorize the Script
-
-Google will prompt you to authorize the script. Click Authorize access.
-
-Choose your Google account.
-
-You will likely see a "Google hasn't verified this app" warning. This is normal for personal scripts. Click Advanced, then click "Go to [Your Script Name] (unsafe)".
-
-Click Allow to grant the script permission to edit your spreadsheets.
-
-Step 7: Copy the Web App URL
-
-After deployment is complete, a dialog box will appear with the Web app URL.
-
-COPY THIS URL. You will need it for the final step.
-
-Step 8: Configure the Extension
-
-Go to your Chrome extensions page by navigating to chrome://extensions.
-
-Find the "WurkWurk" extension.
-
-Right-click the extension's icon in your Chrome toolbar and click Options.
-
-On the settings page:
-
-Paste the Web app URL you copied into the first field, "Google Apps Script URL."
-
-Click the Test button next to it. You should see a green "Success!" message. If not, double-check your script deployment and URL.
-
-Configure your other preferences, such as the log interval and notification sound.
-
-Scroll to the bottom and click Save Settings.
-
-You are all set! The extension is now fully configured and will start prompting you at your chosen interval during your working hours.

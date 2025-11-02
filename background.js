@@ -148,18 +148,6 @@ async function runDiagnostics(url) {
       overallStatus: "error"
     };
   }
-  let diagnosticUrl;
-  try {
-    diagnosticUrl = new URL(url);
-    diagnosticUrl.searchParams.set("action", "diagnose");
-  } catch (e) {
-    return {
-      checks: {
-        url: { success: false, message: "Invalid URL format." }
-      },
-      overallStatus: "error"
-    };
-  }
 
   const report = {
     checks: {
@@ -168,12 +156,14 @@ async function runDiagnostics(url) {
     overallStatus: "pending"
   };
 
-  // 2. Connection & Diagnostics Check
+  // 2. Connection & Diagnostics Check (MODIFIED TO USE POST)
   try {
-    const response = await fetch(diagnosticUrl.toString(), {
-      method: "GET",
+    const response = await fetch(url, { // No query params needed on URL
+      method: "POST",
       cache: "no-cache",
-      redirect: "follow"
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "diagnose" }) // Send action in POST body
     });
 
     if (!response.ok) {
@@ -219,12 +209,19 @@ async function runDiagnostics(url) {
     report.overallStatus = allChecksPassed ? "success" : "error";
 
   } catch (error) {
-    report.checks.connection = { success: false, message: error.message };
+    let errorMessage = error.message;
+    if (error.message.includes("Failed to fetch")) {
+        errorMessage = "Fetch failed. Check URL, network, or CORS. Is the script deployed correctly?";
+    } else if (error.message.includes("Unexpected token")) {
+        errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
+    }
+    report.checks.connection = { success: false, message: errorMessage };
     report.overallStatus = "error";
   }
 
   return report;
 }
+
 
 /**
  * @description Clears any existing alarms and creates a new periodic "workLogAlarm".
@@ -499,19 +496,14 @@ async function testWebAppConnection(url) {
     return { status: "error", message: "Invalid URL. Must start with http:// or https://" };
   }
   
-  let testUrl;
+  // MODIFIED TO USE POST
   try {
-    testUrl = new URL(url);
-    testUrl.searchParams.set("action", "test");
-  } catch (e) {
-    return { status: "error", message: "Invalid URL format." };
-  }
-
-  try {
-    const response = await fetch(testUrl.toString(), {
-      method: "GET",
+    const response = await fetch(url, {
+      method: "POST",
       cache: "no-cache",
-      redirect: "follow"
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "test" }) // Send action in POST body
     });
 
     if (!response.ok) {
@@ -712,14 +704,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Case 10: Options page requests a connection test
     case "testConnection":
-      testWebAppConnection(request.url)
+      testWebAppConnection(request.url) // This function is now POST-based
         .then(response => sendResponse(response))
         .catch(error => sendResponse({ status: "error", message: error.message }));
       return true;
 
     // --- NEW: Case 11: Options page requests diagnostics ---
     case "runDiagnostics":
-      runDiagnostics(request.url)
+      runDiagnostics(request.url) // This function is now POST-based
         .then(response => sendResponse(response))
         .catch(error => sendResponse({ status: "error", message: error.message }));
       return true;
