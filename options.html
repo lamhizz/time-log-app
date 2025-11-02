@@ -206,6 +206,20 @@
       background-color: var(--wurk-primary);
       color: white;
     }
+    .button-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .button-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .button-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
     pre {
       background-color: #F8F9FA;
       border: 1px solid #EAECEF;
@@ -318,7 +332,7 @@
       color: var(--wurk-text-light);
       margin: 5px 0 0 0;
     }
-    .form-group-checkbox {
+    .form-group-checkbox { /* Old checkbox style, retained for fallbacks */
       display: flex;
       align-items: center;
       gap: 8px;
@@ -378,7 +392,7 @@
       color: var(--wurk-text-dark);
     }
     .working-hours-group input[type="time"]:focus {
-      border-color: var(--work-log-primary);
+      border-color: var(--wurk-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
@@ -523,6 +537,121 @@
       font-weight: 500;
       width: 40px;
     }
+    .volume-group #test-sound {
+      flex-shrink: 0;
+      background-color: var(--wurk-secondary);
+      border: 1px solid var(--work-log-border);
+      color: var(--wurk-text-dark);
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--work-log-radius);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .volume-group #test-sound:hover {
+      background-color: var(--wurk-secondary-hover);
+    }
+    .volume-group #test-sound svg {
+      width: 14px;
+      height: 14px;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    /* --- Toggle Switch Styles --- */
+    .toggle-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .toggle-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background-color: #fafafa;
+      padding: 12px;
+      border-radius: var(--work-log-radius);
+      border: 1px solid var(--work-log-border);
+    }
+    .toggle-icon {
+      flex-shrink: 0;
+      color: var(--wurk-primary);
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+    }
+    .toggle-label-group {
+      flex-grow: 1;
+      margin-right: 12px;
+    }
+    .toggle-label-group label {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--wurk-text-dark);
+      display: block;
+      margin-bottom: 2px;
+    }
+    .toggle-label-group p {
+      font-size: 12px;
+      color: var(--wurk-text-light);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .toggle-switch-container {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .toggle-switch-container input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .toggle-slider {
+      background-color: var(--wurk-primary);
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(20px);
+    }
+
+    /* --- Setup Page Styles --- */
+    .setup-image {
+      width: 100%;
+      border-radius: var(--work-log-radius);
+      margin: 10px 0 20px;
+      border: 1px solid var(--work-log-border);
+      background-color: #f9f9f9;
+    }
+    #copy-script-btn {
+      margin-bottom: 12px;
+    }
+
   </style>
 </head>
 <body>
@@ -550,6 +679,24 @@
         <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
         <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
     </symbol>
+    <!-- New Icons -->
+    <symbol id="icon-play-sound" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M6.3 2.841A1.5 1.5 0 004 4.11v11.78a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+    </symbol>
+    <symbol id="icon-copy" viewBox="0 0 20 20" fill="currentColor">
+      <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V16.5a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 017 16.5v-13z" />
+      <path d="M6 3.5A1.5 1.5 0 004.5 5v11.5A1.5 1.5 0 006 18h7a1.5 1.5 0 001.5-1.5v-3a.5.5 0 01-1 0v3a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5V5a.5.5 0 01.5-.5h3a.5.5 0 010 1H6z" />
+    </symbol>
+    <symbol id="icon-domain" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 011.06 0l1.25 1.25a.75.75 0 010 1.06l-1.25 1.25a.75.75 0 01-1.06 0l-1.25-1.25a.75.75 0 010-1.06l1.25-1.25zM11.28 8.72a.75.75 0 011.06 0l1.25 1.25a.75.75 0 010 1.06l-1.25 1.25a.75.75 0 01-1.06 0l-1.25-1.25a.75.75 0 010-1.06l1.25-1.25z" clip-rule="evenodd" />
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM2 10a8 8 0 1116 0 8 8 0 01-16 0z" clip-rule="evenodd" />
+    </symbol>
+    <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.5 7.42V10a.5.5 0 00.5.5h3a.5.5 0 110 1h-3A1.5 1.5 0 017 10V7.42a.5.5 0 01.95-.219l.05.088zM10 4.5a.5.5 0 01.5.5v1a.5.5 0 01-1 0v-1a.5.5 0 01.5-.5z" clip-rule="evenodd" />
+    </symbol>
+    <symbol id="icon-debug" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M6.345 3.125a.75.75 0 01.628-.151l6.052 2.161a.75.75 0 01.52.708v8.314a.75.75 0 01-.52.708l-6.052 2.161a.75.75 0 01-.894-.105l-3.26-3.518a.75.75 0 01-.106-.893l2.16-6.052a.75.75 0 01.372-.628l3.05-1.84zM8.25 4.5a.75.75 0 01.75.75v1a.75.75 0 01-1.5 0v-1a.75.75 0 01.75-.75zm1.5 3a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75zm3-1.5a.75.75 0 01.75.75v5a.75.75 0 01-1.5 0v-5a.75.75 0 01.75-.75zM8.25 10.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75z" clip-rule="evenodd" />
+    </symbol>
   </svg>
 
   <!-- Icons for Diagnostic Tool -->
@@ -568,7 +715,7 @@
   <!-- Sidebar Navigation -->
   <nav class="sidebar-nav">
     <div> <!-- Added wrapper for menu items -->
-      <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="sidebar-logo">
+      <img src="images/wurk-wurk-logo-white.png" alt="WurkWurk Logo" class="sidebar-logo">
       <ul class="sidebar-menu">
         <li>
           <a href="#" id="nav-dashboard-link" title="Open the analytics dashboard.">
@@ -628,7 +775,7 @@
       <div class="container">
         <h1>General Settings</h1>
         
-        <!-- --- [QOL-50] Web App URL --- -->
+        <h2>Connection</h2>
         <div class="form-group">
           <label for="web-app-url">Google Apps Script URL</label>
           <div class="form-group-flex">
@@ -669,6 +816,7 @@
           <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the Apps Script code from the Setup Guide for this to work.</p>
         </div>
 
+        <h2>Prompt Behavior</h2>
         <div class="form-group">
           <label for="log-interval">Log Interval (in minutes)</label>
           <input type="number" id="log-interval" min="0" title="How often the popup should appear. Set to 0 to disable automatic popups. Default is 15.">
@@ -691,21 +839,14 @@
           <div class="volume-group">
             <input type="range" id="notification-volume" min="0" max="1" step="0.1" title="Adjust the notification sound volume.">
             <span id="volume-display">50%</span>
+            <button id="test-sound" title="Test the selected sound and volume">
+              <svg aria-hidden="true"><use href="#icon-play-sound"></use></svg>
+              Test
+            </button>
           </div>
         </div>
         
-        <div class="form-group">
-          <label for="log-tags">Log Tags</label>
-          <textarea id="log-tags" rows="5" title="Define your common tasks here, one per line. They will appear in the dropdown menu."></textarea>
-          <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
-        </div>
-        
-        <div class="form-group">
-          <label for="blocked-domains">"Do Not Disturb" Domains</label>
-          <textarea id="blocked-domains" rows="4" title="The automatic popup will be skipped on these websites. Manual logging (Ctrl+Shift+L) will still work."></textarea>
-          <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
-        </div>
-        
+        <h2>Scheduling</h2>
         <div class="form-group">
           <label>Active Working Days</label>
           <div class="working-days-group" title="The automatic popup will only appear on these selected days.">
@@ -749,21 +890,62 @@
           </div>
           <p class="description">Popup will only appear between these hours (24h format).</p>
         </div>
-        
-        <div class="form-group form-group-checkbox">
-          <input type="checkbox" id="log-domain" title="If checked, the website domain you are on (e.g., 'github.com') will be added to a 'Domain' column in your Google Sheet.">
-          <label for="log-domain">Log active website domain</label>
-        </div>
 
-        <div class="form-group form-group-checkbox">
-          <input type="checkbox" id="pomodoro-enabled" title="If checked, the Task Timer (Pomodoro) feature will be visible in the extension popup.">
-          <label for="pomodoro-enabled">Enable Task Timer (Pomodoro)</label>
+        <h2>Logging Details</h2>
+        <div class="form-group">
+          <label for="log-tags">Log Tags</label>
+          <textarea id="log-tags" rows="5" title="Define your common tasks here, one per line. They will appear in the dropdown menu."></textarea>
+          <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
         </div>
         
-        <div class="form-group form-group-checkbox">
-          <input type="checkbox" id="debug-mode" title="If checked, shows a 'Debug' link in the extension popup to help with troubleshooting.">
-          <label for="debug-mode">Enable Debug Mode</label>
+        <div class="form-group">
+          <label for="blocked-domains">"Do Not Disturb" Domains</label>
+          <textarea id="blocked-domains" rows="4" title="The automatic popup will be skipped on these websites. Manual logging (Ctrl+Shift+L) will still work."></textarea>
+          <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
         </div>
+        
+        <h2>Advanced Features</h2>
+        <div class="toggle-list">
+          <!-- Toggle 1: Log Domain -->
+          <div class="toggle-item">
+            <svg class="toggle-icon" aria-hidden="true"><use href="#icon-domain"></use></svg>
+            <div class="toggle-label-group">
+              <label for="log-domain">Log Active Website Domain</label>
+              <p>If enabled, the website domain you're on (e.g., "github.com") will be added to the 'Domain' column in your sheet.</p>
+            </div>
+            <label class="toggle-switch-container">
+              <input type="checkbox" id="log-domain">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Toggle 2: Pomodoro -->
+          <div class="toggle-item">
+            <svg class="toggle-icon" aria-hidden="true"><use href="#icon-timer"></use></svg>
+            <div class="toggle-label-group">
+              <label for="pomodoro-enabled">Enable Task Timer (Pomodoro)</label>
+              <p>Show the "Start Task" timer in the extension popup for active, timed logging of specific tasks.</p>
+            </div>
+            <label class="toggle-switch-container">
+              <input type="checkbox" id="pomodoro-enabled">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Toggle 3: Debug Mode -->
+          <div class="toggle-item">
+            <svg class="toggle-icon" aria-hidden="true"><use href="#icon-debug"></use></svg>
+            <div class="toggle-label-group">
+              <label for="debug-mode">Enable Debug Mode</label>
+              <p>Show a "Debug" link in the extension popup to help with troubleshooting connection errors.</p>
+            </div>
+            <label class="toggle-switch-container">
+              <input type="checkbox" id="debug-mode">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        
 
         <button id="save" title="Save all your settings.">Save All Settings</button>
         <div id="status"></div>
@@ -773,6 +955,7 @@
     <!-- Page: About -->
     <div id="page-about" class="page-content">
       <div class="container">
+        <!-- This page intentionally does not have a logo inside, only the sidebar -->
         <h1>Stop Guessing. Start Seeing.</h1>
         <p>WurkWurk is a mindful work logger that helps you understand where your time *really* goes. It's not another complex tracker. It's a simple extension that sends your activity logs to a **100% private Google Sheet that you own.**</p>
     
@@ -815,6 +998,7 @@
           <li>Click on <strong>Blank</strong> to create a new spreadsheet.</li>
           <li>Give it a name you'll remember, like "My WurkWurk Logs."</li>
         </ol>
+        <img src="https://placehold.co/600x250/F4F4F4/6A8A8C?text=Step+1:+New+Blank+Sheet" alt="Step 1: Create new blank Google Sheet" class="setup-image">
     
         <h2>Step 2: Add Headers to the Sheet</h2>
         <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.</p>
@@ -833,19 +1017,25 @@
           </tbody>
         </table>
         <p>Copy and paste these into the first row of your sheet.</p>
+        <img src="https://placehold.co/600x150/F4F4F4/6A8A8C?text=Step+2:+Paste+Headers+in+Row+1" alt="Step 2: Add headers to Google Sheet" class="setup-image">
     
         <h2>Step 3: Create the Google Apps Script</h2>
         <ol>
           <li>In your Google Sheet, click <strong>Extensions</strong> &gt; <strong>Apps Script</strong>.</li>
           <li>A new browser tab will open with the Apps Script editor.</li>
         </ol>
+        <img src="https://placehold.co/600x150/F4F4F4/6A8A8C?text=Step+3:+Extensions+>+Apps+Script" alt="Step 3: Open Apps Script" class="setup-image">
     
         <h2>Step 4: Paste the Script Code</h2>
         <ol>
           <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g., <code>function myFunction() { ... }</code>).</li>
-          <li>Copy the entire script below and paste it into the empty <code>Code.gs</code> editor.</li>
+          <li>Click the button below to copy the script, then paste it into the empty <code>Code.gs</code> editor.</li>
         </ol>
-<pre><code>/**
+        <button id="copy-script-btn" class="button button-icon">
+          <svg aria-hidden="true"><use href="#icon-copy"></use></svg>
+          Copy Script
+        </button>
+<pre id="apps-script-code"><code>/**
  * @file Google Apps Script for WurkWurk Chrome Extension (v3.1 with Connection Doctor)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
  * It also provides data for the dashboard and connection diagnostics.
@@ -1103,6 +1293,7 @@ function doPost(e) {
           </li>
           <li>Save the script by clicking the floppy disk icon or pressing <code>Ctrl+S</code>.</li>
         </ol>
+        <img src="https://placehold.co/600x300/F4F4F4/6A8A8C?text=Step+4:+Paste+Code+&+Save" alt="Step 4: Paste and save Apps Script" class="setup-image">
     
         <h2>Step 5: Deploy the Script as a Web App</h2>
         <p>***IF YOU ARE UPDATING, YOU MUST RE-DEPLOY TO APPLY CHANGES.***</p>
@@ -1119,6 +1310,7 @@ function doPost(e) {
           </li>
           <li>Click <strong>Deploy</strong>.</li>
         </ol>
+        <img src="https://placehold.co/600x400/F4F4F4/6A8A8C?text=Step+5:+Deployment+Settings" alt="Step 5: Configure new deployment" class="setup-image">
     
         <h2>Step 6: Authorize the Script</h2>
         <ol>
@@ -1127,9 +1319,11 @@ function doPost(e) {
           <li>Click <strong>Advanced</strong>, then click <strong>"Go to \[Your Script Name\] (unsafe)"</strong>.</li>
           <li>Click <strong>Allow</strong>.</li>
         </ol>
+        <img src="https://placehold.co/600x400/F4F4F4/6A8A8C?text=Step+6:+Authorize+Script" alt="Step 6: Authorize script permissions" class="setup-image">
     
         <h2>Step 7: Copy the Web App URL</h2>
         <p>After deployment, a dialog box will appear. <strong>COPY the Web app URL.</strong></p>
+        <img src="https://placehold.co/600x200/F4F4F4/6A8A8C?text=Step+7:+Copy+Web+App+URL" alt="Step 7: Copy the deployed Web App URL" class="setup-image">
     
         <h2>Step 8: Configure the Extension</h2>
         <ol>
@@ -1139,6 +1333,7 @@ function doPost(e) {
           <li>Click the **Test Connection** button. You should see a green "Success!" message and all diagnostic steps should pass.</li>
           <li>Click the main **Save All Settings** button at the bottom of the page.</li>
         </ol>
+        <img src="https://placehold.co/600x300/F4F4F4/6A8A8C?text=Step+8:+Paste+URL+&+Test" alt="Step 8: Paste URL in settings and test" class="setup-image">
         <p>You are all set! The extension is now fully configured.</p>
       </div>
     </div>
@@ -1155,7 +1350,7 @@ function doPost(e) {
         </div>
         <div class="faq-item">
           <strong>Q: What's the main benefit of using this?</strong>
-          <p>Clarity. Wurk Wurk helps you see the unfiltered truth of your workday. By reviewing your log, you can spot patterns—like how much time is lost to interruptions or low-value tasks—and get the evidence you need to take back control of your schedule.</p>
+          <p>Clarity. WurkWurk helps you see the unfiltered truth of your workday. By reviewing your log, you can spot patterns—like how much time is lost to interruptions or low-value tasks—and get the evidence you need to take back control of your schedule.</p>
         </div>
         <div class="faq-item">
           <strong>Q: Why does it send data to a Google Sheet?</strong>
@@ -1165,7 +1360,7 @@ function doPost(e) {
         <h2>Privacy & Data Security</h2>
         <div class="faq-item">
           <strong>Q: Who can see my work logs?</strong>
-          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of Wurk Wurk) never see, store, analyze, or have access to your log data. Period.</p>
+          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of WurkWurk) never see, store, analyze, or have access to your log data. Period.</p>
         </div>
         <div class="faq-item">
           <strong>Q: How do I know my data is secure?</strong>
