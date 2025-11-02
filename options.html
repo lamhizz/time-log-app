@@ -45,6 +45,7 @@
       font-weight: 200;
       font-size: 20px; /* Default size */
       vertical-align: middle;
+      line-height: 1;
       font-variation-settings:
         'FILL' 0,
         'wght' 200,
@@ -231,7 +232,7 @@
     .button-icon {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .button-icon .material-symbols-outlined {
       font-size: 18px;
@@ -564,13 +565,15 @@
       border-radius: var(--work-log-radius);
       cursor: pointer;
       font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     .volume-group #test-sound:hover {
       background-color: var(--wurk-secondary-hover);
     }
     .volume-group #test-sound .material-symbols-outlined {
       font-size: 16px;
-      margin-right: 4px;
     }
 
     /* --- Toggle Switch Styles --- */
@@ -671,19 +674,6 @@
 </head>
 <body>
 
-  <!-- Icons for Diagnostic Tool -->
-  <svg width="0" height="0" style="display: none;">
-    <symbol id="icon-pending" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 102 0 1 1 0 00-2 0zm1-9a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-    </symbol>
-    <symbol id="icon-success" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-    </symbol>
-    <symbol id="icon-error" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-    </symbol>
-  </svg>
-
   <!-- Sidebar Navigation -->
   <nav class="sidebar-nav">
     <div> <!-- Added wrapper for menu items -->
@@ -723,7 +713,8 @@
           </a>
         </li>
         <li>
-          <a href="#" data-page="privacy" class="nav-link" title="Read our Privacy Policy.">
+          <!-- This link is now handled by options.js to open a new tab -->
+          <a href="privacy_policy.html" id="nav-privacy-link" class="nav-link" title="Read our Privacy Policy.">
             <span class="material-symbols-outlined">shield</span>
             Privacy Policy
           </a>
@@ -761,22 +752,22 @@
           <div id="diagnostic-results">
             <ul>
               <li id="diag-step-1-url">
-                <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+                <span class="material-symbols-outlined diag-icon pending">help</span>
                 <strong>URL Format:</strong>
                 <span class="diag-status pending">Pending...</span>
               </li>
               <li id="diag-step-2-connection">
-                <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+                <span class="material-symbols-outlined diag-icon pending">help</span>
                 <strong>Connection:</strong>
                 <span class="diag-status pending">Pending...</span>
               </li>
               <li id="diag-step-3-version">
-                <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+                <span class="material-symbols-outlined diag-icon pending">help</span>
                 <strong>Script Version:</strong>
                 <span class="diag-status pending">Pending...</span>
               </li>
               <li id="diag-step-4-headers">
-                <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+                <span class="material-symbols-outlined diag-icon pending">help</span>
                 <strong>Sheet Headers:</strong>
                 <span class="diag-status pending">Pending...</span>
               </li>
@@ -1134,6 +1125,7 @@
 
     <!-- Page: Privacy Policy (This is now just a placeholder, content is removed) -->
     <div id="page-privacy" class="page-content">
+      <!-- Content is now in privacy_policy.html -->
     </div>
 
   </main>

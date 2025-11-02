@@ -93,14 +93,15 @@ h1 {
 .stat-card h2, .activity-card h2 {
     margin-top: 0;
     margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-    color: #374151;
+    font-size: 0.875rem; /* 14px - Adjusted */
+    color: #6b7280; /* Lighter color - Adjusted */
     font-weight: 500;
+    text-transform: uppercase; /* Added */
 }
 
 .stat-card p {
     margin: 0;
-    font-size: 2.5rem;
+    font-size: 2.25rem; /* 36px - Adjusted */
     font-weight: 700;
     color: var(--work-log-accent-dark);
 }
@@ -180,7 +181,7 @@ h1 {
 }
 
 .dashboard-section h2 {
-    font-size: 1.5rem;
+    font-size: 1.25rem; /* 20px - Adjusted */
     margin-top: 0;
     margin-bottom: 1.5rem;
     color: var(--work-log-text);
@@ -189,7 +190,7 @@ h1 {
 }
 
 .dashboard-section h3 {
-    font-size: 1.1rem;
+    font-size: 1rem; /* 16px - Adjusted */
     margin-top: 0;
     margin-bottom: 1rem;
     color: #374151;
@@ -229,7 +230,19 @@ h1 {
 .chart-container, .table-container, .heatmap-container {
     display: flex;
     flex-direction: column;
+    position: relative; /* Added for Chart.js */
+    height: 350px; /* Added: Fix for chart height */
 }
+
+/* Specific heights for different containers */
+.table-container, .heatmap-container {
+    height: auto; /* Allow tables to grow */
+}
+
+.chart-container canvas {
+    max-height: 100%; /* Ensure canvas doesn't overflow container */
+}
+
 
 /* --- NEW: Styled Tables --- */
 .dashboard-table {
@@ -292,6 +305,20 @@ h1 {
 }
 
 /* --- NEW: Blindsides Section --- */
+#reactive-report, #drifted-report {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Make this div fill the chart-container */
+  min-height: 0; /* Important for flex-grow in a flex column */
+}
+
+#reactive-report canvas, #drifted-report canvas {
+  flex-grow: 1; /* Make the canvas fill the remaining space */
+  position: relative; /* Chart.js needs this */
+  height: 100%; /* Fill remaining height */
+  width: 100%;
+}
+
 .kpi-standalone {
     background-color: #f9fafb;
     border: 1px solid #e5e7eb;
@@ -320,7 +347,7 @@ h1 {
 .chart-card h3 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    font-size: 1.2rem;
+    font-size: 1.125rem; /* Adjusted */
     color: #374151;
     text-align: center;
 }
@@ -351,3 +378,4 @@ h1 {
     background-color: #fef2f2;
     color: #991b1b;
 }
+

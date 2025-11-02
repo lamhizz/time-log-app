@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const navLinks = document.querySelectorAll(".nav-link");
   const pages = document.querySelectorAll(".page-content");
   const dashboardLink = document.getElementById("nav-dashboard-link");
-  const privacyLink = document.querySelector('.nav-link[data-page="privacy"]'); // Get privacy link
+  const privacyLink = document.getElementById("nav-privacy-link"); // Get privacy link
 
   /**
    * @description Handles navigation between pages within the options.html file.
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add click listeners to nav links (excluding privacy)
   navLinks.forEach(link => {
-    if (link.dataset.page === 'privacy') return; // Skip privacy link
+    if (link.id === 'nav-privacy-link') return; // Skip privacy link
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const pageName = link.getAttribute("data-page");
@@ -221,10 +221,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const steps = [diagStep1, diagStep2, diagStep3, diagStep4];
     steps.forEach(step => {
-      const icon = step.querySelector("svg use");
+      const icon = step.querySelector(".diag-icon");
       const status = step.querySelector(".diag-status");
-      icon.setAttribute("href", "#icon-pending");
-      icon.parentElement.className = "diag-icon pending";
+      icon.textContent = "help"; // Google Icon name
+      icon.className = "material-symbols-outlined diag-icon pending";
       status.textContent = "Pending...";
       status.className = "diag-status pending";
     });
@@ -236,22 +236,22 @@ document.addEventListener("DOMContentLoaded", () => {
    * @param {object} result - The result object for that step.
    */
   function updateDiagStep(el, result) {
-    const icon = el.querySelector("svg use");
+    const icon = el.querySelector(".diag-icon");
     const status = el.querySelector(".diag-status");
     
     if (!result) {
-      icon.setAttribute("href", "#icon-pending");
-      icon.parentElement.className = "diag-icon pending";
+      icon.textContent = "help";
+      icon.className = "material-symbols-outlined diag-icon pending";
       status.textContent = "Skipped.";
       status.className = "diag-status pending";
       return;
     }
 
-    const iconName = result.success ? "#icon-success" : "#icon-error";
+    const iconName = result.success ? "check_circle" : "error";
     const statusClass = result.success ? "success" : "error";
 
-    icon.setAttribute("href", iconName);
-    icon.parentElement.className = `diag-icon ${statusClass}`;
+    icon.textContent = iconName;
+    icon.className = `material-symbols-outlined diag-icon ${statusClass}`;
     status.textContent = result.message;
     status.className = `diag-status ${statusClass}`;
   }
