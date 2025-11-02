@@ -47,7 +47,9 @@
       flex-direction: column;
       padding: 20px 12px;
       flex-shrink: 0;
-      min-height: 100vh;
+      height: 100vh; /* Changed from min-height */
+      position: sticky; /* Added */
+      top: 0; /* Added */
       box-sizing: border-box;
     }
     .sidebar-logo {
@@ -59,6 +61,7 @@
       list-style: none;
       padding: 0;
       margin: 0;
+      overflow-y: auto; /* Added for scrolling if menu is long */
     }
     .sidebar-menu h3 {
       font-size: 11px;
@@ -95,8 +98,15 @@
       opacity: 0.9;
     }
     .sidebar-footer {
-      margin-top: auto;
+      margin-top: auto; /* This makes it stick to the bottom */
+      padding-top: 16px; /* Added padding */
       text-align: center;
+    }
+    .sidebar-footer p {
+      font-size: 11px;
+      color: var(--wurk-text-light);
+      margin-bottom: 8px;
+      line-height: 1.4;
     }
     .support-button-img {
       width: 160px; /* Smaller for sidebar */
@@ -112,6 +122,7 @@
       padding: 32px;
       overflow-y: auto;
       box-sizing: border-box;
+      width: 100%; /* Ensure it takes remaining space */
     }
     .page-content {
       display: none; /* Hidden by default */
@@ -298,13 +309,13 @@
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
-      border-color: var(--work-log-primary);
+      border-color: var(--wurk-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
     .form-group p.description {
       font-size: 12px;
-      color: var(--work-log-text-light);
+      color: var(--wurk-text-light);
       margin: 5px 0 0 0;
     }
     .form-group-checkbox {
@@ -420,7 +431,7 @@
       margin-top: 10px;
     }
     button#save:hover {
-      background-color: var(--work-log-primary-hover);
+      background-color: var(--wurk-primary-hover);
     }
     #status {
       margin-top: 15px;
@@ -556,50 +567,53 @@
 
   <!-- Sidebar Navigation -->
   <nav class="sidebar-nav">
-    <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="sidebar-logo">
-    <ul class="sidebar-menu">
-      <li>
-        <a href="#" id="nav-dashboard-link" title="Open the analytics dashboard.">
-          <svg aria-hidden="true"><use href="#icon-dashboard"></use></svg>
-          Dashboard
-        </a>
-      </li>
-      <h3>Settings</h3>
-      <li>
-        <a href="#" data-page="settings" class="nav-link active" title="Configure the extension.">
-          <svg aria-hidden="true"><use href="#icon-settings"></use></svg>
-          General Settings
-        </a>
-      </li>
-      
-      <h3>Help & Info</h3>
-      <li>
-        <a href="#" data-page="about" class="nav-link" title="Learn about WurkWurk.">
-          <svg aria-hidden="true"><use href="#icon-about"></use></svg>
-          About
-        </a>
-      </li>
-      <li>
-        <a href="#" data-page="setup" class="nav-link" title="View the setup guide.">
-          <svg aria-hidden="true"><use href="#icon-setup"></use></svg>
-          Setup Guide
-        </a>
-      </li>
-      <li>
-        <a href="#" data-page="faq" class="nav-link" title="Frequently Asked Questions.">
-          <svg aria-hidden="true"><use href="#icon-faq"></use></svg>
-          FAQ
-        </a>
-      </li>
-      <li>
-        <a href="#" data-page="privacy" class="nav-link" title="Read our Privacy Policy.">
-          <svg aria-hidden="true"><use href="#icon-privacy"></use></svg>
-          Privacy Policy
-        </a>
-      </li>
-    </ul>
+    <div> <!-- Added wrapper for menu items -->
+      <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="sidebar-logo">
+      <ul class="sidebar-menu">
+        <li>
+          <a href="#" id="nav-dashboard-link" title="Open the analytics dashboard.">
+            <svg aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+            Dashboard
+          </a>
+        </li>
+        <h3>Settings</h3>
+        <li>
+          <a href="#" data-page="settings" class="nav-link active" title="Configure the extension.">
+            <svg aria-hidden="true"><use href="#icon-settings"></use></svg>
+            General Settings
+          </a>
+        </li>
+        
+        <h3>Help & Info</h3>
+        <li>
+          <a href="#" data-page="about" class="nav-link" title="Learn about WurkWurk.">
+            <svg aria-hidden="true"><use href="#icon-about"></use></svg>
+            About
+          </a>
+        </li>
+        <li>
+          <a href="#" data-page="setup" class="nav-link" title="View the setup guide.">
+            <svg aria-hidden="true"><use href="#icon-setup"></use></svg>
+            Setup Guide
+          </a>
+        </li>
+        <li>
+          <a href="#" data-page="faq" class="nav-link" title="Frequently Asked Questions.">
+            <svg aria-hidden="true"><use href="#icon-faq"></use></svg>
+            FAQ
+          </a>
+        </li>
+        <li>
+          <a href="#" data-page="privacy" class="nav-link" title="Read our Privacy Policy.">
+            <svg aria-hidden="true"><use href="#icon-privacy"></use></svg>
+            Privacy Policy
+          </a>
+        </li>
+      </ul>
+    </div>
 
     <div class="sidebar-footer">
+      <p>Enjoying WurkWurk?<br>Support the developer!</p>
       <a href="https://buymeacoffee.com/lamhizz" target="_blank" title="Support the developer!">
         <img src="images/coffee-button.png" alt="Buy Me A Coffee" class="support-button-img" >
       </a>
@@ -822,17 +836,270 @@
     
         <h2>Step 3: Create the Google Apps Script</h2>
         <ol>
-          <li>In your Google Sheet, click <strong>Extensions</strong> > <strong>Apps Script</strong>.</li>
+          <li>In your Google Sheet, click <strong>Extensions</strong> &gt; <strong>Apps Script</strong>.</li>
           <li>A new browser tab will open with the Apps Script editor.</li>
         </ol>
     
         <h2>Step 4: Paste the Script Code</h2>
         <ol>
-          <li>Delete any placeholder code in the <code>Code.gs</code> file.</li>
-          <li>Open the <code>app-script.md</code> file from this extension's folder (or <a href="https://github.com/lamhizz/time-log-app" target="_blank">find it on GitHub</a>).</li>
-          <li>Copy the entire script from that file and paste it into the empty <code>Code.gs</code> editor.</li>
+          <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g., <code>function myFunction() { ... }</code>).</li>
+          <li>Copy the entire script below and paste it into the empty <code>Code.gs</code> editor.</li>
+        </ol>
+<pre><code>/**
+ * @file Google Apps Script for WurkWurk Chrome Extension (v3.1 with Connection Doctor)
+ * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
+ * It also provides data for the dashboard and connection diagnostics.
+ */
+
+// --- CONFIGURATION ---
+
+/**
+ * @const {string}
+ * @description The current version of this Google Apps Script.
+ */
+const SCRIPT_VERSION = "3.1";
+
+/**
+ * @const {string}
+ * @description The time zone for formatting dates and times.
+ * Find your time zone here: [https://en.wikipedia.org/wiki/List_of_tz_database_time_zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+ * @example "America/New_York", "Europe/London", "Asia/Tokyo"
+ */
+const TIME_ZONE = "Europe/Vilnius";
+
+/**
+ * @const {string}
+ * @description The name of the sheet (the tab at the bottom) where logs will be added.
+ * IMPORTANT: If you rename your sheet, you must update this value.
+ */
+const SHEET_NAME = "Sheet1";
+
+// --- END CONFIGURATION ---
+
+
+/**
+ * @description Handles GET requests for connection testing, diagnostics, and dashboard data.
+ * @param {object} e - The event parameter containing the request details.
+ * @returns {ContentService.TextOutput} A JSON response.
+ */
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+
+    // Action: Basic Test Connection
+    if (action === "test") {
+      Logger.log("WurkWurk: Received successful test ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          message: "Connection successful!",
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Action: Advanced Connection Diagnostics
+    if (action === "diagnose") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      // Get only the columns that have content in the first row
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+      Logger.log("WurkWurk: Received successful diagnose ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          version: SCRIPT_VERSION,
+          headers: headers
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Action: Get Weekly Data for Dashboard
+    if (action === "getWeeklyData") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      const data = sheet.getDataRange().getValues();
+      const header = data.shift(); // Remove header row
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentData = data.filter(row => new Date(row[6]) >= thirtyDaysAgo);
+
+      // --- Calculate Stats ---
+
+      // 1. Tag Pie Chart Data (Count occurrences)
+      const tagCounts = recentData.reduce((acc, row) => {
+        const tag = row[3] || "Untagged"; // Column D
+        acc[tag] = (acc[tag] || 0) + 1;
+        return acc;
+      }, {});
+      const tagData = {
+        labels: Object.keys(tagCounts),
+        values: Object.values(tagCounts)
+      };
+
+      // 2. Keyword Bar Chart Data
+      const stopWords = new Set(["a", "an", "the", "and", "in", "on", "for", "with", "to", "is", "of", "it", "i", "was"]);
+      const keywordCounts = recentData.reduce((acc, row) => {
+        const log = (row[2] || "").toLowerCase(); // Column C
+        const words = log.match(/\b(\w+)\b/g) || [];
+        words.forEach(word => {
+          if (word.length > 3 && !stopWords.has(word) && !/\d+/.test(word)) {
+            acc[word] = (acc[word] || 0) + 1;
+          }
+        });
+        return acc;
+      }, {});
+      const sortedKeywords = Object.entries(keywordCounts).sort(([,a],[,b]) => b-a).slice(0, 10);
+      const keywordData = {
+        labels: sortedKeywords.map(item => item[0]),
+        values: sortedKeywords.map(item => item[1])
+      };
+
+      // 3. Focus Over Time Data (Last 7 days)
+      const focusByDay = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dayString = d.toLocaleDateString('en-US', { weekday: 'short' });
+        focusByDay[dayString] = { total: 0, drifted: 0 };
+      }
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const last7DaysData = recentData.filter(row => new Date(row[6]) >= sevenDaysAgo);
+
+      last7DaysData.forEach(row => {
+          const date = new Date(row[6]); // Column G
+          const dayString = date.toLocaleDateString('en-US', { weekday: 'short' });
+          if (focusByDay[dayString]) {
+            focusByDay[dayString].total++;
+            if (row[4] === "Yes") { // Column E is Drifted
+              focusByDay[dayString].drifted++;
+            }
+          }
+      });
+
+      const focusData = {
+        labels: Object.keys(focusByDay),
+        values: Object.values(focusByDay).map(day => {
+          if (day.total === 0) return 0;
+          return Math.round(((day.total - day.drifted) / day.total) * 100);
+        })
+      };
+
+      // --- Assemble Response ---
+      const responseData = { tagData, keywordData, focusData };
+      return ContentService.createTextOutput(
+        JSON.stringify({ status: "success", data: responseData })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Fallback for unknown GET requests (like a redirect)
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: "Invalid GET request. Use POST to log data." })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("WurkWurk: doGet Error - " + err.message);
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: err.message })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+/**
+ * @description Handles POST requests from the Chrome extension to log new data.
+ * @param {object} e - The event parameter containing the POST data.
+ * @returns {ContentService.TextOutput} A JSON response indicating success or failure.
+ */
+function doPost(e) {
+  let sheet;
+  try {
+    const data = JSON.parse(e.postData.contents);
+    
+    // --- [FIX] Handle POST-based diagnostic actions ---
+    if (data.action === "test") {
+      Logger.log("WurkWurk: Received successful test POST ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({ status: "success", message: "Connection successful!" })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === "diagnose") {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+      if (!sheet) {
+        throw new Error(`Sheet not found: ${SHEET_NAME}`);
+      }
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      Logger.log("WurkWurk: Received successful diagnose POST ping.");
+      return ContentService.createTextOutput(
+        JSON.stringify({
+          status: "success",
+          version: SCRIPT_VERSION,
+          headers: headers
+        })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+    // --- [END FIX] ---
+
+    // Original logging logic starts here
+    const logEntry = data.log || "";
+    const tag = data.tag || "";
+    const drifted = data.drifted ? "Yes" : "No";
+    const domain = data.domain || "";
+    const reactive = data.reactive ? "Yes" : "No";
+    const keywords = data.keywords || "";
+    
+    sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+    if (!sheet) {
+      throw new Error(`Sheet not found. Please ensure a sheet named "${SHEET_NAME}" exists.`);
+    }
+    
+    const now = new Date();
+    const fullTimestamp = now.toISOString();
+    const dateFormatted = Utilities.formatDate(now, TIME_ZONE, "yyyy-MM-dd");
+    const timeFormatted = Utilities.formatDate(now, TIME_ZONE, "HH:mm:ss");
+
+    let minsSinceLast = "N/A";
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow >= 1) {
+      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); 
+      if (lastTimestampStr) {
+        const lastTimestamp = new Date(lastTimestampStr);
+        const diffMs = now.getTime() - lastTimestamp.getTime();
+        minsSinceLast = Math.round(diffMs / 60000);
+      }
+    }
+
+    const newRow = [
+      dateFormatted, timeFormatted, logEntry, tag, drifted,
+      minsSinceLast, fullTimestamp, domain, reactive, keywords
+    ];
+    
+    sheet.appendRow(newRow);
+
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "success", row: sheet.getLastRow() })
+    ).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    Logger.log("WurkWurk: doPost Error - " + err.message);
+    return ContentService.createTextOutput(
+      JSON.stringify({ status: "error", message: err.message, sheetName: SHEET_NAME })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+</code></pre>
+        <ol start="3">
           <li>
-            <strong>IMPORTANT</strong>: Find the line <code>const TIME_ZONE = "...";</code> and change the time zone to your own (e.g., <code>"America/New_York"</code>).
+            <strong>IMPORTANT</strong>: Find the line <code>const TIME_ZONE = "Europe/Vilnius";</code> and change the time zone to your own (e.g., <code>"America/New_York"</code>).
           </li>
           <li>Save the script by clicking the floppy disk icon or pressing <code>Ctrl+S</code>.</li>
         </ol>
@@ -965,7 +1232,7 @@
         <p>This policy explains what information is handled and, more importantly, what information we **never** see or collect.</p>
 
         <h2>Our Core Privacy Promise: We Don't See Your Data</h2>
-        <p>Wurk Wurk is a "zero-knowledge" application. We **do not** collect, store, sell, share, or analyze your personal log data.</p>
+        <p>WurkWurk is a "zero-knowledge" application. We **do not** collect, store, sell, share, or analyze your personal log data.</p>
         <ul>
           <li>We **DO NOT** see what you write in your logs.</li>
           <li>We **DO NOT** see your tags, task timers, or notes.</li>
