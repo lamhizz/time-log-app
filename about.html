@@ -9,14 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --wurk-primary: #52A2A0;
-      --wurk-primary-hover: #428482;
-      --wurk-secondary: #F4F4F4;
-      --wurk-secondary-hover: #EAEAEA;
-      --wurk-accent: #EEBD69;
-      --wurk-text-dark: #315558;
-      --wurk-text-light: #6A8A8C;
-      --work-log-border: #D1D5DB;
+      --wurk-primary: #52A2A0; /* Big Accent - Teal */
+      --wurk-primary-hover: #428482; /* Darker Teal */
+      --wurk-secondary: #F4F4F4; /* Light Gray */
+      --wurk-secondary-hover: #EAEAEA; /* Darker Light Gray */
+      --wurk-accent: #EEBD69; /* Small Accent - Gold */
+      --wurk-text-dark: #315558; /* Main Text */
+      --wurk-text-light: #6A8A8C; /* Lighter Text */
+      --work-log-border: #D1D5DB; /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
@@ -47,23 +47,43 @@
       margin: 0 auto 15px;
     }
     h1 {
-      margin: 0 0 16px 0;
+      margin: 0 0 10px 0;
       font-size: 24px;
       font-weight: 600;
       text-align: center;
       color: var(--wurk-text-dark);
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--wurk-text-dark);
+      margin-top: 24px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--wurk-secondary-hover);
+      padding-bottom: 4px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--wurk-primary);
+      margin-top: 20px;
+      margin-bottom: 8px;
     }
     p, li {
       font-size: 15px;
       line-height: 1.6;
       color: var(--wurk-text-dark);
     }
-    ul {
+    ul, ol {
       padding-left: 20px;
       margin-bottom: 20px;
     }
     li {
       margin-bottom: 8px;
+    }
+    .problem-list li {
+      list-style-type: '❓';
+      padding-left: 10px;
     }
     .divider {
       border-top: 1px solid var(--wurk-secondary-hover);
@@ -115,29 +135,55 @@
     .support-button-img:hover {
       opacity: 0.85;
     }
+
+    .privacy-promise {
+      background-color: #F8F9FA;
+      border: 1px solid #EAECEF;
+      border-left: 4px solid var(--wurk-primary);
+      padding: 16px;
+      border-radius: var(--work-log-radius);
+    }
+    .privacy-promise p {
+      margin: 0;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
     <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="header-logo">
-    <h1>Welcome to WurkWurk!</h1>
+    <h1>Stop Guessing. Start Seeing.</h1>
+    <p>WurkWurk is a mindful work logger that helps you understand where your time *really* goes. It's not another complex tracker. It's a simple extension that sends your activity logs to a **100% private Google Sheet that you own.**</p>
 
-    <p>WurkWurk is a simple tool to help you keep a running log of what you're working on. It's designed to be private, simple, and all yours.</p>
+    <h2>Does This Sound Familiar?</h2>
+    <p>You end the day feeling exhausted, but your most important work is still untouched. You *feel* busy, but you don't feel *productive*.</p>
+    <ul class="problem-list">
+      <li>You're stuck in "reactive mode," answering emails and chats all day.</li>
+      <li>Your most important projects keep getting pushed to "tomorrow."</li>
+      <li>You're constantly interrupted, and "deep work" feels impossible.</li>
+      <li>You look at the clock at 5 PM and think, "Where did my day go?"</li>
+    </ul>
 
+    <h2>Replace Guesswork with Your Own Data</h2>
+    <p>You can't fix what you can't see. WurkWurk is the **automated, objective mirror** for your workday. By gently prompting you to log what you *just did*, it creates an honest, powerful dataset for you to review.</p>
+    
     <h3>How It Works</h3>
     <ol>
-      <li><strong>It's Your Data:</strong> WurkWurk sends all logs to a private Google Sheet that you own and control.</li>
-      <li><strong>Periodic Popups:</strong> At an interval you set (e.g., every 15 minutes), a popup will appear asking what you're doing.</li>
-      <li><strong>Log Your Work:</strong> You type a short description, add an optional tag (like "Meeting" or "Focus"), and save it.</li>
-      <li><strong>Analyze Later:</strong> Over time, your Google Sheet becomes a powerful, detailed dashboard of how you spend your time.</li>
+      <li><strong>Setup (1 Min):</strong> Connect the extension to your private Google Sheet.</li>
+      <li><strong>Log (5 Secs):</strong> At your chosen interval, a simple prompt asks what you're working on. Use tags, quick actions, or the built-in timer.</li>
+      <li><strong>Review (15 Mins/Week):</strong> Open your Google Sheet or the Dashboard. See your whole week, filter by tags, and find your "Aha!" moments.</li>
+      <li><strong>Improve (Daily):</strong> See a pattern? Make a small change. Your log gives you the data you need to take back control.</li>
     </ol>
-    
-    <p>That's it! No complex project management, no teams, just a simple log for you.</p>
+
+    <h2>Your Log is Yours. Period.</h2>
+    <div class="privacy-promise">
+      <p>We believe that self-reflection requires total privacy. WurkWurk is a "data-less" app. We **never** see, store, or analyze your logs. The extension sends your input *directly* from your browser to your Google Sheet via Google's own secure Apps Script. You are the only one with access.</p>
+    </div>
 
     <div class="button-group">
       <a href="setup.html" class="button" title="Go to the step-by-step setup guide.">View Setup Guide</a>
-      <a href="options.html" class="button button-secondary" title="Configure your settings.">Open Settings</a>
+      <a href="options.html" id="open-settings" class="button button-secondary" title="Configure your settings.">Open Settings</a>
     </div>
 
     <div class="divider"></div>
@@ -153,7 +199,17 @@
     </div>
 
   </div>
+  
+  <script>
+    // Make the "Open Settings" button work
+    const settingsLink = document.getElementById('open-settings');
+    if (settingsLink && chrome.runtime && chrome.runtime.openOptionsPage) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            chrome.runtime.openOptionsPage();
+        });
+    }
+  </script>
 
 </body>
 </html>
-

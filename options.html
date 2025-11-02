@@ -188,27 +188,22 @@
       background-color: var(--wurk-secondary);
       border: 1px solid var(--work-log-border);
       color: var(--wurk-text-dark);
-      padding: 9px 16px;
+      padding: 9px 12px; /* Adjusted padding */
       font-size: 14px;
       font-weight: 500;
       border-radius: var(--work-log-radius);
       cursor: pointer;
       font-family: inherit;
+      line-height: 1; /* For icon alignment */
     }
     .form-group-flex button:hover {
       background-color: var(--wurk-secondary-hover);
     }
-    #test-status {
-      font-size: 12px;
-      font-weight: 500;
-      margin-top: 6px;
-      padding-left: 2px;
-    }
-    #test-status.success {
-      color: var(--work-log-success);
-    }
-    #test-status.error {
-      color: var(--work-log-error);
+    .form-group-flex button svg { /* Style for save icon */
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+      pointer-events: none;
     }
     
     button#save {
@@ -226,7 +221,7 @@
       margin-top: 10px;
     }
     button#save:hover {
-      background-color: var(--wurk-primary-hover);
+      background-color: var(--work-log-primary-hover);
     }
     #status {
       margin-top: 15px;
@@ -275,9 +270,109 @@
     .support-button-img:hover {
       opacity: 0.85;
     }
+
+    /* --- NEW: Diagnostic Styles --- */
+    #diagnostic-results {
+      font-size: 14px;
+      border: 1px solid var(--work-log-border);
+      border-radius: var(--work-log-radius);
+      margin-top: 12px;
+      display: none; /* Hidden by default */
+    }
+    #diagnostic-results ul {
+      list-style-type: none;
+      padding: 0 16px 16px 16px;
+      margin: 0;
+    }
+    #diagnostic-results li {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--work-log-secondary-hover);
+    }
+    #diagnostic-results li:last-child {
+      border-bottom: none;
+    }
+    #diagnostic-results li strong {
+      color: var(--wurk-text-dark);
+      flex-basis: 120px;
+      flex-shrink: 0;
+    }
+    #diagnostic-results .diag-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+    #diagnostic-results .diag-icon.pending {
+      color: var(--wurk-text-light);
+    }
+    #diagnostic-results .diag-icon.success {
+      color: var(--work-log-success);
+    }
+    #diagnostic-results .diag-icon.error {
+      color: var(--work-log-error);
+    }
+    #diagnostic-results .diag-status {
+      font-weight: 500;
+      white-space: pre-wrap; /* Show newlines in error messages */
+    }
+    #diagnostic-results .diag-status.success {
+      color: var(--work-log-success);
+    }
+    #diagnostic-results .diag-status.error {
+      color: var(--work-log-error);
+    }
+    #diagnostic-results .diag-status.pending {
+      color: var(--wurk-text-light);
+    }
+    #diagnostic-summary {
+      padding: 12px 16px;
+      font-weight: 600;
+      border-top: 1px solid var(--work-log-border);
+      border-radius: 0 0 var(--work-log-radius) var(--work-log-radius);
+    }
+    #diagnostic-summary.success {
+      background-color: #F0FDF4; /* Green 50 */
+      color: var(--work-log-success);
+    }
+    #diagnostic-summary.error {
+      background-color: #FEF2F2; /* Red 50 */
+      color: var(--work-log-error);
+    }
+
+    /* --- NEW: Volume Slider --- */
+    .volume-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .volume-group input[type="range"] {
+      flex-grow: 1;
+      margin: 0;
+    }
+    .volume-group #volume-display {
+      font-size: 14px;
+      color: var(--wurk-text-light);
+      font-weight: 500;
+      width: 40px; /* Fixed width for alignment */
+    }
   </style>
 </head>
 <body>
+
+  <!-- Icons for Diagnostic Tool -->
+  <svg width="0" height="0" style="display: none;">
+    <symbol id="icon-pending" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 102 0 1 1 0 00-2 0zm1-9a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+    </symbol>
+    <symbol id="icon-success" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    </symbol>
+    <symbol id="icon-error" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+    </symbol>
+  </svg>
 
   <div class="container">
     <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="header-logo">
@@ -288,17 +383,40 @@
       <label for="web-app-url">Google Apps Script URL</label>
       <div class="form-group-flex">
         <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the most important field. Paste your deployed 'Web app' URL from Google Apps Script here.">
+        <!-- NEW: Save URL Button -->
+        <button id="save-url-btn" title="Quick-save this URL">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"></path>
+          </svg>
+        </button>
         <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test Connection</button>
       </div>
-      <div id="diagnostic-results" style="display: none; margin-top: 10px;">
-        <p><strong>Diagnostic Results:</strong></p>
-        <ul style="list-style-type: none; padding-left: 10px;">
-          <li id="diag-step-1-url"><strong>1. URL Format:</strong> <span>Pending...</span></li>
-          <li id="diag-step-2-connection"><strong>2. Connection:</strong> <span>Pending...</span></li>
-          <li id="diag-step-3-version"><strong>3. Script Version:</strong> <span>Pending...</span></li>
-          <li id="diag-step-4-headers"><strong>4. Sheet Headers:</strong> <span>Pending...</span></li>
+      
+      <!-- NEW: Visual Diagnostic Tool -->
+      <div id="diagnostic-results">
+        <ul>
+          <li id="diag-step-1-url">
+            <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+            <strong>URL Format:</strong>
+            <span class="diag-status pending">Pending...</span>
+          </li>
+          <li id="diag-step-2-connection">
+            <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+            <strong>Connection:</strong>
+            <span class="diag-status pending">Pending...</span>
+          </li>
+          <li id="diag-step-3-version">
+            <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+            <strong>Script Version:</strong>
+            <span class="diag-status pending">Pending...</span>
+          </li>
+          <li id="diag-step-4-headers">
+            <svg class="diag-icon pending" aria-hidden="true"><use href="#icon-pending"></use></svg>
+            <strong>Sheet Headers:</strong>
+            <span class="diag-status pending">Pending...</span>
+          </li>
         </ul>
-        <div id="diagnostic-summary" style="font-weight: bold; margin-top: 10px;"></div>
+        <div id="diagnostic-summary"></div>
       </div>
       <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the Apps Script code from the Setup Guide for this to work.</p>
     </div>
@@ -319,7 +437,15 @@
         <option value="Bell.wav">Bell</option>
         <option value="Pop.wav">Pop</option>
       </select>
-      <p class="description">Plays a sound when the log popup appears.</p>
+    </div>
+    
+    <!-- NEW: Volume Slider -->
+    <div class="form-group">
+      <label for="notification-volume">Sound Volume</label>
+      <div class="volume-group">
+        <input type="range" id="notification-volume" min="0" max="1" step="0.1" title="Adjust the notification sound volume.">
+        <span id="volume-display">50%</span>
+      </div>
     </div>
     
     <div class="form-group">
@@ -393,7 +519,7 @@
       <label for="debug-mode">Enable Debug Mode</label>
     </div>
 
-    <button id="save" title="Save all your settings.">Save Settings</button>
+    <button id="save" title="Save all your settings.">Save All Settings</button>
     <div id="status"></div>
 
     <div class="divider"></div>
@@ -416,4 +542,3 @@
   <script src="options.js"></script>
 </body>
 </html>
-

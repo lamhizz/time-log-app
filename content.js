@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "showLogPopup") {
     // Only create a new popup if one doesn't already exist
     if (!document.getElementById("work-log-popup-overlay")) {
-      createPopup(request.domain, request.sound); 
+      createPopup(request.domain, request.sound, request.volume); // NEW: Pass volume
     }
     sendResponse({ status: "popup shown" });
   } else if (request.action === "dismissPopup") {
@@ -32,15 +32,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * into the current page. It also sets up all necessary event listeners for the popup's buttons and inputs.
  * @param {string} domainToLog - The domain of the current tab, if logging is enabled.
  * @param {string} soundToPlay - The filename of the notification sound to play.
+ * @param {number} volumeToPlay - The volume level for the sound (0.0 to 1.0).
  */
-function createPopup(domainToLog, soundToPlay) {
+function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   
   // Play a notification sound if one is selected
   if (soundToPlay && soundToPlay !== "none") {
     try {
       const soundUrl = chrome.runtime.getURL(`sounds/${soundToPlay}`);
       const audio = new Audio(soundUrl);
-      audio.volume = 0.5; // Set volume to 50% to be less intrusive
+      audio.volume = volumeToPlay !== undefined ? volumeToPlay : 0.5; // Use configured volume, default to 0.5
       audio.play().catch(e => console.warn(`WurkWurk: Could not play notification sound: ${e.message}`));
     } catch (e) {
       console.error("WurkWurk: Error playing sound.", e);
@@ -387,4 +388,3 @@ function showStatus(message, type) {
     statusMessage.style.display = "block";
   }
 }
-

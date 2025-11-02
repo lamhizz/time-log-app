@@ -22,12 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const notificationSoundInput = document.getElementById("notification-sound");
   const pomodoroEnabledInput = document.getElementById("pomodoro-enabled");
 
+  // --- NEW: Volume Slider Elements ---
+  const volumeInput = document.getElementById("notification-volume");
+  const volumeDisplay = document.getElementById("volume-display");
+
+  // --- NEW: Quick Save URL Button ---
+  const saveUrlButton = document.getElementById("save-url-btn");
+
   // --- NEW: Diagnostic UI Elements ---
   const diagnosticResultsEl = document.getElementById("diagnostic-results");
-  const diagStep1 = document.getElementById("diag-step-1-url").querySelector("span");
-  const diagStep2 = document.getElementById("diag-step-2-connection").querySelector("span");
-  const diagStep3 = document.getElementById("diag-step-3-version").querySelector("span");
-  const diagStep4 = document.getElementById("diag-step-4-headers").querySelector("span");
+  const diagStep1 = document.getElementById("diag-step-1-url");
+  const diagStep2 = document.getElementById("diag-step-2-connection");
+  const diagStep3 = document.getElementById("diag-step-3-version");
+  const diagStep4 = document.getElementById("diag-step-4-headers");
   const diagnosticSummaryEl = document.getElementById("diagnostic-summary");
 
   // Links
@@ -65,6 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
       webAppUrl: webAppUrlInput.value.trim(),
       isDomainLogEnabled: logDomainInput.checked,
       notificationSound: notificationSoundInput.value,
+      notificationVolume: parseFloat(volumeInput.value), // Save volume
       isPomodoroEnabled: pomodoroEnabledInput.checked
     };
 
@@ -99,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       webAppUrl: "",
       isDomainLogEnabled: false,
       notificationSound: "ClickUp.wav",
+      notificationVolume: 0.5, // Default volume
       isPomodoroEnabled: true
     };
 
@@ -112,6 +121,10 @@ document.addEventListener("DOMContentLoaded", () => {
       logDomainInput.checked = items.isDomainLogEnabled;
       notificationSoundInput.value = items.notificationSound;
       pomodoroEnabledInput.checked = items.isPomodoroEnabled;
+
+      // Set volume slider and display
+      volumeInput.value = items.notificationVolume;
+      volumeDisplay.textContent = `${Math.round(items.notificationVolume * 100)}%`;
 
       // Set checked status for working days
       daysInputs.forEach(input => {
@@ -134,26 +147,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const steps = [diagStep1, diagStep2, diagStep3, diagStep4];
     steps.forEach(step => {
-      step.textContent = "Pending...";
-      step.className = "";
+      const icon = step.querySelector("svg use");
+      const status = step.querySelector(".diag-status");
+      icon.setAttribute("href", "#icon-pending");
+      icon.parentElement.className = "diag-icon pending";
+      status.textContent = "Pending...";
+      status.className = "diag-status pending";
     });
   }
 
   /**
    * @description Updates a single step in the diagnostic UI with a success or error status.
-   * @param {HTMLElement} el - The DOM element for the step's status.
+   * @param {HTMLElement} el - The DOM element (li) for the step.
    * @param {object} result - The result object for that step.
    * @param {boolean} result.success - Whether the check was successful.
    * @param {string} result.message - The message to display.
    */
   function updateDiagStep(el, result) {
+    const icon = el.querySelector("svg use");
+    const status = el.querySelector(".diag-status");
+    
     if (!result) {
-      el.textContent = "Skipped.";
-      el.className = "";
+      icon.setAttribute("href", "#icon-pending");
+      icon.parentElement.className = "diag-icon pending";
+      status.textContent = "Skipped.";
+      status.className = "diag-status pending";
       return;
     }
-    el.textContent = result.message;
-    el.className = result.success ? "success" : "error";
+
+    const iconName = result.success ? "#icon-success" : "#icon-error";
+    const statusClass = result.success ? "success" : "error";
+
+    icon.setAttribute("href", iconName);
+    icon.parentElement.className = `diag-icon ${statusClass}`;
+    status.textContent = result.message;
+    status.className = `diag-status ${statusClass}`;
   }
 
   /**
@@ -164,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     resetDiagnosticsUI();
     testConnectionButton.disabled = true;
+    saveUrlButton.disabled = true;
 
     // Send message to background script to perform the diagnostics
     chrome.runtime.sendMessage({ action: "runDiagnostics", url: url }, (report) => {
@@ -171,6 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
         diagnosticSummaryEl.textContent = `Critical Error: ${chrome.runtime.lastError.message}`;
         diagnosticSummaryEl.className = "error";
         testConnectionButton.disabled = false;
+        saveUrlButton.disabled = false;
         return;
       }
 
@@ -190,6 +220,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       testConnectionButton.disabled = false; // Re-enable button
+      saveUrlButton.disabled = false; // Re-enable button
+    });
+  }
+
+  /**
+   * @description Saves just the Web App URL.
+   */
+  function quickSaveUrl() {
+    const url = webAppUrlInput.value.trim();
+    chrome.storage.sync.set({ webAppUrl: url }, () => {
+      // Notify user of save
+      diagnosticSummaryEl.textContent = "URL saved!";
+      diagnosticSummaryEl.className = "success"; // Use success style for feedback
+      diagnosticResultsEl.style.display = "block"; // Ensure it's visible
+      
+      // Clear the message after a moment
+      setTimeout(() => {
+        if (diagnosticSummaryEl.textContent === "URL saved!") {
+          diagnosticSummaryEl.textContent = "";
+          diagnosticSummaryEl.className = "";
+        }
+      }, 2000);
     });
   }
 
@@ -202,6 +254,12 @@ document.addEventListener("DOMContentLoaded", () => {
     restoreOptions();
     saveButton.addEventListener("click", saveOptions);
     testConnectionButton.addEventListener("click", runDiagnostics);
+    saveUrlButton.addEventListener("click", quickSaveUrl); // Add listener for quick save
+
+    // Add listener for volume slider
+    volumeInput.addEventListener("input", () => {
+      volumeDisplay.textContent = `${Math.round(volumeInput.value * 100)}%`;
+    });
     
     // Link listeners
     dashboardLink.addEventListener("click", () => {
@@ -217,4 +275,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initialize();
 });
-
