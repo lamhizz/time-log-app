@@ -88,13 +88,13 @@
     </button>
     
 <pre id="apps-script-code"><code>/**
- * @file Google Apps Script for WurkWurk Chrome Extension (v3.1 with Connection Doctor)
+ * @file Google Apps Script for WurkWurk Chrome Extension (v3.2 with Gap Fix)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
  * It also provides data for the dashboard and connection diagnostics.
  *
  * @changelog
+ * v3.2: - Added logic to reset 'Mins Since Last' to "N/A" on the first log of a new day.
  * v3.1: - Removed data processing from `getWeeklyData`. Now returns raw row data.
- * - This fixes the "is not an array" error in the dashboard.
  */
 
 // --- CONFIGURATION ---
@@ -103,7 +103,7 @@
  * @const {string}
  * @description The current version of this Google Apps Script.
  */
-const SCRIPT_VERSION = "3.1";
+const SCRIPT_VERSION = "3.2";
 
 /**
  * @const {string}
@@ -260,6 +260,7 @@ function doPost(e) {
     
     const now = new Date();
     const fullTimestamp = now.toISOString();
+    // Get formatted date/time for the new log
     const dateFormatted = Utilities.formatDate(now, TIME_ZONE, "yyyy-MM-dd");
     const timeFormatted = Utilities.formatDate(now, TIME_ZONE, "HH:mm:ss");
 
@@ -267,13 +268,19 @@ function doPost(e) {
     const lastRow = sheet.getLastRow();
     
     if (lastRow >= 1) {
-      // Column G (index 7) is FullTimestamp
-      const lastTimestampStr = sheet.getRange(lastRow, 7).getValue(); 
-      if (lastTimestampStr) {
+      // Get the *date* (Col A) and *timestamp* (Col G) from the previous row
+      // We read 7 columns (A to G)
+      const lastRowData = sheet.getRange(lastRow, 1, 1, 7).getValues()[0];
+      const lastDateFormatted = lastRowData[0]; // Column A is at index 0
+      const lastTimestampStr = lastRowData[6]; // Column G is at index 6
+
+      // Check if the last log was on the same day
+      if (lastTimestampStr && lastDateFormatted === dateFormatted) {
         const lastTimestamp = new Date(lastTimestampStr);
         const diffMs = now.getTime() - lastTimestamp.getTime();
         minsSinceLast = Math.round(diffMs / 60000); // Convert milliseconds to minutes
       }
+      // If it's a new day, minsSinceLast remains "N/A"
     }
 
     // The order MUST match your 10-column header setup in the sheet.
