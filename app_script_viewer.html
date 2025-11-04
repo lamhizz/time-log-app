@@ -88,11 +88,12 @@
     </button>
     
 <pre id="apps-script-code"><code>/**
- * @file Google Apps Script for WurkWurk Chrome Extension (v3.2 with Gap Fix)
+ * @file Google Apps Script for WurkWurk Chrome Extension (v3.3 with Caching)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
  * It also provides data for the dashboard and connection diagnostics.
  *
  * @changelog
+ * v3.3: - Added CacheService to `getWeeklyData` to reduce Google Sheet API calls and avoid rate limits.
  * v3.2: - Added logic to reset 'Mins Since Last' to "N/A" on the first log of a new day.
  * v3.1: - Removed data processing from `getWeeklyData`. Now returns raw row data.
  */
@@ -103,7 +104,7 @@
  * @const {string}
  * @description The current version of this Google Apps Script.
  */
-const SCRIPT_VERSION = "3.2";
+const SCRIPT_VERSION = "3.3"; // <-- Updated version
 
 /**
  * @const {string}
@@ -162,8 +163,22 @@ function doGet(e) {
       ).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Action: Get Weekly Data for Dashboard
+    // Action: Get Weekly Data for Dashboard (with Caching)
     if (action === "getWeeklyData") {
+      // --- NEW: Caching Logic ---
+      const cache = CacheService.getScriptCache();
+      const cacheKey = "dashboard_weekly_data";
+      const cachedData = cache.get(cacheKey);
+
+      if (cachedData != null) {
+        Logger.log("WurkWurk: Returning cached weekly data.");
+        return ContentService.createTextOutput(
+          JSON.stringify({ status: "success", data: JSON.parse(cachedData) })
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+      // --- END: Caching Logic ---
+
+      Logger.log("WurkWurk: Fetching fresh weekly data from sheet.");
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
       if (!sheet) {
         throw new Error(`Sheet not found: ${SHEET_NAME}`);
@@ -173,7 +188,7 @@ function doGet(e) {
 
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      
+
       // Filter for recent data and convert to object array for dashboard.js
       const recentData = data.filter(row => new Date(row[6]) >= thirtyDaysAgo)
         .map(row => ({
@@ -188,14 +203,17 @@ function doGet(e) {
           reactive: row[8] === "Yes",
           keywords: row[9]
         }));
-      
+
+      // --- NEW: Store in cache ---
+      // Cache for 10 minutes (600 seconds)
+      cache.put(cacheKey, JSON.stringify(recentData), 600); 
+
       // --- Assemble Response ---
-      // Return the raw recentData array. The dashboard.js will process it.
       return ContentService.createTextOutput(
         JSON.stringify({ status: "success", data: recentData })
       ).setMimeType(ContentService.MimeType.JSON);
     }
-    
+
     // Fallback for unknown GET requests (like a redirect)
     return ContentService.createTextOutput(
       JSON.stringify({ status: "error", message: "Invalid GET request. Use POST to log data." })
@@ -219,7 +237,7 @@ function doPost(e) {
   let sheet;
   try {
     const data = JSON.parse(e.postData.contents);
-    
+
     // --- [FIX] Handle POST-based diagnostic actions ---
     if (data.action === "test") {
       Logger.log("WurkWurk: Received successful test POST ping.");
@@ -227,7 +245,7 @@ function doPost(e) {
         JSON.stringify({ status: "success", message: "Connection successful!" })
       ).setMimeType(ContentService.MimeType.JSON);
     }
-    
+
     if (data.action === "diagnose") {
       const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
       if (!sheet) {
@@ -252,12 +270,12 @@ function doPost(e) {
     const domain = data.domain || "";
     const reactive = data.reactive ? "Yes" : "No";
     const keywords = data.keywords || "";
-    
+
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
       throw new Error(`Sheet not found. Please ensure a sheet named "${SHEET_NAME}" exists.`);
     }
-    
+
     const now = new Date();
     const fullTimestamp = now.toISOString();
     // Get formatted date/time for the new log
@@ -266,7 +284,7 @@ function doPost(e) {
 
     let minsSinceLast = "N/A";
     const lastRow = sheet.getLastRow();
-    
+
     if (lastRow >= 1) {
       // Get the *date* (Col A) and *timestamp* (Col G) from the previous row
       // We read 7 columns (A to G)
@@ -296,8 +314,11 @@ function doPost(e) {
       reactive,         // I: Reactive
       keywords          // J: Keywords
     ];
-    
+
     sheet.appendRow(newRow);
+    
+    // --- NEW: Invalidate dashboard cache on new log ---
+    CacheService.getScriptCache().remove("dashboard_weekly_data");
 
     return ContentService.createTextOutput(
       JSON.stringify({ status: "success", row: sheet.getLastRow() })
@@ -350,4 +371,3 @@ function doPost(e) {
   </script>
 </body>
 </html>
-

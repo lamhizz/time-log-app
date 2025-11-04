@@ -2,6 +2,10 @@
  * @file dashboard.js
  * @description This script manages the functionality of the dashboard page (dashboard.html).
  * It handles tab switching, fetching and displaying data for "Today's Stats" and "Weekly Review".
+ *
+ * @version 2.1 (Today's Stats Timeline)
+ * - Renders a daily timeline for the "Today's Stats" tab.
+ * - `loadTodayStats` now reads rich log objects from storage to build the timeline.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const logsTodayEl = document.getElementById("logs-today");
     const tasksCompletedEl = document.getElementById("tasks-completed");
     const focusScoreEl = document.getElementById("focus-score");
-    const recentActivityEl = document.getElementById("recent-activity");
+    const timelineContainerEl = document.getElementById("daily-timeline-container"); // <-- Changed
 
     // "Weekly Review" Elements
     const refreshDataBtn = document.getElementById("refresh-data-btn");
@@ -48,9 +52,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
             weeklyStatusEl.textContent = "Data refreshed successfully!";
             weeklyStatusEl.className = "status-message success";
-            setTimeout(() => weeklyStatusEl.textContent = "", 2000);
+            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className="status-message"; }, 3000);
             refreshDataBtn.disabled = false;
+            
+            // --- Defensive data handling ---
+            let weeklyData = response.data;
 
+            // If data is a string, try to parse it as JSON
+            if (typeof weeklyData === 'string') {
+                try {
+                    weeklyData = JSON.parse(weeklyData);
+                } catch (e) {
+                    console.error("Failed to parse weekly data:", e);
+                    weeklyData = []; // Default to empty array on parsing error
+                }
+            }
+
+            // Ensure the data is an array before proceeding
+            if (!Array.isArray(weeklyData)) {
+                console.warn("Received weekly data is not an array. Defaulting to empty.", weeklyData);
+                weeklyData = [];
+            }
+
+            // Store the full dataset and render the dashboard
+            fullWeeklyData = weeklyData;
+            renderWeeklyDashboard(fullWeeklyData);
         });
     });
 
@@ -58,35 +84,145 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Data Loading and Rendering ---
 
     /**
-     * @description Loads and displays the stats for the "Today's Stats" tab from local storage.
+     * @description (OVERHAULED) Loads and displays the stats for the "Today's Stats" tab.
+     * It now reads the rich `recentLogs` array from local storage to populate
+     * both the KPIs and the new daily timeline.
      */
     function loadTodayStats() {
         chrome.storage.local.get({
-            logsToday: 0,
             tasksCompleted: 0,
-            driftedLogs: 0,
-            recentLogs: []
+            recentLogs: [] // This now contains rich log objects
         }, (data) => {
-            logsTodayEl.textContent = data.logsToday;
-            tasksCompletedEl.textContent = data.tasksCompleted;
+            
+            const logs = data.recentLogs || [];
+            const logsToday = logs.length;
+            const driftedLogs = logs.filter(log => log.drifted).length;
 
-            const focusScore = data.logsToday > 0
-                ? Math.round(((data.logsToday - data.driftedLogs) / data.logsToday) * 100)
+            // Update KPIs
+            logsTodayEl.textContent = logsToday;
+            tasksCompletedEl.textContent = data.tasksCompleted;
+            
+            const focusScore = logsToday > 0
+                ? Math.round(((logsToday - driftedLogs) / logsToday) * 100)
                 : 100;
             focusScoreEl.textContent = `${focusScore}%`;
 
-            recentActivityEl.innerHTML = "";
-            if (data.recentLogs.length > 0) {
-                data.recentLogs.slice(0, 5).forEach(log => {
-                    const li = document.createElement("li");
-                    li.textContent = log;
-                    recentActivityEl.appendChild(li);
-                });
-            } else {
-                recentActivityEl.innerHTML = "<li>No activity yet today.</li>";
-            }
+            // Render the new timeline
+            renderDailyTimeline(logs);
         });
     }
+
+    /**
+     * @description (NEW) Renders the visual timeline for the "Today's Stats" tab.
+     * @param {Array<object>} logs - The array of rich log objects from local storage.
+     */
+    function renderDailyTimeline(logs) {
+        if (!timelineContainerEl) return;
+
+        if (logs.length === 0) {
+            timelineContainerEl.innerHTML = "<p>No activity yet today.</p>";
+            return;
+        }
+
+        // Logs are stored newest-first, so we reverse them for chronological order.
+        const chronologicalLogs = logs.slice().reverse(); 
+        
+        timelineContainerEl.innerHTML = ""; // Clear loader
+        
+        chronologicalLogs.forEach((log, index) => {
+            // 1. Create and append the gap element (if not the first log)
+            let gapMinutes = parseInt(log.gap, 10);
+            if (isNaN(gapMinutes)) {
+                gapMinutes = 0; // First log of the day has "N/A" gap
+            }
+
+            if (index > 0 || gapMinutes > 0) {
+                // Clamp gap height for sane visualization
+                const gapHeight = Math.min(Math.max(gapMinutes, 5), 100); // 5px min, 100px max
+                const gapEl = document.createElement("div");
+                gapEl.className = "timeline-gap";
+                gapEl.style.height = `${gapHeight}px`;
+
+                // Add a label if the gap is large
+                if (gapMinutes > 30) { // Over 30 min
+                    gapEl.innerHTML = `<span class="timeline-gap-label">${gapMinutes} min gap</span>`;
+                }
+                timelineContainerEl.appendChild(gapEl);
+            }
+
+            // 2. Create the timeline entry
+            const entryEl = document.createElement("div");
+            entryEl.className = "timeline-entry";
+            if (log.tag && log.tag.toLowerCase() === 'break') {
+                entryEl.classList.add("timeline-entry-break");
+            }
+
+            // Generate a consistent color from the tag string
+            const tagColor = stringToHslColor(log.tag || "default");
+            
+            // Badges for special logs
+            let badgesHTML = "";
+            if (log.drifted) {
+                badgesHTML += `<span class="timeline-badge timeline-badge-drifted">Drifted</span>`;
+            }
+            if (log.reactive) {
+                badgesHTML += `<span class="timeline-badge timeline-badge-reactive">Reactive</span>`;
+            }
+
+            entryEl.innerHTML = `
+                <span class="timeline-time">${log.time || "00:00"}</span>
+                <div class="timeline-content">
+                    <p class="timeline-text">${escapeHTML(log.logText)}</p>
+                    ${log.tag ? `<span class="timeline-tag" style="background-color: ${tagColor.bg}; color: ${tagColor.fg};">${escapeHTML(log.tag)}</span>` : ''}
+                    ${badgesHTML ? `<div class="timeline-badges">${badgesHTML}</div>` : ''}
+                </div>
+            `;
+            
+            // Set the dot color
+            entryEl.style.setProperty('--wurk-primary', tagColor.fg);
+
+            timelineContainerEl.appendChild(entryEl);
+        });
+    }
+
+    /**
+     * @description (NEW) Simple helper to prevent XSS from log text.
+     * @param {string} str - The string to escape.
+     * @returns {string} The escaped string.
+     */
+    function escapeHTML(str) {
+        if (!str) return "";
+        return str.replace(/[&<>"']/g, function(match) {
+            return {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[match];
+        });
+    }
+
+    /**
+     * @description (NEW) Generates a consistent, accessible HSL color pair from any string.
+     * @param {string} str - The input string (e.g., a tag name).
+     * @returns {{bg: string, fg: string}} A background (light) and foreground (dark) color.
+     */
+    function stringToHslColor(str) {
+        if (!str) str = "default";
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const h = hash % 360;
+        return {
+            bg: `hsl(${h}, 80%, 90%)`, // Light background
+            fg: `hsl(${h}, 60%, 30%)`  // Dark foreground
+        };
+    }
+
+
+    // --- "Weekly Review" Tab Logic ---
 
     // --- NEW: "Weekly Review" Elements ---
     const dateRangeSelect = document.getElementById("date-range-select");
@@ -182,8 +318,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderWeeklyDashboard(data) {
         if (!data || data.length === 0) {
             kpiGridEl.innerHTML = "<p>No data available for the selected period.</p>";
-            timeByTagChartEl.innerHTML = "";
-            timeByDomainChartEl.innerHTML = "";
+            // Clear all chart/table areas
+            [timeByTagChartEl, timeByDomainChartEl, workHoursHeatmapEl, tagDeepDiveTableEl, reactiveReportEl, driftedReportEl].forEach(el => {
+                if (el) el.innerHTML = "";
+            });
+            // Clear any existing chart instances
+            [timeByTagChartEl, timeByDomainChartEl].forEach(el => {
+                if (el && el.chart) el.chart.destroy();
+            });
             return;
         }
 
@@ -204,27 +346,44 @@ document.addEventListener("DOMContentLoaded", () => {
      * @param {Array<Object>} data - The filtered log data for the selected period.
      */
     function renderBlindsides(data) {
-        // 1. "Reactive" Report
+        // 1. "Reactive" Report (AC 3)
         const reactiveData = data.filter(item => item.reactive);
-        const totalReactiveMinutes = reactiveData.reduce((sum, item) => sum + (parseInt(item.minutesSinceLast, 10) || 0), 0);
+        const reactiveCount = reactiveData.length;
 
-        reactiveReportEl.innerHTML = `<div class="kpi-standalone">You lost <strong>${Math.floor(totalReactiveMinutes / 60)}h ${totalReactiveMinutes % 60}m</strong> to 'Reactive' work this period.</div>`;
+        // AC 3: Replace time-lost metric with count.
+        reactiveReportEl.innerHTML = `<div class="kpi-standalone">You were pulled into 'Reactive' work <strong>${reactiveCount}</strong> time${reactiveCount === 1 ? '' : 's'} this period.</div>`;
 
-        const reactiveTagData = aggregateData(reactiveData, 'tag', 'minutesSinceLast');
+        // AC 3: (Optional) "Top Culprit" sub-metric
+        const reactiveTagData = aggregateData(reactiveData, 'tag');
+        if (reactiveTagData.length > 0) {
+            const topCulprit = reactiveTagData[0];
+            const culpritEl = document.createElement('div');
+            culpritEl.className = 'kpi-standalone';
+            culpritEl.style.marginTop = '-1rem';
+            culpritEl.style.borderTop = 'none';
+            culpritEl.style.paddingTop = '0';
+            culpritEl.innerHTML = `Your most frequent reactive tag was <strong>'${topCulprit.name}'</strong> (${topCulprit.value} logs).`;
+            reactiveReportEl.appendChild(culpritEl);
+        }
+        
         const reactiveCanvas = document.createElement('canvas');
         reactiveReportEl.appendChild(reactiveCanvas);
-        renderChart(reactiveCanvas, 'bar', reactiveTagData, "Minutes", 5);
+        // Render chart based on COUNT, not time
+        renderChart(reactiveCanvas, 'bar', reactiveTagData, "Reactive Logs by Tag", 5);
 
 
-        // 2. "Drifted" Report
+        // 2. "Drifted" Report (AC 3)
         const driftedData = data.filter(item => item.drifted);
+        const driftedCount = driftedData.length;
 
-        driftedReportEl.innerHTML = `<div class="kpi-standalone">You drifted off-task <strong>${driftedData.length}</strong> times.</div>`;
+        // AC 3: This metric is already correct.
+        driftedReportEl.innerHTML = `<div class="kpi-standalone">You drifted off-task <strong>${driftedCount}</strong> time${driftedCount === 1 ? '' : 's'}.</div>`;
 
-        const driftedDomainData = aggregateData(driftedData, 'domain', 'minutesSinceLast');
+        const driftedDomainData = aggregateData(driftedData, 'domain');
         const driftedCanvas = document.createElement('canvas');
         driftedReportEl.appendChild(driftedCanvas);
-        renderChart(driftedCanvas, 'bar', driftedDomainData, "Minutes", 5);
+        // Render chart based on COUNT, not time
+        renderChart(driftedCanvas, 'bar', driftedDomainData, "Drifted Logs by Domain", 5);
     }
 
     /**
@@ -236,10 +395,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const uniqueTags = [...new Set(data.map(item => item.tag).filter(Boolean))];
         populateHeatmapFilter(uniqueTags);
 
-        // 2. Render Heatmap
+        // 2. Render Heatmap (Now based on COUNT, not time)
         renderHeatmap(data);
 
-        // 3. Render Tag Deep-Dive Table
+        // 3. Render Tag Deep-Dive Table (AC 2)
         renderTagDeepDiveTable(data);
     }
 
@@ -261,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * @description Renders the work-hours heatmap as a styled table.
+     * @description Renders the work-hours heatmap as a styled table based on log *count*.
      * @param {Array<Object>} data - The filtered data for the selected period.
      */
     function renderHeatmap(data) {
@@ -273,18 +432,19 @@ document.addEventListener("DOMContentLoaded", () => {
             ? data
             : data.filter(item => item.tag === selectedTag);
 
-        // Create a data structure to hold minutes per hour per day
+        // Create a data structure to hold LOG COUNT per hour per day
         const heatmapGrid = Array.from({ length: 24 }, () => Array(7).fill(0));
-        let maxMinutes = 0;
+        let maxCount = 0; // Changed from maxMinutes
 
         heatmapData.forEach(item => {
             const date = new Date(item.timestamp);
             const day = date.getDay(); // Sunday = 0, Saturday = 6
             const hour = date.getHours();
-            const minutes = parseInt(item.minutesSinceLast, 10) || 0;
-            heatmapGrid[hour][day] += minutes;
-            if (heatmapGrid[hour][day] > maxMinutes) {
-                maxMinutes = heatmapGrid[hour][day];
+            
+            heatmapGrid[hour][day]++; // Increment count
+            
+            if (heatmapGrid[hour][day] > maxCount) {
+                maxCount = heatmapGrid[hour][day]; // Find max count
             }
         });
 
@@ -313,11 +473,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             for (let day = 0; day < 7; day++) {
                 const cell = row.insertCell();
-                const minutes = heatmapGrid[hour][day];
-                if (minutes > 0) {
-                    const intensity = Math.min(minutes / (maxMinutes * 0.75), 1); // Normalize intensity
+                const count = heatmapGrid[hour][day]; // Get count
+                if (count > 0) {
+                    // Normalize intensity based on count
+                    const intensity = maxCount > 0 ? count / maxCount : 0; 
                     cell.style.backgroundColor = `rgba(82, 162, 160, ${intensity})`; // #52A2A0 with opacity
-                    cell.title = `${minutes} minutes logged`;
+                    cell.title = `${count} logs`; // Update title
                 }
             }
         }
@@ -325,41 +486,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * @description Renders the "Tag Deep-Dive" sortable table.
+     * @description Renders the "Tag Deep-Dive" sortable table based on log *count*. (AC 2)
      * @param {Array<Object>} data - The filtered log data for the selected period.
      */
     function renderTagDeepDiveTable(data) {
         tagDeepDiveTableEl.innerHTML = "";
         const tagStats = {};
-        const totalMinutes = data.reduce((sum, item) => sum + (parseInt(item.minutesSinceLast, 10) || 0), 0);
-        const daysInRange = (getDateRange().end - getDateRange().start) / (1000 * 60 * 60 * 24);
+        const totalLogs = data.length; // (AC 2)
 
         data.forEach(item => {
             const tag = item.tag || 'Uncategorized';
             if (!tagStats[tag]) {
-                tagStats[tag] = { totalTime: 0, count: 0 };
+                tagStats[tag] = { count: 0 };
             }
-            tagStats[tag].totalTime += parseInt(item.minutesSinceLast, 10) || 0;
             tagStats[tag].count++;
         });
 
         const tableData = Object.entries(tagStats).map(([name, stats]) => ({
             name,
-            totalTime: stats.totalTime,
-            percentage: totalMinutes > 0 ? Math.round((stats.totalTime / totalMinutes) * 100) : 0,
-            avgPerDay: daysInRange > 0 ? Math.round(stats.totalTime / daysInRange) : 0,
-            entries: stats.count
-        })).sort((a, b) => b.totalTime - a.totalTime);
+            count: stats.count, // (AC 2)
+            percentage: totalLogs > 0 ? Math.round((stats.count / totalLogs) * 100) : 0, // (AC 2)
+        })).sort((a, b) => b.count - a.count); // Sort by count
 
-        // Create and render table
+        // Create and render table (AC 2)
         const table = document.createElement("table");
         table.className = "dashboard-table sortable";
         const headers = [
             { key: 'name', text: 'Tag Name' },
-            { key: 'totalTime', text: 'Total Time' },
-            { key: 'percentage', text: '% of Total' },
-            { key: 'avgPerDay', text: 'Avg. Time / Day' },
-            { key: 'entries', text: '# of Entries' }
+            { key: 'count', text: 'Log Count' }, // AC 2: Replaced 'Total Time'
+            { key: 'percentage', text: '% of Total' }, // AC 2: Re-calced
+            // AC 2: Removed 'Avg. Time / Day'
         ];
 
         const thead = table.createTHead();
@@ -375,40 +531,47 @@ document.addEventListener("DOMContentLoaded", () => {
         tableData.forEach(item => {
             const row = tbody.insertRow();
             row.insertCell().textContent = item.name;
-            row.insertCell().textContent = `${Math.floor(item.totalTime / 60)}h ${item.totalTime % 60}m`;
-            row.insertCell().textContent = `${item.percentage}%`;
-            row.insertCell().textContent = `${item.avgPerDay} min`;
-            row.insertCell().textContent = item.entries;
+            row.insertCell().textContent = item.count; // (AC 2)
+            row.insertCell().textContent = `${item.percentage}%`; // (AC 2)
         });
 
         tagDeepDiveTableEl.appendChild(table);
     }
 
     /**
-     * @description Renders all components for the "At a Glance" section.
+     * @description Renders all components for the "At a Glance" section. (AC 1)
      * @param {Array<Object>} data - The filtered log data for the selected period.
      */
     function renderAtAGlance(data) {
-        // 1. KPIs
+        // 1. KPIs (AC 1)
+        const totalLogs = data.length; // AC 1: New Metric
+        const reactiveCount = data.filter(row => row.reactive).length;
+        const driftedCount = data.filter(row => row.drifted).length; // AC 1: Keep
+        
+        // Calculate total minutes *only* for the avg. gap metric
         const totalMinutes = data.reduce((sum, row) => sum + (parseInt(row.minutesSinceLast, 10) || 0), 0);
-        const reactiveMinutes = data.filter(row => row.reactive).reduce((sum, row) => sum + (parseInt(row.minutesSinceLast, 10) || 0), 0);
-        const driftedCount = data.filter(row => row.drifted).length;
+        
+        // AC 1: New metric logic
+        const reactivePercentage = totalLogs > 0 ? Math.round((reactiveCount / totalLogs) * 100) : 0;
+        
+        // AC 1: Keep, but rename
+        const avgGap = totalLogs > 0 ? Math.round(totalMinutes / totalLogs) : 0;
 
         const kpis = {
-            "Total Time Logged": `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`,
-            "'Reactive' Time": totalMinutes > 0 ? `${Math.round((reactiveMinutes / totalMinutes) * 100)}%` : "0%",
-            "'Drifted' Count": driftedCount,
-            "Avg. Log Frequency": data.length > 0 ? `${Math.round(totalMinutes / data.length)} min` : "N/A"
+            "Total Logs": totalLogs, // AC 1: Replaced 'Total Time Logged'
+            "'Reactive' Logs": `${reactivePercentage}% (${reactiveCount})`, // AC 1: Replaced 'Reactive Time'
+            "'Drifted' Count": driftedCount, // AC 1: Keep
+            "Avg. Gap Between Logs": `${avgGap} min` // AC 1: Renamed 'Avg. Log Frequency'
         };
         renderKpis(kpis);
 
-        // 2. Time by Tag
-        const tagData = aggregateData(data, 'tag', 'minutesSinceLast');
-        renderChart(timeByTagChartEl, 'pie', tagData, "Time by Tag", 5);
+        // 2. Time by Tag (Chart) - Now based on COUNT
+        const tagData = aggregateData(data, 'tag'); // Switched to count
+        renderChart(timeByTagChartEl, 'pie', tagData, "Logs by Tag", 5); // Updated label
 
-        // 3. Time by Domain
-        const domainData = aggregateData(data, 'domain', 'minutesSinceLast');
-        renderChart(timeByDomainChartEl, 'bar', domainData, "Time by Domain", 10);
+        // 3. Time by Domain (Chart) - Now based on COUNT
+        const domainData = aggregateData(data, 'domain'); // Switched to count
+        renderChart(timeByDomainChartEl, 'bar', domainData, "Logs by Domain", 10); // Updated label
     }
 
      /**
@@ -426,35 +589,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /**
-     * @description Aggregates time-based data by a specific key (e.g., 'tag' or 'domain').
+     * @description Aggregates data by key and *counts* occurrences. (Metric Overhaul)
      * @param {Array<Object>} data - The filtered data array.
      * @param {string} key - The property to group by (e.g., 'tag').
-     * @param {string} valueKey - The property to sum up (e.g., 'minutesSinceLast').
-     * @returns {Array<Object>} A sorted array of aggregated data.
+     * @returns {Array<Object>} A sorted array of aggregated data (count-based).
      */
-    function aggregateData(data, key, valueKey) {
+    function aggregateData(data, key) {
         const aggregation = {};
-        let totalValue = 0;
+        const totalCount = data.length;
 
         data.forEach(item => {
             const itemKey = item[key] || 'Uncategorized';
-            const itemValue = parseInt(item[valueKey], 10) || 0;
-            if (itemValue > 0) {
-                if (!aggregation[itemKey]) {
-                    aggregation[itemKey] = 0;
-                }
-                aggregation[itemKey] += itemValue;
-                totalValue += itemValue;
-            }
+            // Increment count for this key
+            aggregation[itemKey] = (aggregation[itemKey] || 0) + 1;
         });
 
         return Object.entries(aggregation)
             .map(([name, value]) => ({
                 name,
-                value,
-                percentage: totalValue > 0 ? Math.round((value / totalValue) * 100) : 0
+                value, // 'value' is now the COUNT
+                percentage: totalCount > 0 ? Math.round((value / totalCount) * 100) : 0
             }))
-            .sort((a, b) => b.value - a.value);
+            .sort((a, b) => b.value - a.value); // Sort by count
     }
 
     /**
@@ -475,13 +631,17 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
             canvasEl.style.display = 'none'; // Hide canvas
             // Optionally show a message
-            const messageEl = document.createElement('p');
-            messageEl.textContent = "No data to display.";
-            canvasEl.parentNode.appendChild(messageEl);
+            const messageEl = canvasEl.parentNode.querySelector('.chart-message');
+            if (!messageEl) {
+                const newMsg = document.createElement('p');
+                newMsg.className = 'chart-message';
+                newMsg.textContent = "No data to display.";
+                canvasEl.parentNode.appendChild(newMsg);
+            }
             return;
         } else {
              canvasEl.style.display = 'block';
-             const existingMsg = canvasEl.parentNode.querySelector('p');
+             const existingMsg = canvasEl.parentNode.querySelector('.chart-message');
              if (existingMsg) existingMsg.remove();
         }
 
@@ -524,7 +684,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     label += ': ';
                                 }
                                 const value = context.raw;
-                                label += `${Math.floor(value / 60)}h ${value % 60}m`;
+                                // (Metric Overhaul) Changed tooltip to show 'logs' instead of time
+                                label += `${value} logs`; 
                                 return label;
                             }
                         }
@@ -596,39 +757,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return { start, end };
     }
 
-    /**
-     * @description Loads and displays the stats for the "Today's Stats" tab from local storage.
-     */
-    function loadTodayStats() {
-        chrome.storage.local.get({
-            logsToday: 0,
-            tasksCompleted: 0,
-            driftedLogs: 0,
-            recentLogs: []
-        }, (data) => {
-            logsTodayEl.textContent = data.logsToday;
-            tasksCompletedEl.textContent = data.tasksCompleted;
-
-            const focusScore = data.logsToday > 0
-                ? Math.round(((data.logsToday - data.driftedLogs) / data.logsToday) * 100)
-                : 100;
-            focusScoreEl.textContent = `${focusScore}%`;
-
-            recentActivityEl.innerHTML = "";
-            if (data.recentLogs.length > 0) {
-                data.recentLogs.slice(0, 5).forEach(log => {
-                    const li = document.createElement("li");
-                    li.textContent = log;
-                    recentActivityEl.appendChild(li);
-                });
-            } else {
-                recentActivityEl.innerHTML = "<li>No activity yet today.</li>";
-            }
-        });
-    }
-
     // --- Initial Load ---
-    loadTodayStats();
+    loadTodayStats(); // This will now render the new timeline
     // Set default dates for custom filter
     endDateInput.valueAsDate = new Date();
     startDateInput.valueAsDate = new Date(new Date().setDate(new Date().getDate() - 7));
@@ -636,3 +766,4 @@ document.addEventListener("DOMContentLoaded", () => {
     // Automatically refresh weekly data on first load
     refreshDataBtn.click();
 });
+

@@ -25,6 +25,14 @@ let alarmBadgeActive = false;
  */
 let logPromptTabId = null;
 
+// --- NEW: Helper for rate limiting ---
+/**
+ * @description A simple promise-based sleep function.
+ * @param {number} ms - The number of milliseconds to wait.
+ */
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 // --- Extension Lifecycle & Alarm Management ---
 
 /**
@@ -178,11 +186,11 @@ async function runDiagnostics(url) {
     report.checks.connection = { success: true, message: "Successfully connected to the script." };
 
     // 3. Script Version Check
-    const requiredVersion = "3.1";
-    if (json.version && json.version === requiredVersion) {
+    const requiredVersion = "3.2"; // Updated to check for 3.2
+    if (json.version && parseFloat(json.version) >= parseFloat(requiredVersion)) {
       report.checks.version = { success: true, message: `Your Google Apps Script is up-to-date (v${json.version}).` };
     } else {
-      report.checks.version = { success: false, message: `Outdated script version. Expected v${requiredVersion}, but found v${json.version || "unknown"}. Please update the script in SETUP_GUIDE.txt.` };
+      report.checks.version = { success: false, message: `Outdated script version. Expected v${requiredVersion} or newer, but found v${json.version || "unknown"}. Please update the script from the Setup Guide.` };
     }
 
     // 4. Sheet Header Check
@@ -385,7 +393,8 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
   chrome.storage.sync.get({ 
     blockedDomains: "",
     isDomainLogEnabled: false,
-    notificationSound: "ClickUp.wav"
+    notificationSound: "ClickUp.wav",
+    notificationVolume: 0.5 // <-- Add volume
   }, (data) => {
     const domains = data.blockedDomains.split('\n').filter(Boolean);
     
@@ -426,7 +435,8 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
         chrome.tabs.sendMessage(tab.id, {
           action: "showLogPopup",
           domain: domainToLog,
-          sound: data.notificationSound
+          sound: data.notificationSound,
+          volume: data.notificationVolume // <-- Pass volume
         });
 
         // Set the alarm badge
@@ -548,36 +558,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.log("Received log object:", request.data);
       chrome.notifications.clear("workLogNotification");
       logPromptTabId = null;
-      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
-        const WEB_APP_URL = data.webAppUrl;
-        if (!WEB_APP_URL) {
-            const errorMsg = "Google Apps Script URL is not set.";
-            chrome.storage.local.set({ lastError: errorMsg });
-            sendResponse({ status: "error", message: errorMsg });
-            return;
-        }
-        
-        logToGoogleSheet(request.data, WEB_APP_URL)
-          .then((jsonResponse) => {
-            chrome.storage.local.set({
-              lastLog: request.data.logText,
-              lastTag: request.data.tag,
-              lastError: ""
-            });
-            updateMruTags(request.data.tag);
-            updateDailyStats(request.data); // New function call
-            // Clear the alarm badge, but leave the timer badge if it's active
-            alarmBadgeActive = false;
-            if (!timerBadgeActive) {
-              chrome.action.setBadgeText({ text: '' });
-            }
-            sendResponse({ status: "success" });
-          })
-          .catch((error) => {
-            chrome.storage.local.set({ lastError: error.message });
-            sendResponse({ status: "error", message: error.message });
+      // We now pass the logData object to logToGoogleSheet
+      // which will return it with 'time' and 'gap' info.
+      logToGoogleSheet(request.data)
+        .then((fullLogData) => {
+          chrome.storage.local.set({
+            lastLog: fullLogData.logText, // Keep this for "Doing Same"
+            lastTag: fullLogData.tag, // Keep this for "Doing Same"
+            lastError: ""
           });
-      });
+          updateMruTags(fullLogData.tag);
+          updateDailyStats(fullLogData); // Pass the rich object
+          
+          alarmBadgeActive = false;
+          if (!timerBadgeActive) {
+            chrome.action.setBadgeText({ text: '' });
+          }
+          sendResponse({ status: "success" });
+        })
+        .catch((error) => {
+          chrome.storage.local.set({ lastError: error.message });
+          sendResponse({ status: "error", message: error.message });
+        });
       return true;
 
     // Case 2: User snoozes or skips a log
@@ -606,36 +608,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	  chrome.notifications.clear("workLogNotification");
       logPromptTabId = null;
       console.log(`Received logAndSnooze for ${request.minutes} min:`, request.data);
-      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
-        const WEB_APP_URL = data.webAppUrl;
-        if (!WEB_APP_URL) {
-          sendResponse({ status: "error", message: "Google Apps Script URL is not set." });
-          return;
-        }
 
-        logToGoogleSheet(request.data, WEB_APP_URL)
-          .then(() => {
-            chrome.storage.local.set({
-              lastLog: request.data.logText,
-              lastTag: request.data.tag,
-              lastError: ""
-            });
-            updateMruTags(request.data.tag);
-            alarmBadgeActive = false;
-            if (!timerBadgeActive) {
-              chrome.action.setBadgeText({ text: '' });
-            }
-
-            chrome.alarms.clear("workLogAlarm", () => {
-              chrome.alarms.create("snoozeAlarm", { delayInMinutes: request.minutes });
-              sendResponse({ status: "success_and_snoozed" });
-            });
-          })
-          .catch((error) => {
-            chrome.storage.local.set({ lastError: error.message });
-            sendResponse({ status: "error", message: error.message });
+      logToGoogleSheet(request.data)
+        .then((fullLogData) => {
+          chrome.storage.local.set({
+            lastLog: fullLogData.logText,
+            lastTag: fullLogData.tag,
+            lastError: ""
           });
-      });
+          updateMruTags(fullLogData.tag);
+          updateDailyStats(fullLogData); // Pass the rich object
+
+          alarmBadgeActive = false;
+          if (!timerBadgeActive) {
+            chrome.action.setBadgeText({ text: '' });
+          }
+
+          chrome.alarms.clear("workLogAlarm", () => {
+            chrome.alarms.create("snoozeAlarm", { delayInMinutes: request.minutes });
+            sendResponse({ status: "success_and_snoozed" });
+          });
+        })
+        .catch((error) => {
+          chrome.storage.local.set({ lastError: error.message });
+          sendResponse({ status: "error", message: error.message });
+        });
       return true;
 
     // Case 4: Settings have been updated in the options page
@@ -718,28 +715,57 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // --- NEW: Dashboard weekly data request ---
     case "getWeeklyData":
-      chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
-        const WEB_APP_URL = data.webAppUrl;
-        if (!WEB_APP_URL) {
-          sendResponse({ status: "error", message: "Google Apps Script URL is not set." });
+      // --- Caching logic added ---
+      chrome.storage.local.get({ weeklyCache: null, lastWeeklyFetch: 0 }, (cache) => {
+        const now = Date.now();
+        const TEN_MINUTES = 10 * 60 * 1000;
+
+        // 1. Check if cache is recent
+        if (cache.weeklyCache && (now - cache.lastWeeklyFetch < TEN_MINUTES)) {
+          console.log("Returning cached weekly data.");
+          sendResponse({ status: "success", data: cache.weeklyCache });
           return;
         }
 
-        const url = new URL(WEB_APP_URL);
-        url.searchParams.set("action", "getWeeklyData");
+        // 2. Fetch fresh data
+        console.log("Fetching fresh weekly data from Google Sheet.");
+        chrome.storage.sync.get({ webAppUrl: "" }, (data) => {
+          const WEB_APP_URL = data.webAppUrl;
+          if (!WEB_APP_URL) {
+            sendResponse({ status: "error", message: "Google Apps Script URL is not set." });
+            return;
+          }
 
-        fetch(url.toString())
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === "success") {
-              sendResponse({ status: "success", data: data.data });
-            } else {
-              sendResponse({ status: "error", message: data.message });
-            }
-          })
-          .catch(error => {
-            sendResponse({ status: "error", message: error.message });
-          });
+          const url = new URL(WEB_APP_URL);
+          url.searchParams.set("action", "getWeeklyData");
+
+          fetch(url.toString())
+            .then(response => response.json())
+            .then(data => {
+              if (data.status === "success") {
+                // 3. Store in cache
+                chrome.storage.local.set({
+                  weeklyCache: data.data,
+                  lastWeeklyFetch: Date.now()
+                });
+                sendResponse({ status: "success", data: data.data });
+              } else {
+                sendResponse({ status: "error", message: data.message });
+              }
+            })
+            .catch(error => {
+              sendResponse({ status: "error", message: error.message });
+            });
+        });
+      });
+      return true;
+    
+    // --- NEW: Dashboard today data request ---
+    case "getTodayData":
+      chrome.storage.local.get({ recentLogs: [] }, (data) => {
+        // 'recentLogs' now contains the rich data needed for the timeline.
+        // We send it in reverse order so the dashboard can display it chronologically.
+        sendResponse({ status: "success", data: data.recentLogs.reverse() });
       });
       return true;
   }
@@ -749,80 +775,135 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // --- Google Sheet Communication ---
 
 /**
- * @description Sends the log data to the Google Apps Script web app.
+ * @description (MODIFIED) Sends the log data to the Google Apps Script web app.
+ * It now includes exponential backoff for rate limiting (429 errors).
  * @param {object} logData - The data to be logged.
- * @param {string} logData.logText - The main log entry text.
- * @param {string} logData.tag - The selected tag.
- * @param {boolean} logData.drifted - Whether the user was off-task.
- * @param {boolean} logData.reactive - Whether the work was ad-hoc.
- * @param {string} [logData.domain] - The domain of the active tab, if enabled.
- * @param {string} webAppUrl - The URL of the Google Apps Script.
- * @returns {Promise<object>} A promise that resolves with the JSON response from the script.
- * @throws {Error} Throws an error if the fetch request fails or the script returns an error.
+ * @returns {Promise<object>} A promise that resolves with the *full* log data object.
+ * @throws {Error} Throws an error if the fetch request fails after retries.
  */
-async function logToGoogleSheet(logData, webAppUrl) {
+async function logToGoogleSheet(logData) {
+  // Get URL and Timezone from sync storage first
+  const settings = await chrome.storage.sync.get({ webAppUrl: "", timeZone: "Europe/Vilnius" });
+  
+  const WEB_APP_URL = settings.webAppUrl;
+  if (!WEB_APP_URL) {
+    throw new Error("Google Apps Script URL is not set.");
+  }
+
+  // --- Logic to calculate time/gap ---
+  const now = new Date();
+  const timeFormatted = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateFormatted = now.toLocaleDateString('en-CA'); // 'yyyy-MM-dd' format
+
+  let minsSinceLast = "N/A";
+  const localData = await chrome.storage.local.get({ recentLogs: [] });
+  const recentLogs = localData.recentLogs || [];
+
+  if (recentLogs.length > 0) {
+    const lastLog = recentLogs[0]; // recentLogs is newest-first
+    if (lastLog.fullTimestamp && lastLog.date === dateFormatted) {
+      const lastTimestamp = new Date(lastLog.fullTimestamp);
+      const diffMs = now.getTime() - lastTimestamp.getTime();
+      minsSinceLast = Math.round(diffMs / 60000);
+    }
+  }
+  // --- End logic ---
+  
   const payload = {
     log: logData.logText,
     tag: logData.tag,
     drifted: logData.drifted,
     reactive: logData.reactive,
-    keywords: logData.keywords || ""
+    keywords: logData.keywords || "",
+    domain: logData.domain || ""
   };
   
-  if (logData.domain !== undefined) {
-    payload.domain = logData.domain;
+  // --- NEW: Exponential Backoff Retry Logic ---
+  const MAX_RETRIES = 3;
+  let delay = 2000; // Start with 2 seconds
+
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      const response = await fetch(WEB_APP_URL, {
+        method: "POST",
+        cache: "no-cache",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        redirect: "follow",
+        body: JSON.stringify(payload)
+      });
+
+      if (response.status === 429) { // Too Many Requests
+        throw new Error("429"); // Trigger the retry logic
+      }
+
+      if (!response.ok) {
+        throw new Error(`Network error: ${response.status} - ${response.statusText}`);
+      }
+
+      const json = await response.json();
+
+      if (json.status !== "success") {
+        throw new Error(`Google Script Error: ${json.message || 'Unknown error'}`);
+      }
+
+      // Success! Return the full object.
+      return {
+        ...logData,
+        time: timeFormatted,
+        date: dateFormatted,
+        gap: minsSinceLast,
+        fullTimestamp: now.toISOString()
+      };
+
+    } catch (error) {
+      console.warn(`Fetch attempt ${i + 1} failed.`);
+      let errorMessage = error.message;
+
+      if (errorMessage.includes("429")) { // Handle rate limit
+        if (i < MAX_RETRIES - 1) {
+          console.warn(`Rate limit (429) hit. Retrying in ${delay}ms...`);
+          await sleep(delay);
+          delay *= 2; // Double the delay for next time
+          continue; // Go to the next loop iteration
+        } else {
+          errorMessage = "Google Apps Script is rate limiting. Too many requests. Please wait a while before logging again.";
+        }
+      }
+      
+      if (error.message.includes("Failed to fetch")) {
+          errorMessage = "Fetch failed. Check URL, network, or CORS. Did you re-deploy and update the URL?";
+      } else if (error.message.includes("Unexpected token")) {
+          errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
+      }
+
+      // If this is the last retry, throw the error
+      if (i === MAX_RETRIES - 1) {
+        throw new Error(errorMessage);
+      }
+    }
   }
-  
-  try {
-    const response = await fetch(webAppUrl, {
-      method: "POST",
-      cache: "no-cache",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      redirect: "follow",
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      throw new Error(`Network error: ${response.status} - ${response.statusText}`);
-    }
-
-    const json = await response.json();
-
-    if (json.status !== "success") {
-      throw new Error(`Google Script Error: ${json.message || 'Unknown error'}`);
-    }
-
-    return json;
-
-  } catch (error) {
-    console.error("Fetch error details:", error);
-    let errorMessage = error.message;
-    if (error.message.includes("Failed to fetch")) {
-        errorMessage = "Fetch failed. Check URL, network, or CORS. Did you re-deploy and update the URL?";
-    } else if (error.message.includes("Unexpected token")) {
-        errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
-    }
-    throw new Error(errorMessage);
-  }
+  // This line should not be reachable, but as a fallback:
+  throw new Error("Failed to log after multiple retries.");
 }
 
 /**
  * @description Updates and stores daily statistics in chrome.storage.local.
- * @param {object} logData - The log data object from the log submission.
+ * Now stores the full, rich log object.
+ * @param {object} fullLogData - The rich log data object from logToGoogleSheet.
  */
-function updateDailyStats(logData) {
+function updateDailyStats(fullLogData) {
   chrome.storage.local.get({
     logsToday: 0,
     driftedLogs: 0,
     recentLogs: []
   }, (data) => {
     const newLogsToday = data.logsToday + 1;
-    const newDriftedLogs = data.driftedLogs + (logData.drifted ? 1 : 0);
+    const newDriftedLogs = data.driftedLogs + (fullLogData.drifted ? 1 : 0);
 
-    // Add the new log to the start of the recent logs list
-    let recentLogs = [logData.logText, ...data.recentLogs];
-    // Keep only the 5 most recent logs
-    recentLogs = recentLogs.slice(0, 5);
+    // Add the new *full log object* to the start of the recent logs list
+    let recentLogs = [fullLogData, ...data.recentLogs];
+    // Keep only the 50 most recent logs for the day (increased limit for timeline)
+    recentLogs = recentLogs.slice(0, 50);
 
     chrome.storage.local.set({
       logsToday: newLogsToday,
@@ -831,3 +912,4 @@ function updateDailyStats(logData) {
     });
   });
 }
+

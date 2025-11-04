@@ -37,10 +37,11 @@
                     <p id="focus-score">100%</p>
                 </div>
                 <div class="activity-card">
-                    <h2>Recent Activity</h2>
-                    <ul id="recent-activity">
-                        <li>No activity yet.</li>
-                    </ul>
+                    <h2>Today's Timeline</h2>
+                    <!-- This is the new timeline container -->
+                    <div id="daily-timeline-container">
+                        <p>Loading today's activity...</p>
+                    </div>
                 </div>
             </div>
 
@@ -74,11 +75,11 @@
                         </div>
                         <div class="chart-grid">
                             <div class="chart-container">
-                                <h3>Time by Tag</h3>
+                                <h3>Logs by Tag</h3>
                                 <canvas id="time-by-tag-chart"></canvas>
                             </div>
                             <div class="chart-container">
-                                <h3>Time by Domain</h3>
+                                <h3>Logs by Domain</h3>
                                 <canvas id="time-by-domain-chart"></canvas>
                             </div>
                         </div>
