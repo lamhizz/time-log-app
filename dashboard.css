@@ -39,34 +39,21 @@ h1 {
     font-weight: 600;
 }
 
-/* --- Tab Navigation --- */
-.tab-navigation {
-    display: flex;
-    gap: 0.5rem;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 1.5rem;
+/* --- NEW: Header Navigation --- */
+.header-nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--wurk-primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.header-nav-link:hover {
+    color: var(--wurk-primary-hover);
+    text-decoration: underline;
 }
 
-.tab-link {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    font-size: 1rem;
-    color: #6b7280;
-    border-bottom: 2px solid transparent;
-    transition: all 0.2s ease-in-out;
-}
 
-.tab-link:hover {
-    color: var(--work-log-text);
-}
-
-.tab-link.active {
-    color: var(--work-log-accent-dark);
-    border-bottom: 2px solid var(--work-log-accent-dark);
-    font-weight: 600;
-}
+/* --- REMOVED Tab Navigation --- */
 
 /* --- Tab Content --- */
 .tab-content {
@@ -109,25 +96,6 @@ h1 {
 .activity-card {
     grid-column: 1 / -1; /* Span full width */
 }
-
-#recent-activity {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-#recent-activity li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #e5e7eb;
-    color: #4b5563;
-}
-
-#recent-activity li:last-child {
-    border-bottom: none;
-}
-
 
 /* --- Weekly Review --- */
 .weekly-header {
@@ -379,3 +347,119 @@ h1 {
     color: #991b1b;
 }
 
+/* --- (Proposal 2) Hourly Block Timeline --- */
+#daily-timeline-container {
+    max-height: 450px;
+    overflow-y: auto;
+    padding: 0 10px;
+}
+
+.timeline-hour-header {
+    font-size: 11px;
+    font-weight: 600;
+    color: #9ca3af; /* Gray 400 */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 0 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 8px;
+    position: sticky;
+    top: -10px; /* Stick to top when scrolling */
+    background-color: #f9fafb; /* Match card bg */
+    z-index: 10;
+}
+
+/* Removed .timeline-gap styles */
+
+.timeline-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    position: relative;
+    border: 1px solid #e5e7eb;
+    background-color: #fff;
+    margin-bottom: 8px; /* Space between entries */
+    border-left-width: 4px; /* Default thick border */
+}
+
+.timeline-meta {
+    flex-basis: 70px; /* Fixed width for left column */
+    flex-shrink: 0;
+    text-align: right;
+    padding-top: 2px;
+}
+.timeline-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--work-log-text-dark);
+    display: block;
+}
+.timeline-gap {
+    font-size: 12px;
+    font-style: italic;
+    color: #9ca3af; /* Gray */
+    display: block;
+    margin-top: 2px;
+}
+
+.timeline-content {
+    flex-grow: 1;
+    padding-left: 12px;
+    border-left: 1px solid #f3f4f6; /* Subtle separator */
+}
+.timeline-text {
+    font-size: 14px;
+    color: var(--work-log-text-dark);
+    margin: 0 0 8px 0;
+    word-break: break-word;
+}
+.timeline-tag {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--work-log-text-dark);
+    background-color: #e5e7eb;
+}
+
+.timeline-badges {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+}
+.timeline-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+.timeline-badge-drifted {
+    background-color: #FEF2F2; /* Red bg */
+    color: #991B1B; /* Red text */
+    border: 1px solid #FEE2E2;
+}
+.timeline-badge-reactive {
+    background-color: #FFFBEB; /* Yellow bg */
+    color: #92400E; /* Yellow text */
+    border: 1px solid #FEF3C7;
+}
+
+/* --- Special Entry Styles --- */
+.timeline-entry-break {
+    background-color: #f3f4f6;
+    border-style: dashed;
+    border-left: 4px dashed #9ca3af;
+}
+.timeline-entry-break .timeline-text {
+    color: #6b7280;
+    font-style: italic;
+}
+
+.timeline-entry-drifted {
+    background-color: #FFFBFB; /* Very light red tint */
+    border-color: #FEE2E2;
+    border-left-color: #EF4444;
+}

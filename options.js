@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Page Navigation ---
   const navLinks = document.querySelectorAll(".nav-link");
   const pages = document.querySelectorAll(".page-content");
-  const dashboardLink = document.getElementById("nav-dashboard-link");
+  // const dashboardLink = document.getElementById("nav-dashboard-link"); // No longer needed for JS
   const privacyLink = document.getElementById("nav-privacy-link"); // Get privacy link
 
   /**
@@ -45,9 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Add click listeners to nav links (excluding privacy)
+  // Add click listeners to nav links (excluding privacy and dashboard links)
   navLinks.forEach(link => {
-    if (link.id === 'nav-privacy-link') return; // Skip privacy link
+    if (link.id === 'nav-privacy-link' || link.id === 'nav-dashboard-link' || link.id === 'nav-weekly-link') return; // Skip external links
+    
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const pageName = link.getAttribute("data-page");
@@ -67,11 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Open dashboard in a new tab
-  dashboardLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    chrome.tabs.create({ url: chrome.runtime.getURL("dashboard.html") });
-  });
+  // Removed dashboardLink click listener, handled by href
 
   /**
    * @description Checks the URL hash or query parameters to show the correct page on load.
@@ -366,4 +363,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-

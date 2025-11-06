@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WurkWurk - Weekly Review</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-container">
+                <img src="icons/wurk-wurk-logo-48.png" alt="WurkWurk Logo" class="logo">
+                <h1>Weekly Review</h1>
+            </div>
+            <!-- Added navigation link back to the "Today" page -->
+            <a href="dashboard.html" class="header-nav-link">&larr; Back to Today's Timeline</a>
+        </header>
+
+        <main id="main-content">
+            
+            <!-- Removed Today's Stats Content -->
+
+            <!-- Weekly Review Tab (now the only content) -->
+            <div id="weekly" class="tab-content active">
+                <div class="weekly-header">
+                    <p>In-depth analysis of your work patterns from the last 7 days.</p>
+                    <button id="refresh-data-btn" class="button-primary">Refresh Data</button>
+                </div>
+                <div id="weekly-charts-container">
+                    <!-- Date Range Filter -->
+                    <div class="dashboard-section date-filter-container">
+                        <label for="date-range-select">Select Period:</label>
+                        <select id="date-range-select">
+                            <option value="this-week">This Week</option>
+                            <option value="last-week">Last Week</option>
+                            <option value="this-month">This Month</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                        <div id="custom-date-inputs" style="display: none;">
+                            <input type="date" id="start-date">
+                            <input type="date" id="end-date">
+                        </div>
+                    </div>
+
+                    <!-- Section 1: At a Glance -->
+                    <div class="dashboard-section">
+                        <h2>At a Glance: Your Weekly Summary</h2>
+                        <div class="kpi-grid" id="kpi-grid">
+                            <!-- KPIs will be injected here -->
+                        </div>
+                        <div class="chart-grid">
+                            <div class="chart-container">
+                                <h3>Logs by Tag</h3>
+                                <canvas id="time-by-tag-chart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h3>Logs by Domain</h3>
+                                <canvas id="time-by-domain-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Pattern & Rhythm Analysis -->
+                    <div class="dashboard-section">
+                        <h2>Pattern & Rhythm Analysis</h2>
+                        <div class="heatmap-container">
+                            <h3>Work-Hours Heatmap</h3>
+                             <div class="filter-container">
+                                <label for="heatmap-tag-filter">Filter by Tag:</label>
+                                <select id="heatmap-tag-filter">
+                                    <option value="all">All Tags</option>
+                                    <!-- Options will be populated by JS -->
+                                </select>
+                            </div>
+                            <div id="work-hours-heatmap"></div>
+                        </div>
+                        <div class="table-container">
+                            <h3>Tag Deep-Dive</h3>
+                            <div id="tag-deep-dive-table"></div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Blindsides & Time Leaks -->
+                    <div class="dashboard-section">
+                        <h2>Blindsides & Time Leaks</h2>
+                        <div class="chart-grid">
+                            <div class="chart-container">
+                                <h3>The "Reactive" Report</h3>
+                                <div id="reactive-report"></div>
+                            </div>
+                            <div class="chart-container">
+                                <h3>The "Drifted (Off-Task)" Report</h3>
+                                <div id="drifted-report"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="weekly-status" class="status-message"></div>
+            </div>
+        </main>
+    </div>
+    <script src="lib/chart.js"></script>
+    <!-- Added new script weekly.js -->
+    <script src="weekly.js"></script>
+</body>
+</html>

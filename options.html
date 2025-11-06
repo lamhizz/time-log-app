@@ -679,10 +679,19 @@
     <div> <!-- Added wrapper for menu items -->
       <img src="images/wurk-wurk-logo-white.png" alt="WurkWurk Logo" class="sidebar-logo">
       <ul class="sidebar-menu">
+        <h3>Reports</h3> <!-- Added new section -->
         <li>
-          <a href="#" id="nav-dashboard-link" title="Open the analytics dashboard.">
-            <span class="material-symbols-outlined">dashboard</span>
-            Dashboard
+          <!-- Changed to point to dashboard.html -->
+          <a href="dashboard.html" id="nav-dashboard-link" title="See your real-time daily log." target="_blank">
+            <span class="material-symbols-outlined">today</span>
+            Today's Timeline
+          </a>
+        </li>
+        <li>
+          <!-- NEW link to weekly.html -->
+          <a href="weekly.html" id="nav-weekly-link" title="Analyze your weekly trends." target="_blank">
+            <span class="material-symbols-outlined">calendar_view_week</span>
+            Weekly Review
           </a>
         </li>
         <h3>Settings</h3>
@@ -1052,7 +1061,7 @@
         <h2>About the App & Purpose</h2>
         <div class="faq-item">
           <strong>Q: Is this just another time tracker?</strong>
-          <p>No. Most time trackers are for billing clients or reporting to a manager. <strong>Wurk Wurk is a private reflection tool built for *you*.</strong> The goal isn't just to *track* hours, but to *understand* where your time goes so you can improve your focus and effectiveness.</p>
+          <p>No. Most time trackers are for billing clients or reporting to a manager. <strong>WurkWurk is a private reflection tool built for *you*.</strong> The goal isn't just to *track* hours, but to *understand* where your time goes so you can improve your focus and effectiveness.</p>
         </div>
         <div class="faq-item">
           <strong>Q: What's the main benefit of using this?</strong>
@@ -1105,7 +1114,7 @@
         <h2>Getting Value from Your Log</h2>
         <div class="faq-item">
           <strong>Q: I have a week of data. Now what?</strong>
-          <p>This is the most important part! Block 15-20 minutes on your calendar for a "Weekly Review." Open your Google Sheet or the **Dashboard** and look for patterns. Ask yourself:
+          <p>This is the most important part! Block 15-20 minutes on your calendar for a "Weekly Review." Open your Google Sheet or the **Weekly Review** dashboard and look for patterns. Ask yourself:
             <br>1. How much time went to "Meetings" vs. "Focus Time"?
             <br>2. Was my most productive day Tuesday? Why? What was different?
             <br>3. How often was I interrupted? (Look for fractured logs: Coding -> Email -> Coding)
@@ -1133,4 +1142,3 @@
   <script src="options.js"></script>
 </body>
 </html>
-

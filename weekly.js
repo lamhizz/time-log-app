@@ -1,238 +1,19 @@
 /**
- * @file dashboard.js
- * @description This script manages the functionality of the dashboard page (dashboard.html).
- * It handles tab switching, fetching and displaying data for "Today's Stats" and "Weekly Review".
+ * @file weekly.js
+ * @description This script manages the functionality of the "Weekly Review" page (weekly.html).
+ * It fetches historical data from the Google Sheet and renders all charts and tables.
  *
- * @version 2.2 (Hourly Block Timeline)
- * - Renders a two-column, hourly-grouped timeline for "Today's Stats".
- * - `renderDailyTimeline` is overhauled to group logs by hour.
- * - Gap time is now shown as text (e.g., "+15m") in the left column.
+ * @version 1.0 (Refactored from dashboard.js)
  */
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- DOM Element Selections ---
-    const tabs = document.querySelectorAll(".tab-link");
-    const contents = document.querySelectorAll(".tab-content");
-
-    // "Today's Stats" Elements
-    const logsTodayEl = document.getElementById("logs-today");
-    const tasksCompletedEl = document.getElementById("tasks-completed");
-    const focusScoreEl = document.getElementById("focus-score");
-    const timelineContainerEl = document.getElementById("daily-timeline-container"); // <-- Changed
 
     // "Weekly Review" Elements
     const refreshDataBtn = document.getElementById("refresh-data-btn");
     const weeklyStatusEl = document.getElementById("weekly-status");
 
-    // --- Event Listeners ---
-
-    // Tab switching logic
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            tabs.forEach(item => item.classList.remove("active"));
-            contents.forEach(item => item.classList.remove("active"));
-
-            tab.classList.add("active");
-            document.getElementById(tab.dataset.tab).classList.add("active");
-        });
-    });
-
-    // Refresh weekly data
-    refreshDataBtn.addEventListener("click", () => {
-        weeklyStatusEl.textContent = "Refreshing data from Google Sheet...";
-        weeklyStatusEl.className = "status-message info";
-        refreshDataBtn.disabled = true;
-
-        chrome.runtime.sendMessage({ action: "getWeeklyData" }, (response) => {
-            if (chrome.runtime.lastError || response.status === "error") {
-                weeklyStatusEl.textContent = `Error: ${response.message || "Could not fetch data."}`;
-                weeklyStatusEl.className = "status-message error";
-                refreshDataBtn.disabled = false;
-                return;
-            }
-
-            weeklyStatusEl.textContent = "Data refreshed successfully!";
-            weeklyStatusEl.className = "status-message success";
-            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className="status-message"; }, 3000);
-            refreshDataBtn.disabled = false;
-            
-            // --- Defensive data handling ---
-            let weeklyData = response.data;
-
-            // If data is a string, try to parse it as JSON
-            if (typeof weeklyData === 'string') {
-                try {
-                    weeklyData = JSON.parse(weeklyData);
-                } catch (e) {
-                    console.error("Failed to parse weekly data:", e);
-                    weeklyData = []; // Default to empty array on parsing error
-                }
-            }
-
-            // Ensure the data is an array before proceeding
-            if (!Array.isArray(weeklyData)) {
-                console.warn("Received weekly data is not an array. Defaulting to empty.", weeklyData);
-                weeklyData = [];
-            }
-
-            // Store the full dataset and render the dashboard
-            fullWeeklyData = weeklyData;
-            renderWeeklyDashboard(fullWeeklyData);
-        });
-    });
-
-
-    // --- Data Loading and Rendering ---
-
-    /**
-     * @description Loads and displays the stats for the "Today's Stats" tab.
-     */
-    function loadTodayStats() {
-        chrome.storage.local.get({
-            tasksCompleted: 0,
-            recentLogs: [] // This now contains rich log objects
-        }, (data) => {
-            
-            const logs = data.recentLogs || [];
-            const logsToday = logs.length;
-            const driftedLogs = logs.filter(log => log.drifted).length;
-
-            // Update KPIs
-            logsTodayEl.textContent = logsToday;
-            tasksCompletedEl.textContent = data.tasksCompleted;
-            
-            const focusScore = logsToday > 0
-                ? Math.round(((logsToday - driftedLogs) / logsToday) * 100)
-                : 100;
-            focusScoreEl.textContent = `${focusScore}%`;
-
-            // Render the new timeline
-            renderDailyTimeline(logs);
-        });
-    }
-
-    /**
-     * @description (OVERHAULED for Proposal 2) Renders the hourly block timeline.
-     * @param {Array<object>} logs - The array of rich log objects from local storage.
-     */
-    function renderDailyTimeline(logs) {
-        if (!timelineContainerEl) return;
-
-        if (logs.length === 0) {
-            timelineContainerEl.innerHTML = "<p>No activity yet today.</p>";
-            return;
-        }
-
-        // Logs are stored newest-first, so we reverse them for chronological order.
-        const chronologicalLogs = logs.slice().reverse(); 
-        
-        timelineContainerEl.innerHTML = ""; // Clear loader
-        
-        let currentHour = -1; // Initialize to -1 to force first header
-
-        chronologicalLogs.forEach((log) => {
-            // 1. Get hour from log time (e.g., "09:05" -> 9)
-            const logHour = parseInt(log.time.split(':')[0], 10);
-
-            // 2. Check if we need to render an "Hour Header"
-            if (logHour > currentHour) {
-                currentHour = logHour;
-                const hourEl = document.createElement("div");
-                hourEl.className = "timeline-hour-header";
-                // Format hour (e.g., 9 -> "9:00 AM", 14 -> "2:00 PM")
-                const ampm = currentHour < 12 ? 'AM' : 'PM';
-                const displayHour = currentHour % 12 === 0 ? 12 : currentHour % 12;
-                hourEl.textContent = `--- ${displayHour}:00 ${ampm} ---`;
-                timelineContainerEl.appendChild(hourEl);
-            }
-
-            // 3. Create the timeline entry (two-column layout)
-            const entryEl = document.createElement("div");
-            entryEl.className = "timeline-entry";
-
-            // --- Add special classes based on log content ---
-            if (log.tag && log.tag.toLowerCase() === 'break') {
-                entryEl.classList.add("timeline-entry-break");
-            }
-            if (log.drifted) {
-                entryEl.classList.add("timeline-entry-drifted");
-            }
-
-            // Generate a consistent color from the tag string
-            const tagColor = stringToHslColor(log.tag || "default");
-            // Apply color to border
-            entryEl.style.borderColor = tagColor.bg; 
-            entryEl.style.borderLeftColor = tagColor.fg; // Strong left border
-
-            // Badges for special logs
-            let badgesHTML = "";
-            if (log.drifted) {
-                badgesHTML += `<span class="timeline-badge timeline-badge-drifted">Drifted</span>`;
-            }
-            if (log.reactive) {
-                badgesHTML += `<span class="timeline-badge timeline-badge-reactive">Reactive</span>`;
-            }
-
-            // Gap text (e.g., "+15m" or "---")
-            const gapText = (log.gap !== "N/A" && log.gap > 0) ? `+${log.gap}m` : "---";
-
-            // --- Build the entry's HTML ---
-            entryEl.innerHTML = `
-                <div class="timeline-meta">
-                    <span class="timeline-time">${log.time || "00:00"}</span>
-                    <span class="timeline-gap">${gapText}</span>
-                </div>
-                <div class="timeline-content">
-                    <p class="timeline-text">${escapeHTML(log.logText)}</p>
-                    ${log.tag ? `<span class="timeline-tag" style="background-color: ${tagColor.bg}; color: ${tagColor.fg};">${escapeHTML(log.tag)}</span>` : ''}
-                    ${badgesHTML ? `<div class="timeline-badges">${badgesHTML}</div>` : ''}
-                </div>
-            `;
-            
-            timelineContainerEl.appendChild(entryEl);
-        });
-    }
-
-    /**
-     * @description (NEW) Simple helper to prevent XSS from log text.
-     * @param {string} str - The string to escape.
-     * @returns {string} The escaped string.
-     */
-    function escapeHTML(str) {
-        if (!str) return "";
-        return str.replace(/[&<>"']/g, function(match) {
-            return {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[match];
-        });
-    }
-
-    /**
-     * @description (NEW) Generates a consistent, accessible HSL color pair from any string.
-     * @param {string} str - The input string (e.g., a tag name).
-     * @returns {{bg: string, fg: string}} A background (light) and foreground (dark) color.
-     */
-    function stringToHslColor(str) {
-        if (!str) str = "default";
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const h = hash % 360;
-        return {
-            bg: `hsl(${h}, 80%, 90%)`, // Light background
-            fg: `hsl(${h}, 60%, 30%)`  // Dark foreground
-        };
-    }
-
-
-    // --- "Weekly Review" Tab Logic ---
-
-    // --- NEW: "Weekly Review" Elements ---
+    // --- "Weekly Review" Elements ---
     const dateRangeSelect = document.getElementById("date-range-select");
     const customDateInputs = document.getElementById("custom-date-inputs");
     const startDateInput = document.getElementById("start-date");
@@ -766,7 +547,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Initial Load ---
-    loadTodayStats(); // This will now render the new timeline
     // Set default dates for custom filter
     endDateInput.valueAsDate = new Date();
     startDateInput.valueAsDate = new Date(new Date().setDate(new Date().getDate() - 7));

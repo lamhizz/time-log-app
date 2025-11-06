@@ -1,0 +1,162 @@
+/**
+ * WurkWurk Demo Data Injector
+ * * INSTRUCTIONS:
+ * 1. Open your dashboard.html page.
+ * 2. Open the developer console (F12).
+ * 3. Copy and paste this entire snippet into the console.
+ * 4. Press Enter.
+ * * The page will reload with a full day of dummy data in the "Today's Stats" tab.
+ */
+(function() {
+
+    console.log("Injecting WurkWurk demo data...");
+
+    // Get today's date in 'YYYY-MM-DD' format
+    const today = new Date();
+    const dateFormatted = today.toLocaleDateString('en-CA'); // 'yyyy-MM-dd'
+
+    // Helper to create a full timestamp
+    const createTimestamp = (timeStr) => {
+        const [hours, minutes] = timeStr.split(':');
+        const date = new Date();
+        date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        return date.toISOString();
+    };
+
+    // Create the dummy log data (chronological order)
+    const dummyLogs = [
+        {
+            logText: "Cleared overnight emails, planned day's tasks",
+            tag: "Email",
+            drifted: false,
+            reactive: true,
+            time: "09:05",
+            date: dateFormatted,
+            gap: "N/A", // First log of the day
+            fullTimestamp: createTimestamp("09:05")
+        },
+        {
+            logText: "Attended daily stand-up meeting",
+            tag: "Meeting",
+            drifted: false,
+            reactive: true,
+            time: "09:32",
+            date: dateFormatted,
+            gap: 27,
+            fullTimestamp: createTimestamp("09:32")
+        },
+        {
+            logText: "Continued work on [Project Phoenix] main feature",
+            tag: "Focus Time",
+            drifted: false,
+            reactive: false,
+            time: "09:48",
+            date: dateFormatted,
+            gap: 16,
+            fullTimestamp: createTimestamp("09:48")
+        },
+        {
+            logText: "Got pulled into an urgent bug fix by sales",
+            tag: "Dev",
+            drifted: false,
+            reactive: true,
+            time: "10:30",
+            date: dateFormatted,
+            gap: 42,
+            fullTimestamp: createTimestamp("10:30")
+        },
+        {
+            logText: "Back to [Project Phoenix] feature",
+            tag: "Focus Time",
+            drifted: false,
+            reactive: false,
+            time: "10:45",
+            date: dateFormatted,
+            gap: 15,
+            fullTimestamp: createTimestamp("10:45")
+        },
+        {
+            logText: "Went to get coffee",
+            tag: "Break",
+            drifted: false,
+            reactive: false,
+            time: "11:35",
+            date: dateFormatted,
+            gap: 50,
+            fullTimestamp: createTimestamp("11:35")
+        },
+        {
+            logText: "Finished code, submitted merge request",
+            tag: "Dev",
+            drifted: false,
+            reactive: false,
+            time: "12:10",
+            date: dateFormatted,
+            gap: 35,
+            fullTimestamp: createTimestamp("12:10")
+        },
+        {
+            logText: "Mindlessly browsed news and social media",
+            tag: "Browsing",
+            drifted: true,
+            reactive: false,
+            time: "12:25",
+            date: dateFormatted,
+            gap: 15,
+            fullTimestamp: createTimestamp("12:25")
+        },
+        {
+            logText: "Lunch break",
+            tag: "Break",
+            drifted: false,
+            reactive: false,
+            time: "13:00",
+            date: dateFormatted,
+            gap: 35,
+            fullTimestamp: createTimestamp("13:00")
+        },
+        {
+            logText: "Weekly sync meeting with the product team",
+            tag: "Meeting",
+            drifted: false,
+            reactive: true,
+            time: "14:00",
+            date: dateFormatted,
+            gap: 60,
+            fullTimestamp: createTimestamp("14:00")
+        },
+        {
+            logText: "Clearing Slack messages and non-urgent emails",
+            tag: "Slack",
+            drifted: false,
+            reactive: false,
+            time: "14:48",
+            date: dateFormatted,
+            gap: 48,
+            fullTimestamp: createTimestamp("14:48")
+        }
+    ];
+
+    // The app stores logs newest-first, so we must reverse the array
+    const logsToStore = dummyLogs.reverse();
+
+    // Calculate total drifted logs
+    const driftedCount = dummyLogs.filter(log => log.drifted).length;
+
+    // Set the data in chrome.storage.local
+    if (chrome && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({
+            recentLogs: logsToStore,
+            logsToday: dummyLogs.length,
+            driftedLogs: driftedCount,
+            tasksCompleted: 3 // Add a few completed tasks
+        }, () => {
+            console.log("SUCCESS: Dummy data injected.");
+            // Reload the page to show the new timeline
+            window.location.reload();
+        });
+    } else {
+        console.error("This snippet must be run on a page with extension context (like the dashboard).");
+    }
+
+})();

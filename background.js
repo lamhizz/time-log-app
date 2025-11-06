@@ -912,4 +912,3 @@ function updateDailyStats(fullLogData) {
     });
   });
 }
-
