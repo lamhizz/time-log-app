@@ -273,7 +273,7 @@ function doPost(e) {
 
     sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
     if (!sheet) {
-      throw new Error(`Sheet not found. Please ensure a sheet named "${SHEET_NAME}" exists.`);
+      throw new Error(`Sheet not found: Please ensure a sheet named "${SHEET_NAME}" exists.`);
     }
 
     const now = new Date();
@@ -334,40 +334,12 @@ function doPost(e) {
 </code></pre>
   </div>
 
-  <script>
-    document.getElementById('copy-script-btn').addEventListener('click', () => {
-      const codeEl = document.getElementById('apps-script-code');
-      const copyButton = document.getElementById('copy-script-btn');
-      const code = codeEl.innerText;
-
-      const textArea = document.createElement("textarea");
-      textArea.value = code;
-      textArea.style.position = "fixed";
-      textArea.style.top = "0";
-      textArea.style.left = "0";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      
-      textArea.focus();
-      textArea.select();
-
-      try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-          copyButton.innerHTML = `<span class="material-symbols-outlined">check</span> Copied!`;
-          setTimeout(() => {
-            copyButton.innerHTML = `<span class="material-symbols-outlined">content_copy</span> Copy to Clipboard`;
-          }, 2000);
-        } else {
-          copyButton.textContent = "Failed to copy";
-        }
-      } catch (err) {
-        console.error('Failed to copy script: ', err);
-        copyButton.textContent = "Failed to copy";
-      }
-
-      document.body.removeChild(textArea);
-    });
-  </script>
+  <!-- 
+    REMOVED the inline script block:
+    <script> ... </script>
+  -->
+  
+  <!-- ADDED this line to load the script from an external file -->
+  <script src="app_script_viewer.js"></script>
 </body>
 </html>
