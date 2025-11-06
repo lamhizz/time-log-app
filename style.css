@@ -122,6 +122,7 @@
   box-sizing: border-box !important;
   resize: vertical !important;
   color: var(--work-log-text-dark);
+  background-color: #fff !important; /* Already set, but good to confirm */
 }
 #work-log-popup-input:focus {
   border-color: var(--work-log-primary) !important;
@@ -204,6 +205,8 @@
   flex-shrink: 0;
   border-radius: var(--work-log-radius) !important;
   border: 1px solid var(--work-log-border) !important;
+  background-color: #fff !important; /* NEW: Added to fight dark mode */
+  accent-color: var(--wurk-primary); /* NEW: Styles the checkmark */
 }
 .work-log-checkbox-group label {
   margin: 0 !important;
@@ -353,4 +356,3 @@
 .work-log-status-success {
   color: var(--work-log-success) !important;
 }
-

@@ -66,8 +66,10 @@ h1 {
 }
 
 /* --- Today's Stats --- */
-#today {
+#today-kpis { /* Renamed from #today */
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: grid;
+    gap: 1.5rem;
 }
 
 .stat-card, .activity-card {
@@ -86,11 +88,20 @@ h1 {
     text-transform: uppercase; /* Added */
 }
 
-.stat-card p {
+/* UPDATED: Changed from 'p' to '.stat-metric' */
+.stat-card .stat-metric {
     margin: 0;
     font-size: 2.25rem; /* 36px - Adjusted */
     font-weight: 700;
     color: var(--work-log-accent-dark);
+}
+
+/* NEW: Context style for sub-metrics */
+.stat-context {
+    display: block;
+    font-size: 0.875rem; /* 14px */
+    color: #6b7280; /* gray-500 */
+    margin-top: 0.25rem; /* 4px */
 }
 
 .activity-card {
@@ -183,7 +194,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    /* margin-bottom: 2rem; -- Removed, handled by main grid */
 }
 
 /* Use existing .stat-card for KPIs */
@@ -400,6 +411,15 @@ h1 {
     font-size: 12px;
     font-style: italic;
     color: #9ca3af; /* Gray */
+    display: block;
+    margin-top: 2px;
+}
+/* NEW: Warning style for large gaps */
+.timeline-gap-warning {
+    font-size: 12px;
+    font-style: italic;
+    font-weight: 600; /* Bold */
+    color: #D97706; /* Amber-600 */
     display: block;
     margin-top: 2px;
 }

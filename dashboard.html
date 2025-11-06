@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WurkWurk - Today's Timeline</title> <!-- Changed title -->
+    <title>WurkWurk Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
@@ -12,44 +12,45 @@
         <header class="header">
             <div class="logo-container">
                 <img src="icons/wurk-wurk-logo-48.png" alt="WurkWurk Logo" class="logo">
-                <h1>Today's Timeline</h1> <!-- Changed header -->
+                <h1>Today's Timeline</h1>
             </div>
-            <!-- Added navigation link to the other page -->
-            <a href="weekly.html" class="header-nav-link">Go to Weekly Review &rarr;</a>
+            <!-- Link to new weekly page -->
+            <a href="weekly.html" class="header-nav-link">View Weekly Review &rarr;</a>
         </header>
 
-        <!-- Removed Tab Navigation -->
-
         <main id="main-content">
-            <!-- Today's Stats Tab (now the only content) -->
-            <div id="today" class="tab-content active">
-                <div class="stat-card">
-                    <h2>Logs Today</h2>
-                    <p id="logs-today">0</p>
-                </div>
-                <div class="stat-card">
-                    <h2>Tasks Completed</h2>
-                    <p id="tasks-completed">0</p>
-                </div>
+            <!-- Today's Stats KPIs (OVERHAULED) -->
+            <div id="today-kpis" class="kpi-grid">
+                <!-- Card 1: Focus Score -->
                 <div class="stat-card">
                     <h2>Focus Score</h2>
-                    <p id="focus-score">100%</p>
+                    <p id="focus-score-metric" class="stat-metric">100%</p>
+                    <span id="focus-score-context" class="stat-context">No drifted logs yet.</span>
                 </div>
-                <div class="activity-card">
-                    <h2>Today's Timeline</h2>
-                    <!-- This is the timeline container -->
-                    <div id="daily-timeline-container">
-                        <p>Loading today's activity...</p>
-                    </div>
+                <!-- Card 2: Interruptions -->
+                <div class="stat-card">
+                    <h2>Interruptions</h2>
+                    <p id="reactive-metric" class="stat-metric">0</p>
+                    <span id="reactive-context" class="stat-context">No reactive logs yet.</span>
+                </div>
+                <!-- Card 3: Activity Summary -->
+                <div class="stat-card">
+                    <h2>Activity Summary</h2>
+                    <p id="activity-metric" class="stat-metric">0</p>
+                    <span id="activity-context" class="stat-context">Tasks Completed: 0</span>
                 </div>
             </div>
 
-            <!-- Removed Weekly Review Tab Content -->
-
+            <!-- Today's Timeline (from previous step) -->
+            <div class="activity-card">
+                <h2>Today's Timeline</h2>
+                <div id="daily-timeline-container">
+                    <p>Loading today's activity...</p>
+                </div>
+            </div>
         </main>
     </div>
-    <script src="lib/chart.js"></script>
-    <!-- Renamed script to today.js -->
+    <!-- Load the new today.js script -->
     <script src="today.js"></script>
 </body>
 </html>

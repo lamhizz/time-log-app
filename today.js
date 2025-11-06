@@ -3,26 +3,36 @@
  * @description This script manages the functionality of the "Today's Stats" page (dashboard.html).
  * It fetches real-time daily data from local storage and renders the timeline.
  *
- * @version 1.0 (Refactored from dashboard.js)
+ * @version 2.3 (At-a-Glance KPIs)
+ * - Implements the "At-a-Glance Story" layout for the top KPI cards.
+ * - Calculates "Top Reactive Tag" and provides context for all KPIs.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- DOM Element Selections ---
 
-    // "Today's Stats" Elements
-    const logsTodayEl = document.getElementById("logs-today");
-    const tasksCompletedEl = document.getElementById("tasks-completed");
-    const focusScoreEl = document.getElementById("focus-score");
+    // --- (NEW) KPI Card Elements ---
+    const focusScoreMetricEl = document.getElementById("focus-score-metric");
+    const focusScoreContextEl = document.getElementById("focus-score-context");
+    
+    const reactiveMetricEl = document.getElementById("reactive-metric");
+    const reactiveContextEl = document.getElementById("reactive-context");
+
+    const activityMetricEl = document.getElementById("activity-metric");
+    const activityContextEl = document.getElementById("activity-context");
+    
+    // Timeline Element
     const timelineContainerEl = document.getElementById("daily-timeline-container");
 
     // --- Data Loading and Rendering ---
 
     /**
-     * @description Loads and displays the stats for the "Today's Stats" tab.
-     * It reads the rich `recentLogs` array from local storage to populate
-     * both the KPIs and the new daily timeline.
+     * @description (OVERHAULED for "At-a-Glance Story")
+     * Loads and displays the stats for the "Today's Stats" tab.
+     * It now calculates and displays the new contextual KPIs.
      */
     function loadTodayStats() {
+        // We ask for 'recentLogs' from local storage, which is updated by background.js
         chrome.storage.local.get({
             tasksCompleted: 0,
             recentLogs: [] // This now contains rich log objects
@@ -30,18 +40,47 @@ document.addEventListener("DOMContentLoaded", () => {
             
             const logs = data.recentLogs || [];
             const logsToday = logs.length;
-            const driftedLogs = logs.filter(log => log.drifted).length;
+            const tasksCompleted = data.tasksCompleted;
 
-            // Update KPIs
-            logsTodayEl.textContent = logsToday;
-            tasksCompletedEl.textContent = data.tasksCompleted;
-            
+            // --- 1. Focus Score Card ---
+            const driftedLogs = logs.filter(log => log.drifted);
+            const driftedCount = driftedLogs.length;
             const focusScore = logsToday > 0
-                ? Math.round(((logsToday - driftedLogs) / logsToday) * 100)
+                ? Math.round(((logsToday - driftedCount) / logsToday) * 100)
                 : 100;
-            focusScoreEl.textContent = `${focusScore}%`;
+            
+            focusScoreMetricEl.textContent = `${focusScore}%`;
+            if (driftedCount === 0) {
+                focusScoreContextEl.textContent = "No drifted logs yet.";
+            } else {
+                focusScoreContextEl.textContent = `You've drifted ${driftedCount} time${driftedCount > 1 ? 's' : ''} today.`;
+            }
 
-            // Render the new timeline
+            // --- 2. Interruptions Card ---
+            const reactiveLogs = logs.filter(log => log.reactive);
+            const reactiveCount = reactiveLogs.length;
+
+            reactiveMetricEl.textContent = reactiveCount;
+            
+            if (reactiveCount === 0) {
+                reactiveContextEl.textContent = "No reactive logs yet.";
+            } else {
+                // Find the top reactive tag
+                const tagCounts = reactiveLogs.reduce((acc, log) => {
+                    const tag = log.tag || "Untagged";
+                    acc[tag] = (acc[tag] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                const topCulprit = Object.entries(tagCounts).sort(([,a],[,b]) => b-a)[0];
+                reactiveContextEl.textContent = `Top culprit: '${topCulprit[0]}' (${topCulprit[1]} logs)`;
+            }
+
+            // --- 3. Activity Summary Card ---
+            activityMetricEl.textContent = logsToday;
+            activityContextEl.textContent = `Tasks Completed: ${tasksCompleted}`;
+
+            // --- 4. Render the timeline ---
             renderDailyTimeline(logs);
         });
     }
@@ -67,18 +106,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         chronologicalLogs.forEach((log) => {
             // 1. Get hour from log time (e.g., "09:05" -> 9)
-            const logHour = parseInt(log.time.split(':')[0], 10);
+            // Handle potential errors if log.time is not set
+            const logHour = log.time ? parseInt(log.time.split(':')[0], 10) : -1;
 
             // 2. Check if we need to render an "Hour Header"
-            if (logHour > currentHour) {
-                currentHour = logHour;
-                const hourEl = document.createElement("div");
-                hourEl.className = "timeline-hour-header";
-                // Format hour (e.g., 9 -> "9:00 AM", 14 -> "2:00 PM")
-                const ampm = currentHour < 12 ? 'AM' : 'PM';
-                const displayHour = currentHour % 12 === 0 ? 12 : currentHour % 12;
-                hourEl.textContent = `--- ${displayHour}:00 ${ampm} ---`;
-                timelineContainerEl.appendChild(hourEl);
+            if (logHour !== -1 && logHour > currentHour) {
+                // Also add headers for any empty hours in between
+                for (let hour = currentHour + 1; hour <= logHour; hour++) {
+                    currentHour = hour;
+                    const hourEl = document.createElement("div");
+                    hourEl.className = "timeline-hour-header";
+                    // Format hour (e.g., 9 -> "9:00 AM", 14 -> "2:00 PM")
+                    const ampm = currentHour < 12 ? 'AM' : 'PM';
+                    const displayHour = currentHour % 12 === 0 ? 12 : currentHour % 12;
+                    hourEl.textContent = `--- ${displayHour}:00 ${ampm} ---`;
+                    timelineContainerEl.appendChild(hourEl);
+                }
             }
 
             // 3. Create the timeline entry (two-column layout)
@@ -109,13 +152,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Gap text (e.g., "+15m" or "---")
-            const gapText = (log.gap !== "N/A" && log.gap > 0) ? `+${log.gap}m` : "---";
+            const gapMinutes = log.gap !== "N/A" ? parseInt(log.gap, 10) : 0;
+            const gapText = (gapMinutes > 0) ? `+${log.gap}m` : "---";
+            // NEW: Add a warning class if the gap is large
+            const gapClass = (gapMinutes > 45) ? "timeline-gap-warning" : "timeline-gap";
+
 
             // --- Build the entry's HTML ---
             entryEl.innerHTML = `
                 <div class="timeline-meta">
                     <span class="timeline-time">${log.time || "00:00"}</span>
-                    <span class="timeline-gap">${gapText}</span>
+                    <span class="${gapClass}">${gapText}</span>
                 </div>
                 <div class="timeline-content">
                     <p class="timeline-text">${escapeHTML(log.logText)}</p>
@@ -165,5 +212,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- Initial Load ---
-    loadTodayStats(); // This will now render the new timeline
+    loadTodayStats(); // This will now render the new KPIs and timeline
 });
