@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-R">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,6 +19,7 @@
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+
     body {
       font-family: var(--work-log-font);
       margin: 0;
@@ -28,6 +30,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+
     .container {
       max-width: 650px;
       margin: 0 auto;
@@ -36,40 +39,52 @@
       border-radius: var(--work-log-radius);
       box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
+
     img.logo {
-      width: 120px; 
-      display: block; 
-      margin: 0 auto 10px; 
+      width: 120px;
+      display: block;
+      margin: 0 auto 10px;
       opacity: 0.8;
     }
-    h1, h2, h3 {
+
+    h1,
+    h2,
+    h3 {
       color: var(--wurk-text-dark);
       font-weight: 600;
     }
+
     h1 {
       text-align: center;
       font-size: 22px;
       margin: 0 0 20px 0;
     }
+
     h2 {
       font-size: 18px;
       margin-top: 24px;
       border-bottom: 1px solid var(--wurk-secondary);
       padding-bottom: 5px;
     }
+
     h3 {
       font-size: 16px;
       margin-top: 20px;
       color: var(--wurk-primary);
     }
-    p, li {
+
+    p,
+    li {
       font-size: 14px;
       line-height: 1.6;
       color: var(--wurk-text-dark);
     }
-    ul, ol {
+
+    ul,
+    ol {
       padding-left: 20px;
     }
+
     pre {
       background-color: #F8F9FA;
       border: 1px solid #EAECEF;
@@ -79,20 +94,25 @@
       overflow-x: auto;
       line-height: 1.5;
     }
+
     code {
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       font-size: 13px;
     }
+
     pre code {
       color: #333;
     }
-    p > code, li > code {
+
+    p>code,
+    li>code {
       background-color: #EAEAEA;
       color: #D6336C;
       padding: 2px 5px;
       border-radius: 3px;
       font-weight: 600;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -100,19 +120,24 @@
       font-size: 13px;
       border: 1px solid var(--work-log-border);
     }
-    th, td {
+
+    th,
+    td {
       border: 1px solid var(--work-log-border);
       padding: 8px 10px;
       text-align: left;
     }
+
     th {
       background-color: var(--wurk-secondary);
       font-weight: 600;
     }
+
     strong {
       color: var(--wurk-text-dark);
       font-weight: 600;
     }
+
     .links {
       display: flex;
       gap: 12px;
@@ -121,6 +146,7 @@
       padding-top: 20px;
       border-top: 1px solid var(--wurk-secondary);
     }
+
     .links a {
       font-family: inherit;
       font-size: 14px;
@@ -133,18 +159,31 @@
       color: var(--wurk-text-dark);
       background-color: #fff;
     }
+
     .links a:hover {
       background-color: var(--wurk-secondary);
     }
+
+    .guide-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 15px 0;
+      border: 1px solid var(--work-log-border);
+      border-radius: var(--work-log-radius);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
   </style>
 </head>
+
 <body>
 
   <div class="container">
     <img src="images/wurk-wurk-logo.png" alt="WurkWurk Logo" class="logo">
     <h1>WurkWurk Setup Guide</h1>
 
-    <p>This guide provides step-by-step instructions to connect the WurkWurk Chrome extension to your own private Google Sheet.</p>
+    <p>This guide provides step-by-step instructions to connect the WurkWurk Chrome extension to your own private Google
+      Sheet.</p>
 
     <h2>Step 1: Create Your Google Sheet</h2>
     <ol>
@@ -152,16 +191,18 @@
       <li>Click on <strong>Blank</strong> to create a new spreadsheet.</li>
       <li>Give the spreadsheet a name you'll remember, like "My WurkWurk Logs."</li>
     </ol>
+    <img src="images/setup-guide/step-1.jpeg" alt="Step 1: Create Spreadsheet" class="guide-image">
 
     <h2>Step 2: Add Headers to the Sheet</h2>
-    <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.</p>
+    <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to
+      function correctly.</p>
 
     <table>
       <thead>
         <tr>
           <th>A1</th>
           <th>B1</th>
-                    <th>C1</th>
+          <th>C1</th>
           <th>D1</th>
           <th>E1</th>
           <th>F1</th>
@@ -199,6 +240,7 @@
       <li>In cell <strong>I1</strong>, type: <code>Reactive</code></li>
       <li>In cell <strong>J1</strong>, type: <code>Keywords</code></li>
     </ol>
+    <img src="images/setup-guide/step-2.jpeg" alt="Step 2: Add Headers" class="guide-image">
 
     <h2>Step 3: Create the Google Apps Script</h2>
     <p>This script will act as the secure bridge between the Chrome extension and your Google Sheet.</p>
@@ -206,13 +248,17 @@
       <li>In your Google Sheet, click <strong>Extensions</strong> > <strong>Apps Script</strong>.</li>
       <li>A new browser tab will open with the Apps Script editor.</li>
     </ol>
+    <img src="images/setup-guide/step-3.jpeg" alt="Step 3: Open Apps Script" class="guide-image">
 
     <h2>Step 4: Paste the Script Code</h2>
     <ol>
-      <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g., <code>function myFunction() { ... }</code>).</li>
+      <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g.,
+        <code>function myFunction() { ... }</code>).
+      </li>
       <li>Copy the entire script below and paste it into the empty <code>Code.gs</code> editor.</li>
     </ol>
-<pre><code>/**
+    <img src="images/setup-guide/step-4.jpeg" alt="Step 4: Paste Code" class="guide-image">
+    <pre><code>/**
  * @file Google Apps Script for WurkWurk Chrome Extension (v3.2 with Gap Fix)
  * @description This script receives data from the Chrome extension and logs it to a Google Sheet.
  * It also provides data for the dashboard and connection diagnostics.
@@ -440,7 +486,8 @@ function doPost(e) {
 </code></pre>
     <ol start="3">
       <li>
-        <strong>IMPORTANT</strong>: Find the line <code>const TIME_ZONE = "Europe/Vilnius";</code> and change the time zone to your own (e.g., <code>"America/New_York"</code>).
+        <strong>IMPORTANT</strong>: Find the line <code>const TIME_ZONE = "Europe/Vilnius";</code> and change the time
+        zone to your own (e.g., <code>"America/New_York"</code>).
       </li>
       <li>Save the script by clicking the floppy disk icon or pressing <code>Ctrl+S</code>.</li>
     </ol>
@@ -455,23 +502,30 @@ function doPost(e) {
         <ul>
           <li><strong>Description</strong>: <code>WurkWurk Log Receiver</code> (Optional)</li>
           <li><strong>Execute as</strong>: <code>Me</code> (This is very important).</li>
-          <li><strong>Who has access</strong>: <code>Anyone</code> (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).</li>
+          <li><strong>Who has access</strong>: <code>Only myself</code> (This does NOT make your sheet public. It only
+            allows
+            someone with the secret, complex URL to send data to the script).</li>
         </ul>
       </li>
       <li>Click <strong>Deploy</strong>.</li>
     </ol>
+    <img src="images/setup-guide/step-5.jpeg" alt="Step 5: Deploy as Web App" class="guide-image">
 
     <h2>Step 6: Authorize the Script</h2>
     <ol>
       <li>Google will prompt you to authorize the script. Click <strong>Authorize access</strong>.</li>
       <li>Choose your Google account.</li>
-      <li>You will likely see a "Google hasn't verified this app" warning. This is normal for personal scripts. Click <strong>Advanced</strong>, then click <strong>"Go to [Your Script Name] (unsafe)"</strong>.</li>
+      <li>You will likely see a "Google hasn't verified this app" warning. This is normal for personal scripts. Click
+        <strong>Advanced</strong>, then click <strong>"Go to [Your Script Name] (unsafe)"</strong>.
+      </li>
       <li>Click <strong>Allow</strong> to grant the script permission to edit your spreadsheets.</li>
     </ol>
+    <img src="images/setup-guide/step-6.jpeg" alt="Step 6: Authorize Script" class="guide-image">
 
     <h2>Step 7: Copy the Web App URL</h2>
     <p>After deployment is complete, a dialog box will appear with the <strong>Web app URL</strong>.</p>
     <p><strong>COPY THIS URL.</strong> You will need it for the final step.</p>
+    <img src="images/setup-guide/step-7.jpeg" alt="Step 7: Copy URL" class="guide-image">
 
     <h2>Step 8: Configure the Extension</h2>
     <ol>
@@ -481,13 +535,16 @@ function doPost(e) {
       <li>On the settings page:
         <ul>
           <li>Paste the <strong>Web app URL</strong> you copied into the first field, "Google Apps Script URL."</li>
-          <li>Click the <strong>Test</strong> button next to it. You should see a green "Success!" message. If not, double-check your script deployment and URL.</li>
+          <li>Click the <strong>Test</strong> button next to it. You should see a green "Success!" message. If not,
+            double-check your script deployment and URL.</li>
           <li>Configure your other preferences, such as the log interval and notification sound.</li>
         </ul>
       </li>
       <li>Scroll to the bottom and click <strong>Save Settings</strong>.</li>
     </ol>
-    <p>You are all set! The extension is now fully configured and will start prompting you at your chosen interval during your working hours.</p>
+    <img src="images/setup-guide/step-8.jpeg" alt="Step 8: Configure Extension" class="guide-image">
+    <p>You are all set! The extension is now fully configured and will start prompting you at your chosen interval
+      during your working hours.</p>
 
     <div class="links">
       <a href="#" id="open-settings">Back to Settings</a>
@@ -502,4 +559,5 @@ function doPost(e) {
   </script>
 
 </body>
+
 </html>

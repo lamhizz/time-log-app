@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Using wght 200 as requested for a lighter icon style -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,200,0,0" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,200,0,0"
+    rel="stylesheet" />
   <style>
     :root {
       --wurk-primary: #52A2A0;
@@ -28,6 +30,7 @@
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+
     body {
       font-family: var(--work-log-font);
       margin: 0;
@@ -39,11 +42,12 @@
       display: flex;
       min-height: 100vh;
     }
-    
+
     /* --- Google Font Icon Base Style --- */
     .material-symbols-outlined {
       font-weight: 200;
-      font-size: 20px; /* Default size */
+      font-size: 20px;
+      /* Default size */
       vertical-align: middle;
       line-height: 1;
       font-variation-settings:
@@ -62,22 +66,29 @@
       flex-direction: column;
       padding: 20px 12px;
       flex-shrink: 0;
-      height: 100vh; /* Changed from min-height */
-      position: sticky; /* Added */
-      top: 0; /* Added */
+      height: 100vh;
+      /* Changed from min-height */
+      position: sticky;
+      /* Added */
+      top: 0;
+      /* Added */
       box-sizing: border-box;
     }
+
     .sidebar-logo {
       width: 120px;
       margin: 10px auto 20px;
       display: block;
     }
+
     .sidebar-menu {
       list-style: none;
       padding: 0;
       margin: 0;
-      overflow-y: auto; /* Added for scrolling if menu is long */
+      overflow-y: auto;
+      /* Added for scrolling if menu is long */
     }
+
     .sidebar-menu h3 {
       font-size: 11px;
       font-weight: 600;
@@ -87,6 +98,7 @@
       padding: 16px 12px 4px;
       margin: 0;
     }
+
     .sidebar-menu a {
       display: flex;
       align-items: center;
@@ -99,33 +111,44 @@
       color: var(--wurk-nav-text);
       transition: background-color 0.2s ease, color 0.2s ease;
     }
+
     .sidebar-menu a:hover {
       background-color: var(--wurk-nav-hover);
     }
+
     .sidebar-menu a.active {
       background-color: var(--wurk-nav-active);
       color: white;
     }
+
     .sidebar-menu a .material-symbols-outlined {
       flex-shrink: 0;
       opacity: 0.9;
-      font-size: 22px; /* Slightly larger for sidebar */
+      font-size: 22px;
+      /* Slightly larger for sidebar */
     }
+
     .sidebar-footer {
-      margin-top: auto; /* This makes it stick to the bottom */
-      padding-top: 16px; /* Added padding */
+      margin-top: auto;
+      /* This makes it stick to the bottom */
+      padding-top: 16px;
+      /* Added padding */
       text-align: center;
     }
+
     .sidebar-footer p {
       font-size: 11px;
       color: var(--wurk-text-light);
       margin-bottom: 8px;
       line-height: 1.4;
     }
+
     .support-button-img {
-      width: 160px; /* Smaller for sidebar */
+      width: 160px;
+      /* Smaller for sidebar */
       transition: opacity 0.2s ease;
     }
+
     .support-button-img:hover {
       opacity: 0.85;
     }
@@ -136,16 +159,21 @@
       padding: 32px;
       overflow-y: auto;
       box-sizing: border-box;
-      width: 100%; /* Ensure it takes remaining space */
+      width: 100%;
+      /* Ensure it takes remaining space */
     }
+
     .page-content {
-      display: none; /* Hidden by default */
+      display: none;
+      /* Hidden by default */
       max-width: 700px;
       margin: 0 auto;
     }
+
     .page-content.active {
       display: block;
     }
+
     .container {
       background-color: #fff;
       padding: 24px 32px;
@@ -159,6 +187,7 @@
       display: block;
       margin: 0 auto 15px;
     }
+
     h1 {
       margin: 0 0 20px 0;
       font-size: 24px;
@@ -166,6 +195,7 @@
       text-align: left;
       color: var(--wurk-text-dark);
     }
+
     h2 {
       font-size: 20px;
       font-weight: 600;
@@ -175,6 +205,7 @@
       border-bottom: 1px solid var(--wurk-secondary-hover);
       padding-bottom: 4px;
     }
+
     h3 {
       font-size: 16px;
       font-weight: 600;
@@ -182,22 +213,29 @@
       margin-top: 20px;
       margin-bottom: 8px;
     }
-    p, li {
+
+    p,
+    li {
       font-size: 15px;
       line-height: 1.6;
       color: var(--wurk-text-dark);
     }
-    ul, ol {
+
+    ul,
+    ol {
       padding-left: 20px;
       margin-bottom: 20px;
     }
+
     li {
       margin-bottom: 8px;
     }
+
     .divider {
       border-top: 1px solid var(--wurk-secondary-hover);
       margin: 24px 0;
     }
+
     .button {
       background-color: var(--wurk-primary);
       color: white;
@@ -212,28 +250,34 @@
       text-decoration: none;
       display: inline-block;
     }
+
     .button:hover {
       background-color: var(--wurk-primary-hover);
     }
+
     .button-secondary {
       background-color: transparent;
       border: 1px solid var(--wurk-primary);
       color: var(--wurk-primary);
       margin-left: 10px;
     }
+
     .button-secondary:hover {
       background-color: var(--wurk-primary);
       color: white;
     }
+
     .button-small {
       padding: 6px 12px;
       font-size: 13px;
     }
+
     .button-icon {
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
+
     .button-icon .material-symbols-outlined {
       font-size: 18px;
     }
@@ -247,20 +291,25 @@
       overflow-x: auto;
       line-height: 1.5;
     }
+
     code {
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
       font-size: 13px;
     }
+
     pre code {
       color: #333;
     }
-    p > code, li > code {
+
+    p>code,
+    li>code {
       background-color: #EAEAEA;
       color: #D6336C;
       padding: 2px 5px;
       border-radius: 3px;
       font-weight: 600;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -268,15 +317,19 @@
       font-size: 13px;
       border: 1px solid var(--work-log-border);
     }
-    th, td {
+
+    th,
+    td {
       border: 1px solid var(--work-log-border);
       padding: 8px 10px;
       text-align: left;
     }
+
     th {
       background-color: var(--wurk-secondary);
       font-weight: 600;
     }
+
     .privacy-promise {
       background-color: #F8F9FA;
       border: 1px solid #EAECEF;
@@ -284,24 +337,31 @@
       padding: 16px;
       border-radius: var(--work-log-radius);
     }
+
     .privacy-promise p {
       margin: 0;
       font-weight: 500;
     }
+
     .problem-list li {
       list-style-type: '❓';
       padding-left: 10px;
     }
+
     .faq-item {
       margin-bottom: 20px;
     }
-    .faq-item strong { /* Question style */
+
+    .faq-item strong {
+      /* Question style */
       font-weight: 600;
       color: var(--wurk-text-dark);
       display: block;
       margin-bottom: 4px;
     }
-    .faq-item p { /* Answer style */
+
+    .faq-item p {
+      /* Answer style */
       margin: 0;
       color: #333;
     }
@@ -311,6 +371,7 @@
     .form-group {
       margin-bottom: 16px;
     }
+
     .form-group label {
       display: block;
       margin-bottom: 6px;
@@ -318,6 +379,7 @@
       font-size: 14px;
       color: var(--wurk-text-dark);
     }
+
     .form-group input[type="number"],
     .form-group textarea,
     .form-group input[type="text"],
@@ -331,13 +393,16 @@
       box-sizing: border-box;
       color: var(--wurk-text-dark);
     }
+
     .form-group textarea {
       resize: vertical;
       min-height: 100px;
     }
+
     .form-group input[type="number"] {
       max-width: 100px;
     }
+
     .form-group input:focus,
     .form-group textarea:focus,
     .form-group select:focus {
@@ -345,12 +410,15 @@
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
+
     .form-group p.description {
       font-size: 12px;
       color: var(--wurk-text-light);
       margin: 5px 0 0 0;
     }
-    .form-group-checkbox { /* Old checkbox style, retained for fallbacks */
+
+    .form-group-checkbox {
+      /* Old checkbox style, retained for fallbacks */
       display: flex;
       align-items: center;
       gap: 8px;
@@ -359,29 +427,34 @@
       border-radius: var(--work-log-radius);
       border: 1px solid var(--work-log-border);
     }
+
     .form-group-checkbox label {
       font-weight: 500;
       font-size: 14px;
       margin: 0;
       cursor: pointer;
     }
+
     .form-group-checkbox input[type="checkbox"] {
       width: 16px;
       height: 16px;
       cursor: pointer;
       flex-shrink: 0;
     }
+
     .working-days-group {
       display: flex;
       gap: 12px;
       justify-content: flex-start;
       flex-wrap: wrap;
     }
-    .working-days-group > div {
+
+    .working-days-group>div {
       display: flex;
       align-items: center;
       gap: 5px;
     }
+
     .working-days-group label {
       font-size: 14px;
       font-weight: 500;
@@ -390,16 +463,19 @@
       cursor: pointer;
       color: var(--wurk-text-dark);
     }
+
     .working-days-group input[type="checkbox"] {
-       width: 16px;
-       height: 16px;
-       cursor: pointer;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
     }
+
     .working-hours-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
+
     .working-hours-group input[type="time"] {
       font-family: inherit;
       border: 1px solid var(--work-log-border);
@@ -409,23 +485,28 @@
       width: 100px;
       color: var(--wurk-text-dark);
     }
+
     .working-hours-group input[type="time"]:focus {
       border-color: var(--wurk-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
+
     .working-hours-group span {
       font-size: 14px;
       color: var(--wurk-text-light);
     }
+
     .form-group-flex {
       display: flex;
       gap: 8px;
       align-items: flex-start;
     }
+
     .form-group-flex input[type="text"] {
       flex-grow: 1;
     }
+
     .form-group-flex button {
       flex-shrink: 0;
       background-color: var(--wurk-secondary);
@@ -439,14 +520,17 @@
       font-family: inherit;
       line-height: 1;
     }
+
     .form-group-flex button:hover {
       background-color: var(--wurk-secondary-hover);
     }
+
     .form-group-flex button .material-symbols-outlined {
       font-size: 18px;
       vertical-align: middle;
       pointer-events: none;
     }
+
     button#save {
       background-color: var(--wurk-primary);
       color: white;
@@ -461,9 +545,11 @@
       font-family: inherit;
       margin-top: 10px;
     }
+
     button#save:hover {
       background-color: var(--wurk-primary-hover);
     }
+
     #status {
       margin-top: 15px;
       text-align: center;
@@ -471,6 +557,7 @@
       font-weight: 500;
       color: var(--work-log-success);
     }
+
     #diagnostic-results {
       font-size: 14px;
       border: 1px solid var(--work-log-border);
@@ -478,82 +565,102 @@
       margin-top: 12px;
       display: none;
     }
+
     #diagnostic-results ul {
       list-style-type: none;
       padding: 0 16px 16px 16px;
       margin: 0;
     }
+
     #diagnostic-results li {
       display: flex;
       align-items: center;
       padding: 8px 0;
       border-bottom: 1px solid var(--wurk-secondary-hover);
     }
+
     #diagnostic-results li:last-child {
       border-bottom: none;
     }
+
     #diagnostic-results li strong {
       color: var(--wurk-text-dark);
       flex-basis: 120px;
       flex-shrink: 0;
     }
-    .diag-icon { /* Target class directly */
+
+    .diag-icon {
+      /* Target class directly */
       width: 20px;
       height: 20px;
       margin-right: 12px;
       flex-shrink: 0;
     }
+
     .diag-icon.pending {
       color: var(--wurk-text-light);
     }
+
     .diag-icon.success {
       color: var(--work-log-success);
     }
+
     .diag-icon.error {
       color: var(--work-log-error);
     }
+
     #diagnostic-results .diag-status {
       font-weight: 500;
       white-space: pre-wrap;
     }
+
     #diagnostic-results .diag-status.success {
       color: var(--work-log-success);
     }
+
     #diagnostic-results .diag-status.error {
       color: var(--work-log-error);
     }
+
     #diagnostic-results .diag-status.pending {
       color: var(--wurk-text-light);
     }
+
     #diagnostic-summary {
       padding: 12px 16px;
       font-weight: 600;
       border-top: 1px solid var(--work-log-border);
       border-radius: 0 0 var(--work-log-radius) var(--work-log-radius);
     }
+
     #diagnostic-summary.success {
       background-color: #F0FDF4;
       color: var(--work-log-success);
     }
+
     #diagnostic-summary.error {
       background-color: #FEF2F2;
       color: var(--work-log-error);
     }
+
     .volume-group {
       display: flex;
       align-items: center;
       gap: 12px;
     }
+
     .volume-group input[type="range"] {
       flex-grow: 1;
       margin: 0;
     }
+
     .volume-group #volume-display {
       font-size: 14px;
       color: var(--wurk-text-light);
       font-weight: 500;
       width: 40px;
     }
+
     .volume-group #test-sound {
       flex-shrink: 0;
       background-color: var(--wurk-secondary);
@@ -569,9 +676,11 @@
       align-items: center;
       gap: 4px;
     }
+
     .volume-group #test-sound:hover {
       background-color: var(--wurk-secondary-hover);
     }
+
     .volume-group #test-sound .material-symbols-outlined {
       font-size: 16px;
     }
@@ -582,6 +691,7 @@
       flex-direction: column;
       gap: 12px;
     }
+
     .toggle-item {
       display: flex;
       align-items: flex-start;
@@ -591,18 +701,22 @@
       border-radius: var(--work-log-radius);
       border: 1px solid var(--work-log-border);
     }
+
     .toggle-icon {
       flex-shrink: 0;
       color: var(--wurk-primary);
-      width: 24px; /* Slightly larger for clarity */
+      width: 24px;
+      /* Slightly larger for clarity */
       height: 24px;
       margin-top: 2px;
       font-size: 24px;
     }
+
     .toggle-label-group {
       flex-grow: 1;
       margin-right: 12px;
     }
+
     .toggle-label-group label {
       font-weight: 600;
       font-size: 14px;
@@ -610,12 +724,14 @@
       display: block;
       margin-bottom: 2px;
     }
+
     .toggle-label-group p {
       font-size: 12px;
       color: var(--wurk-text-light);
       margin: 0;
       line-height: 1.5;
     }
+
     .toggle-switch-container {
       position: relative;
       display: inline-block;
@@ -624,11 +740,13 @@
       flex-shrink: 0;
       margin-top: 2px;
     }
+
     .toggle-switch-container input {
       opacity: 0;
       width: 0;
       height: 0;
     }
+
     .toggle-slider {
       position: absolute;
       cursor: pointer;
@@ -640,6 +758,7 @@
       transition: .4s;
       border-radius: 24px;
     }
+
     .toggle-slider:before {
       position: absolute;
       content: "";
@@ -651,10 +770,12 @@
       transition: .4s;
       border-radius: 50%;
     }
-    input:checked + .toggle-slider {
+
+    input:checked+.toggle-slider {
       background-color: var(--wurk-primary);
     }
-    input:checked + .toggle-slider:before {
+
+    input:checked+.toggle-slider:before {
       transform: translateX(20px);
     }
 
@@ -666,12 +787,13 @@
       border: 1px solid var(--work-log-border);
       background-color: #f9f9f9;
     }
+
     #open-script-page-btn {
       margin-bottom: 12px;
     }
-
   </style>
 </head>
+
 <body>
 
   <!-- Sidebar Navigation -->
@@ -701,7 +823,7 @@
             General Settings
           </a>
         </li>
-        
+
         <h3>Help & Info</h3>
         <li>
           <a href="#" data-page="about" class="nav-link" title="Learn about WurkWurk.">
@@ -734,7 +856,7 @@
     <div class="sidebar-footer">
       <p>Enjoying WurkWurk?<br>Support the developer!</p>
       <a href="https://buymeacoffee.com/lamhizz" target="_blank" title="Support the developer!">
-        <img src="images/coffee-button.png" alt="Buy Me A Coffee" class="support-button-img" >
+        <img src="images/coffee-button.png" alt="Buy Me A Coffee" class="support-button-img">
       </a>
     </div>
   </nav>
@@ -746,18 +868,20 @@
     <div id="page-settings" class="page-content active">
       <div class="container">
         <h1>General Settings</h1>
-        
+
         <h2>Connection</h2>
         <div class="form-group">
           <label for="web-app-url">Google Apps Script URL</label>
           <div class="form-group-flex">
-            <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..." title="This is the most important field. Paste your deployed 'Web app' URL from Google Apps Script here.">
+            <input type="text" id="web-app-url" placeholder="https://script.google.com/macros/s/..."
+              title="This is the most important field. Paste your deployed 'Web app' URL from Google Apps Script here.">
             <button id="save-url-btn" title="Quick-save this URL">
               <span class="material-symbols-outlined">save</span>
             </button>
-            <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test Connection</button>
+            <button id="test-connection" title="Click to verify the URL is correct and the script is working.">Test
+              Connection</button>
           </div>
-          
+
           <div id="diagnostic-results">
             <ul>
               <li id="diag-step-1-url">
@@ -783,14 +907,17 @@
             </ul>
             <div id="diagnostic-summary"></div>
           </div>
-          <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the Apps Script code from the Setup Guide for this to work.</p>
+          <p class="description">Paste your deployed "Web app" URL here. <strong>Important:</strong> You must use the
+            Apps Script code from the Setup Guide for this to work.</p>
         </div>
 
         <h2>Prompt Behavior</h2>
         <div class="form-group">
           <label for="log-interval">Log Interval (in minutes)</label>
-          <input type="number" id="log-interval" min="0" title="How often the popup should appear. Set to 0 to disable automatic popups. Default is 15.">
-          <p class="description">How often the popup should appear. Set to 0 to disable automatic popups and only log manually.</p>
+          <input type="number" id="log-interval" min="0"
+            title="How often the popup should appear. Set to 0 to disable automatic popups. Default is 15.">
+          <p class="description">How often the popup should appear. Set to 0 to disable automatic popups and only log
+            manually.</p>
         </div>
 
         <div class="form-group">
@@ -803,11 +930,12 @@
             <option value="Pop.wav">Pop</option>
           </select>
         </div>
-        
+
         <div class="form-group">
           <label for="notification-volume">Sound Volume</label>
           <div class="volume-group">
-            <input type="range" id="notification-volume" min="0" max="1" step="0.1" title="Adjust the notification sound volume.">
+            <input type="range" id="notification-volume" min="0" max="1" step="0.1"
+              title="Adjust the notification sound volume.">
             <span id="volume-display">50%</span>
             <button id="test-sound" title="Test the selected sound and volume">
               <span class="material-symbols-outlined">play_arrow</span>
@@ -815,7 +943,7 @@
             </button>
           </div>
         </div>
-        
+
         <h2>Scheduling</h2>
         <div class="form-group">
           <label>Active Working Days</label>
@@ -850,7 +978,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="form-group">
           <label>Active Working Hours</label>
           <div class="working-hours-group" title="The automatic popup will only appear between these hours.">
@@ -864,16 +992,20 @@
         <h2>Logging Details</h2>
         <div class="form-group">
           <label for="log-tags">Log Tags</label>
-          <textarea id="log-tags" rows="5" title="Define your common tasks here, one per line. They will appear in the dropdown menu."></textarea>
-          <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the dropdown list.</p>
+          <textarea id="log-tags" rows="5"
+            title="Define your common tasks here, one per line. They will appear in the dropdown menu."></textarea>
+          <p class="description">Enter one tag per line (e.g., "Meeting", "Focus Time", "Slack"). This will create the
+            dropdown list.</p>
         </div>
-        
+
         <div class="form-group">
           <label for="blocked-domains">"Do Not Disturb" Domains</label>
-          <textarea id="blocked-domains" rows="4" title="The automatic popup will be skipped on these websites. Manual logging (Ctrl+Shift+L) will still work."></textarea>
-          <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on these sites.</p>
+          <textarea id="blocked-domains" rows="4"
+            title="The automatic popup will be skipped on these websites. Manual logging (Ctrl+Shift+L) will still work."></textarea>
+          <p class="description">One domain per line (e.g., "meet.google.com", "zoom.us"). Popups will be skipped on
+            these sites.</p>
         </div>
-        
+
         <h2>Advanced Features</h2>
         <div class="toggle-list">
           <!-- Toggle 1: Log Domain -->
@@ -881,7 +1013,8 @@
             <span class="material-symbols-outlined toggle-icon">language</span>
             <div class="toggle-label-group">
               <label for="log-domain">Log Active Website Domain</label>
-              <p>If enabled, the website domain you're on (e.g., "github.com") will be added to the 'Domain' column in your sheet.</p>
+              <p>If enabled, the website domain you're on (e.g., "github.com") will be added to the 'Domain' column in
+                your sheet.</p>
             </div>
             <label class="toggle-switch-container">
               <input type="checkbox" id="log-domain">
@@ -915,7 +1048,7 @@
             </label>
           </div>
         </div>
-        
+
 
         <button id="save" title="Save all your settings.">Save All Settings</button>
         <div id="status"></div>
@@ -927,31 +1060,40 @@
       <div class="container">
         <img src="images/wurk-wurk-logo-dark.png" alt="WurkWurk Logo" class="page-logo">
         <h1>Stop Guessing. Start Seeing.</h1>
-        <p>WurkWurk is a mindful work logger that helps you understand where your time *really* goes. It's not another complex tracker. It's a simple extension that sends your activity logs to a **100% private Google Sheet that you own.**</p>
-    
+        <p>WurkWurk is a mindful work logger that helps you understand where your time *really* goes. It's not another
+          complex tracker. It's a simple extension that sends your activity logs to a **100% private Google Sheet that
+          you own.**</p>
+
         <h2>Does This Sound Familiar?</h2>
-        <p>You end the day feeling exhausted, but your most important work is still untouched. You *feel* busy, but you don't feel *productive*.</p>
+        <p>You end the day feeling exhausted, but your most important work is still untouched. You *feel* busy, but you
+          don't feel *productive*.</p>
         <ul class="problem-list">
           <li>You're stuck in "reactive mode," answering emails and chats all day.</li>
           <li>Your most important projects keep getting pushed to "tomorrow."</li>
           <li>You're constantly interrupted, and "deep work" feels impossible.</li>
           <li>You look at the clock at 5 PM and think, "Where did my day go?"</li>
         </ul>
-    
+
         <h2>Replace Guesswork with Your Own Data</h2>
-        <p>You can't fix what you can't see. WurkWurk is the **automated, objective mirror** for your workday. By gently prompting you to log what you *just did*, it creates an honest, powerful dataset for you to review.</p>
-        
+        <p>You can't fix what you can't see. WurkWurk is the **automated, objective mirror** for your workday. By gently
+          prompting you to log what you *just did*, it creates an honest, powerful dataset for you to review.</p>
+
         <h3>How It Works</h3>
         <ol>
           <li><strong>Setup (1 Min):</strong> Connect the extension to your private Google Sheet.</li>
-          <li><strong>Log (5 Secs):</strong> At your chosen interval, a simple prompt asks what you're working on. Use tags, quick actions, or the built-in timer.</li>
-          <li><strong>Review (15 Mins/Week):</strong> Open your Google Sheet or the Dashboard. See your whole week, filter by tags, and find your "Aha!" moments.</li>
-          <li><strong>Improve (Daily):</strong> See a pattern? Make a small change. Your log gives you the data you need to take back control.</li>
+          <li><strong>Log (5 Secs):</strong> At your chosen interval, a simple prompt asks what you're working on. Use
+            tags, quick actions, or the built-in timer.</li>
+          <li><strong>Review (15 Mins/Week):</strong> Open your Google Sheet or the Dashboard. See your whole week,
+            filter by tags, and find your "Aha!" moments.</li>
+          <li><strong>Improve (Daily):</strong> See a pattern? Make a small change. Your log gives you the data you need
+            to take back control.</li>
         </ol>
-    
+
         <h2>Your Log is Yours. Period.</h2>
         <div class="privacy-promise">
-          <p>We believe that self-reflection requires total privacy. WurkWurk is a "data-less" app. We **never** see, store, or analyze your logs. The extension sends your input *directly* from your browser to your Google Sheet via Google's own secure Apps Script. You are the only one with access.</p>
+          <p>We believe that self-reflection requires total privacy. WurkWurk is a "data-less" app. We **never** see,
+            store, or analyze your logs. The extension sends your input *directly* from your browser to your Google
+            Sheet via Google's own secure Apps Script. You are the only one with access.</p>
         </div>
       </div>
     </div>
@@ -968,65 +1110,89 @@
           <li>Click on <strong>Blank</strong> to create a new spreadsheet.</li>
           <li>Give it a name you'll remember, like "My WurkWurk Logs."</li>
         </ol>
-        <img src="https://placehold.co/600x250/F4F4F4/6A8A8C?text=Step+1:+New+Blank+Sheet" alt="Step 1: Create new blank Google Sheet" class="setup-image">
-    
+        <img src="images/setup-guide/step-1.jpeg" alt="Step 1: Create new blank Google Sheet" class="setup-image">
+
         <h2>Step 2: Add Headers to the Sheet</h2>
-        <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.</p>
+        <p>This is a critical step. The script requires ten specific headers in the first row, in this exact order, to
+          function correctly.</p>
         <table>
           <thead>
             <tr>
-              <th>A1</th> <th>B1</th> <th>C1</th> <th>D1</th> <th>E1</th>
-              <th>F1</th> <th>G1</th> <th>H1</th> <th>I1</th> <th>J1</th>
+              <th>A1</th>
+              <th>B1</th>
+              <th>C1</th>
+              <th>D1</th>
+              <th>E1</th>
+              <th>F1</th>
+              <th>G1</th>
+              <th>H1</th>
+              <th>I1</th>
+              <th>J1</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Date</td> <td>Time</td> <td>Log Entry</td> <td>Tag</td> <td>Drifted</td>
-              <td>Mins Since Last</td> <td>FullTimestamp</td> <td>Domain</td> <td>Reactive</td> <td>Keywords</td>
+              <td>Date</td>
+              <td>Time</td>
+              <td>Log Entry</td>
+              <td>Tag</td>
+              <td>Drifted</td>
+              <td>Mins Since Last</td>
+              <td>FullTimestamp</td>
+              <td>Domain</td>
+              <td>Reactive</td>
+              <td>Keywords</td>
             </tr>
           </tbody>
         </table>
         <p>Copy and paste these into the first row of your sheet.</p>
-        <img src="https://placehold.co/600x150/F4F4F4/6A8A8C?text=Step+2:+Paste+Headers+in+Row+1" alt="Step 2: Add headers to Google Sheet" class="setup-image">
-    
+        <img src="images/setup-guide/step-2.jpeg" alt="Step 2: Add headers to Google Sheet" class="setup-image">
+
         <h2>Step 3: Create the Google Apps Script</h2>
         <ol>
           <li>In your Google Sheet, click <strong>Extensions</strong> &gt; <strong>Apps Script</strong>.</li>
           <li>A new browser tab will open with the Apps Script editor.</li>
         </ol>
-        <img src="https://placehold.co/600x150/F4F4F4/6A8A8C?text=Step+3:+Extensions+>+Apps+Script" alt="Step 3: Open Apps Script" class="setup-image">
-    
+        <img src="images/setup-guide/step-3.jpeg" alt="Step 3: Open Apps Script" class="setup-image">
+
         <h2>Step 4: Paste the Script Code</h2>
         <ol>
-          <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g., <code>function myFunction() { ... }</code>).</li>
-          <li>Click the button below to open the script code in a new tab, then copy it and paste it into the empty <code>Code.gs</code> editor.</li>
+          <li>Delete any placeholder code in the <code>Code.gs</code> file (e.g.,
+            <code>function myFunction() { ... }</code>).
+          </li>
+          <li>Click the button below to open the script code in a new tab, then copy it and paste it into the empty
+            <code>Code.gs</code> editor.
+          </li>
         </ol>
         <button id="open-script-page-btn" class="button button-icon">
           <span class="material-symbols-outlined">description</span>
           See App Script code
         </button>
         <p style="margin-top: 15px;">
-          <strong>IMPORTANT</strong>: In the script editor, find the line <code>const TIME_ZONE = "...";</code> and change the time zone to your own (e.g., <code>"America/New_York"</code>).
+          <strong>IMPORTANT</strong>: In the script editor, find the line <code>const TIME_ZONE = "...";</code> and
+          change the time zone to your own (e.g., <code>"America/New_York"</code>).
         </p>
-        <img src="https://placehold.co/600x300/F4F4F4/6A8A8C?text=Step+4:+Paste+Code+&+Save" alt="Step 4: Paste and save Apps Script" class="setup-image">
-    
+        <img src="images/setup-guide/step-4.jpeg" alt="Step 4: Paste and save Apps Script" class="setup-image">
+
         <h2>Step 5: Deploy the Script as a Web App</h2>
         <p>***IF YOU ARE UPDATING, YOU MUST RE-DEPLOY TO APPLY CHANGES.***</p>
         <ol>
           <li>In the Apps Script editor, click the blue <strong>Deploy</strong> button.</li>
-          <li>Select <strong>New deployment</strong>. (If re-deploying, select 'Manage Deployments' > 'Edit' > 'New version'.)</li>
+          <li>Select <strong>New deployment</strong>. (If re-deploying, select 'Manage Deployments' > 'Edit' > 'New
+            version'.)</li>
           <li>Click the gear icon (⚙️) and choose <strong>Web app</strong>.</li>
           <li>In the dialog box, set:
             <ul>
               <li><strong>Description</strong>: <code>WurkWurk Log Receiver</code> (Optional)</li>
               <li><strong>Execute as</strong>: <code>Me</code> (Very important).</li>
-              <li><strong>Who has access</strong>: <code>Anyone</code> (This is secure; only the secret URL works).</li>
+              <li><strong>Who has access</strong>: <code>Only myself</code> (This is secure; only the secret URL works).
+              </li>
             </ul>
           </li>
           <li>Click <strong>Deploy</strong>.</li>
         </ol>
-        <img src="https://placehold.co/600x400/F4F4F4/6A8A8C?text=Step+5:+Deployment+Settings" alt="Step 5: Configure new deployment" class="setup-image">
-    
+        <img src="images/setup-guide/step-5.jpeg" alt="Step 5: Configure new deployment" class="setup-image">
+
         <h2>Step 6: Authorize the Script</h2>
         <ol>
           <li>Click <strong>Authorize access</strong>.</li>
@@ -1034,21 +1200,22 @@
           <li>Click <strong>Advanced</strong>, then click <strong>"Go to \[Your Script Name\] (unsafe)"</strong>.</li>
           <li>Click <strong>Allow</strong>.</li>
         </ol>
-        <img src="https://placehold.co/600x400/F4F4F4/6A8A8C?text=Step+6:+Authorize+Script" alt="Step 6: Authorize script permissions" class="setup-image">
-    
+        <img src="images/setup-guide/step-6.jpeg" alt="Step 6: Authorize script permissions" class="setup-image">
+
         <h2>Step 7: Copy the Web App URL</h2>
         <p>After deployment, a dialog box will appear. <strong>COPY the Web app URL.</strong></p>
-        <img src="https://placehold.co/600x200/F4F4F4/6A8A8C?text=Step+7:+Copy+Web+App+URL" alt="Step 7: Copy the deployed Web App URL" class="setup-image">
-    
+        <img src="images/setup-guide/step-7.jpeg" alt="Step 7: Copy the deployed Web App URL" class="setup-image">
+
         <h2>Step 8: Configure the Extension</h2>
         <ol>
           <li>Go back to the **General Settings** page (the first tab in this menu).</li>
           <li>Paste the <strong>Web app URL</strong> you copied into the "Google Apps Script URL" field.</li>
           <li>Click the **Save URL** icon button.</li>
-          <li>Click the **Test Connection** button. You should see a green "Success!" message and all diagnostic steps should pass.</li>
+          <li>Click the **Test Connection** button. You should see a green "Success!" message and all diagnostic steps
+            should pass.</li>
           <li>Click the main **Save All Settings** button at the bottom of the page.</li>
         </ol>
-        <img src="https://placehold.co/600x300/F4F4F4/6A8A8C?text=Step+8:+Paste+URL+&+Test" alt="Step 8: Paste URL in settings and test" class="setup-image">
+        <img src="images/setup-guide/step-8.jpeg" alt="Step 8: Paste URL in settings and test" class="setup-image">
         <p>You are all set! The extension is now fully configured.</p>
       </div>
     </div>
@@ -1057,29 +1224,37 @@
     <div id="page-faq" class="page-content">
       <div class="container">
         <h1>Frequently Asked Questions</h1>
-        
+
         <h2>About the App & Purpose</h2>
         <div class="faq-item">
           <strong>Q: Is this just another time tracker?</strong>
-          <p>No. Most time trackers are for billing clients or reporting to a manager. <strong>WurkWurk is a private reflection tool built for *you*.</strong> The goal isn't just to *track* hours, but to *understand* where your time goes so you can improve your focus and effectiveness.</p>
+          <p>No. Most time trackers are for billing clients or reporting to a manager. <strong>WurkWurk is a private
+              reflection tool built for *you*.</strong> The goal isn't just to *track* hours, but to *understand* where
+            your time goes so you can improve your focus and effectiveness.</p>
         </div>
         <div class="faq-item">
           <strong>Q: What's the main benefit of using this?</strong>
-          <p>Clarity. WurkWurk helps you see the unfiltered truth of your workday. By reviewing your log, you can spot patterns—like how much time is lost to interruptions or low-value tasks—and get the evidence you need to take back control of your schedule.</p>
+          <p>Clarity. WurkWurk helps you see the unfiltered truth of your workday. By reviewing your log, you can spot
+            patterns—like how much time is lost to interruptions or low-value tasks—and get the evidence you need to
+            take back control of your schedule.</p>
         </div>
         <div class="faq-item">
           <strong>Q: Why does it send data to a Google Sheet?</strong>
-          <p>To put you in 100% control of your own data. You own the sheet, you own the log. This is the core of our privacy promise.</p>
+          <p>To put you in 100% control of your own data. You own the sheet, you own the log. This is the core of our
+            privacy promise.</p>
         </div>
 
         <h2>Privacy & Data Security</h2>
         <div class="faq-item">
           <strong>Q: Who can see my work logs?</strong>
-          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google Sheet. We (the creators of Wurk Wurk) never see, store, analyze, or have access to your log data. Period.</p>
+          <p><strong>Only you.</strong> Your logs are sent *directly* from the Chrome extension to *your* private Google
+            Sheet. We (the creators of Wurk Wurk) never see, store, analyze, or have access to your log data. Period.
+          </p>
         </div>
         <div class="faq-item">
           <strong>Q: How do I know my data is secure?</strong>
-          <p>We use Google's own secure Apps Script as the bridge between the extension and your sheet. The entire process happens within your own Google account, protected by Google's security.</p>
+          <p>We use Google's own secure Apps Script as the bridge between the extension and your sheet. The entire
+            process happens within your own Google account, protected by Google's security.</p>
         </div>
         <div class="faq-item">
           <strong>Q: Is Wurk Wurk free?</strong>
@@ -1089,7 +1264,10 @@
         <h2>How It Works</h2>
         <div class="faq-item">
           <strong>Q: Will the popup interrupt me during meetings?</strong>
-          <p>No! You can (and should) use the "Do Not Disturb" feature. In the **General Settings**, add domains like <code>meet.google.com</code> or <code>zoom.us</code>. The extension will not show a prompt when a tab with that domain is active.</p>
+          <p>No! You can (and should) use the "Do Not Disturb" feature. In the **General Settings**, add domains like
+            <code>meet.google.com</code> or <code>zoom.us</code>. The extension will not show a prompt when a tab with
+            that domain is active.
+          </p>
         </div>
         <div class="faq-item">
           <strong>Q: What if I'm in the middle of deep work when the prompt appears?</strong>
@@ -1101,20 +1279,24 @@
         <div class="faq-item">
           <strong>Q: How do the "Quick Actions" work?</strong>
           <p>They are shortcuts for your most common logs.
-            <br>1. <strong>"Doing Same"</strong> instantly logs the *exact same thing* you logged last time. Perfect for long focus blocks.
+            <br>1. <strong>"Doing Same"</strong> instantly logs the *exact same thing* you logged last time. Perfect for
+            long focus blocks.
             <br>2. <strong>"Break"</strong> instantly logs "Break" so you can step away without breaking your log.
             <br>3. The app also shows your **three most recently used tags** for one-click logging.
           </p>
         </div>
         <div class="faq-item">
           <strong>Q: What's the point of the built-in timer?</strong>
-          <p>It's for "active" logging. If you're about to start a new task, you can open the prompt, start the timer, and work. When you stop it, the task name and duration are pre-filled, ready to log. It's great for measuring tasks you *think* will be quick.</p>
+          <p>It's for "active" logging. If you're about to start a new task, you can open the prompt, start the timer,
+            and work. When you stop it, the task name and duration are pre-filled, ready to log. It's great for
+            measuring tasks you *think* will be quick.</p>
         </div>
 
         <h2>Getting Value from Your Log</h2>
         <div class="faq-item">
           <strong>Q: I have a week of data. Now what?</strong>
-          <p>This is the most important part! Block 15-20 minutes on your calendar for a "Weekly Review." Open your Google Sheet or the **Weekly Review** dashboard and look for patterns. Ask yourself:
+          <p>This is the most important part! Block 15-20 minutes on your calendar for a "Weekly Review." Open your
+            Google Sheet or the **Weekly Review** dashboard and look for patterns. Ask yourself:
             <br>1. How much time went to "Meetings" vs. "Focus Time"?
             <br>2. Was my most productive day Tuesday? Why? What was different?
             <br>3. How often was I interrupted? (Look for fractured logs: Coding -> Email -> Coding)
@@ -1125,7 +1307,8 @@
           <strong>Q: How do I analyze the data in my Google Sheet?</strong>
           <p>Your Google Sheet makes this easy.
             <br>1. <strong>Filter by Tag:</strong> See exactly how much time you spent on "Admin" or "Project X."
-            <br>2. <strong>Pivot Tables:</strong> (Optional) If you're savvy with Google Sheets, you can create a simple pivot table to see a high-level summary of "Hours per Tag" in seconds.
+            <br>2. <strong>Pivot Tables:</strong> (Optional) If you're savvy with Google Sheets, you can create a simple
+            pivot table to see a high-level summary of "Hours per Tag" in seconds.
           </p>
         </div>
 
@@ -1141,4 +1324,5 @@
 
   <script src="options.js"></script>
 </body>
+
 </html>

@@ -397,7 +397,6 @@ h1 {
 
 /* --- (Proposal 2) Hourly Block Timeline --- */
 #daily-timeline-container {
-    max-height: 450px;
     overflow-y: auto;
     padding: 0 10px;
 }
@@ -612,8 +611,7 @@ h1 {
     /* Red dashed border */
     background-color: #FEF2F2;
     /* Light red bg */
-    border-left: none;
-    /* Remove standard left border */
+    /* border-left: none;  <-- Removed to show full box */
     justify-content: center;
     align-items: center;
     padding: 8px;

@@ -492,21 +492,27 @@
   color: var(--wurk-text-dark);
 }
 
-html,
-body {
-  width: 250px;
+html {
   box-sizing: border-box !important;
-  overflow-x: hidden !important;
+}
+
+/* Scoped to extension popup */
+body.extension-menu {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+  margin: 0;
+  padding: 15px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 body {
   font-family: 'Inter', sans-serif;
   background-color: #F9FAFB;
-  margin: 0;
-  padding: 15px;
-  width: 250px;
-  /* Compact width */
   color: var(--wurk-text-dark);
+  margin: 0;
+  /* Reset margin for other pages */
 }
 
 .menu-links-list {

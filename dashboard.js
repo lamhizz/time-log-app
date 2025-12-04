@@ -164,7 +164,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     const gapEl = document.createElement("div");
                     gapEl.className = "timeline-entry timeline-entry-gap";
                     gapEl.textContent = `⚠️ Blind Spot? (${gapMins} min gap)`;
+
+                    // [NEW] Set height proportional to gap (1px per minute)
+                    gapEl.style.minHeight = `${gapMins}px`;
+                    gapEl.style.display = "flex";
+                    gapEl.style.alignItems = "center";
+                    gapEl.style.justifyContent = "center";
+
                     timelineContainerEl.appendChild(gapEl);
+
+                    // [NEW] Suppress hour headers covered by this gap
+                    currentHour = logHour;
                 }
             }
 

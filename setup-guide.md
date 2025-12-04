@@ -8,6 +8,8 @@ This guide provides step-by-step instructions to connect the WurkWurk Chrome ext
 2.  Click on **Blank** to create a new spreadsheet.
 3.  Give the spreadsheet a name you'll remember, like "My WurkWurk Logs."
 
+![Step 1: Create Spreadsheet](images/setup-guide/step-1.jpeg)
+
 ## Step 2: Add Headers to the Sheet
 
 This is a critical step. The script requires ten specific headers in the first row, in this exact order, to function correctly.
@@ -25,6 +27,8 @@ This is a critical step. The script requires ten specific headers in the first r
 9.  In cell **I1**, type: `Reactive`
 10.  In cell **J1**, type: `Keywords`
 
+![Step 2: Add Headers](images/setup-guide/step-2.jpeg)
+
 ## Step 3: Create the Google Apps Script
 
 This script will act as the secure bridge between the Chrome extension and your Google Sheet.
@@ -32,12 +36,16 @@ This script will act as the secure bridge between the Chrome extension and your 
 1.  In your Google Sheet, click **Extensions** > **Apps Script**.
 2.  A new browser tab will open with the Apps Script editor.
 
+![Step 3: Open Apps Script](images/setup-guide/step-3.jpeg)
+
 ## Step 4: Paste the Script Code
 
 1.  Delete any placeholder code in the `Code.gs` file (e.g., `function myFunction() { ... }`).
 2.  Copy the entire script from the `app-script.md` file (located in the root of the repository) and paste it into the empty `Code.gs` editor.
 3.  **IMPORTANT:** Once pasted, find the line `const TIME_ZONE = "Europe/Vilnius";` and change the time zone to your own if it's incorrect (e.g., `"America/New_York"`).
 4.  Save the script by clicking the floppy disk icon or pressing `Ctrl+S`.
+
+![Step 4: Paste Code](images/setup-guide/step-4.jpeg)
 
 ## Step 5: Deploy the Script as a Web App
 
@@ -51,8 +59,10 @@ This step creates the secret URL the extension will use to send data to your she
 4.  In the dialog box, enter the following settings:
 5.  **Description:** `WurkWurk Log Receiver` (Optional)
 6.  **Execute as:** `Me` (This is very important).
-7.  **Who has access:** `Anyone` (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).
+7.  **Who has access:** `Only myself` (This does NOT make your sheet public. It only allows someone with the secret, complex URL to send data to the script).
 8.  Click **Deploy**.
+
+![Step 5: Deploy as Web App](images/setup-guide/step-5.jpeg)
 
 ## Step 6: Authorize the Script
 
@@ -63,11 +73,15 @@ This step creates the secret URL the extension will use to send data to your she
 5.  (unsafe)".
 6.  Click **Allow** to grant the script permission to edit your spreadsheets.
 
+![Step 6: Authorize Script](images/setup-guide/step-6.jpeg)
+
 ## Step 7: Copy the Web App URL
 
 After deployment is complete, a dialog box will appear with the **Web app URL**.
 
 **COPY THIS URL.** You will need it for the final step.
+
+![Step 7: Copy URL](images/setup-guide/step-7.jpeg)
 
 ## Step 8: Configure the Extension
 
@@ -79,5 +93,7 @@ After deployment is complete, a dialog box will appear with the **Web app URL**.
 6.  Click the **Test** button next to it. You should see a green "Success!" message. If not, double-check your script deployment and URL.
 7.  Configure your other preferences, such as the log interval and notification sound.
 8.  Scroll to the bottom and click **Save Settings**.
+
+![Step 8: Configure Extension](images/setup-guide/step-8.jpeg)
 
 You are all set! The extension is now fully configured and will start prompting you at your chosen interval during your working hours.
