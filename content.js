@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "showLogPopup") {
     // Only create a new popup if one doesn't already exist
     if (!document.getElementById("work-log-popup-overlay")) {
-      createPopup(request.domain, request.sound, request.volume); // NEW: Pass volume
+      createPopup(request.domain, request.sound, request.volume, request.prefill); // NEW: Pass prefill data
     }
     sendResponse({ status: "popup shown" });
   } else if (request.action === "dismissPopup") {
@@ -32,10 +32,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * into the current page. It also sets up all necessary event listeners for the popup's buttons and inputs.
  * @param {string} domainToLog - The domain of the current tab, if logging is enabled.
  * @param {string} soundToPlay - The filename of the notification sound to play.
- * @param {number} volumeToPlay - The volume level for the sound (0.0 to 1.0).
+ * @param {object} [prefillData] - Optional data to pre-fill the form (e.g. from Pomodoro).
  */
-function createPopup(domainToLog, soundToPlay, volumeToPlay) {
-  
+function createPopup(domainToLog, soundToPlay, volumeToPlay, prefillData) {
+
   // Play a notification sound if one is selected
   if (soundToPlay && soundToPlay !== "none") {
     try {
@@ -47,7 +47,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       console.error("WurkWurk: Error playing sound.", e);
     }
   }
-  
+
   // Inject Google Fonts for icons if not already present
   if (!document.getElementById("work-log-google-symbols")) {
     const fontLink = document.createElement("link");
@@ -61,16 +61,51 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
 
   const overlay = document.createElement("div");
   overlay.id = "work-log-popup-overlay";
-  
+
   const modal = document.createElement("div");
   modal.id = "work-log-popup-modal";
-  
+
   // **NOTE: Logo was removed from this popup as requested.**
-  
+
   const title = document.createElement("h2");
   title.id = "work-log-popup-title";
   title.textContent = "Log your Wurk!";
-  
+
+  // [NEW] Last Entry Info
+  const lastEntryContainer = document.createElement("div");
+  lastEntryContainer.id = "work-log-last-entry-container";
+  lastEntryContainer.style.textAlign = "center";
+  lastEntryContainer.style.fontSize = "11px";
+  lastEntryContainer.style.color = "#6A8A8C"; // var(--wurk-text-light)
+  lastEntryContainer.style.marginBottom = "8px";
+  lastEntryContainer.style.display = "none";
+  lastEntryContainer.innerHTML = `Last: <span id="work-log-last-entry-time"></span> (<span id="work-log-time-since-last"></span> ago)`;
+
+  // Fetch and display last entry info
+  chrome.storage.local.get({ recentLogs: [] }, (data) => {
+    const logs = data.recentLogs || [];
+    if (logs.length > 0) {
+      const lastLog = logs[0]; // Newest is first in array
+      if (lastLog && lastLog.time) {
+        lastEntryContainer.style.display = "block";
+        const timeSpan = lastEntryContainer.querySelector("#work-log-last-entry-time");
+        const sinceSpan = lastEntryContainer.querySelector("#work-log-time-since-last");
+
+        if (timeSpan) timeSpan.textContent = lastLog.time;
+
+        if (sinceSpan) {
+          const now = new Date();
+          const [hours, minutes] = lastLog.time.split(':').map(Number);
+          const lastTimeDate = new Date();
+          lastTimeDate.setHours(hours, minutes, 0, 0);
+          const diffMs = now - lastTimeDate;
+          const diffMins = Math.floor(diffMs / 60000);
+          sinceSpan.textContent = `${diffMins >= 0 ? diffMins : 0} min`;
+        }
+      }
+    }
+  });
+
   // Tag selection dropdown
   const tagGroup = document.createElement("div");
   tagGroup.className = "work-log-form-group";
@@ -81,7 +116,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   tagSelect.id = "work-log-tag-select";
   tagSelect.className = "work-log-popup-select"; // Add class for styling
   tagSelect.title = "Categorize your work entry.";
-  
+
   // Populate tags from user settings
   chrome.storage.sync.get({ logTags: "Meeting\nFocus Time\nSlack" }, (data) => {
     const tags = data.logTags.split('\n').filter(Boolean);
@@ -91,14 +126,14 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       tagSelect.innerHTML += `<option value="${tag}">${tag}</option>`;
     });
   });
-  
+
   tagGroup.appendChild(tagLabel);
   tagGroup.appendChild(tagSelect);
-  
+
   // Most Recently Used (MRU) tags container
   const mruTagsContainer = document.createElement("div");
   mruTagsContainer.className = "work-log-mru-tags-container";
-  
+
   // Fetch and display MRU tags
   chrome.runtime.sendMessage({ action: "getMruTags" }, (mruTags) => {
     if (mruTags && mruTags.length > 0) {
@@ -123,8 +158,11 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   textarea.id = "work-log-popup-input";
   textarea.placeholder = "What are you working on? Use [Project] for keywords.";
   textarea.title = "Enter a brief log entry. Wrap keywords in [brackets] to tag them.";
+  if (prefillData && prefillData.logText) {
+    textarea.value = prefillData.logText;
+  }
   textGroup.appendChild(textarea);
-  
+
   // Checkboxes for 'Drifted' and 'Reactive'
   const checkboxContainer = document.createElement("div");
   checkboxContainer.className = "work-log-checkbox-container";
@@ -142,7 +180,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   reactiveLabel.htmlFor = "work-log-reactive-check";
   reactiveLabel.textContent = "I reacted (ad-hoc)";
   reactiveLabel.title = "Check this if the work was unplanned or an interruption.";
-  
+
   checkboxContainer.innerHTML = `
     <div class="work-log-form-group work-log-checkbox-group">
       ${driftedCheck.outerHTML}
@@ -177,23 +215,23 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   snoozeButton.title = "Postpone or skip this reminder.";
   snoozeGroup.appendChild(snoozeSelect);
   snoozeGroup.appendChild(snoozeButton);
-  
+
   const submitButton = document.createElement("button");
   submitButton.id = "work-log-popup-submit";
   submitButton.textContent = "Log It (Ctrl+Enter)";
   submitButton.title = "Submit this log entry (Ctrl+Enter)";
-  
+
   const logAndSnoozeButton = document.createElement("button");
   logAndSnoozeButton.id = "work-log-log-and-snooze-btn"; // Add ID for styling
   logAndSnoozeButton.className = "work-log-popup-button work-log-button-secondary";
   logAndSnoozeButton.textContent = "Log & Snooze 30 min";
   logAndSnoozeButton.title = "Log this entry and snooze reminders for 30 minutes.";
-  
+
   const sameAsLastButton = document.createElement("button");
   sameAsLastButton.className = "work-log-popup-button work-log-button-secondary";
   sameAsLastButton.textContent = "Log 'Doing Same'";
   sameAsLastButton.title = "Log 'Doing Same' as your last entry.";
-  
+
   const breakButton = document.createElement("button");
   breakButton.id = "work-log-break-btn"; // Add ID for styling
   breakButton.className = "work-log-popup-button work-log-button-secondary";
@@ -202,7 +240,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
 
   const statusMessage = document.createElement("p");
   statusMessage.id = "work-log-popup-status";
-  
+
   const closeButton = document.createElement("button");
   closeButton.id = "work-log-popup-close";
   closeButton.textContent = "×";
@@ -225,7 +263,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
     const keywords = (logText.match(/\[(.*?)\]/g) || [])
       .map(keyword => keyword.slice(1, -1)) // Remove brackets
       .join(', ');
-    
+
     const logData = {
       logText,
       tag: tagSelect.value || "",
@@ -234,7 +272,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       domain: domainToLog || "",
       keywords: keywords
     };
-    
+
     setLoading(true, isLogAndSnooze ? "Logging & Snoozing..." : "Logging...");
 
     const message = isLogAndSnooze
@@ -243,7 +281,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
 
     chrome.runtime.sendMessage(message, handleResponse);
   }
-  
+
   // Attach event listeners
   textarea.addEventListener("keydown", (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
@@ -251,10 +289,10 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       submitLog(false);
     }
   });
-  
+
   submitButton.addEventListener("click", () => submitLog(false));
   logAndSnoozeButton.addEventListener("click", () => submitLog(true));
-  
+
   snoozeButton.addEventListener("click", () => {
     const minutes = parseInt(snoozeSelect.value, 10);
     setLoading(true, minutes > 0 ? "Snoozing..." : "Skipping...");
@@ -267,13 +305,13 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       }
     });
   });
-  
+
   sameAsLastButton.addEventListener("click", () => {
     setLoading(true, "Logging last task...");
     chrome.storage.local.get({ lastLog: null, lastTag: null }, (data) => {
       if (data.lastLog) {
-        const logData = { 
-          logText: "↑ " + data.lastLog, 
+        const logData = {
+          logText: "↑ " + data.lastLog,
           tag: data.lastTag || "",
           drifted: false,
           reactive: false,
@@ -286,7 +324,7 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
       }
     });
   });
-  
+
   breakButton.addEventListener("click", () => {
     setLoading(true, "Logging break...");
     const logData = { logText: "Break", tag: "Break", drifted: false, reactive: false, domain: domainToLog || "" };
@@ -310,9 +348,9 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
    */
   function handleResponse(response) {
     if (chrome.runtime.lastError) {
-        showStatus(`Error: ${chrome.runtime.lastError.message}`, "error");
-        setLoading(false);
-        return;
+      showStatus(`Error: ${chrome.runtime.lastError.message}`, "error");
+      setLoading(false);
+      return;
     }
     if (response && (response.status === "success" || response.status === "success_and_snoozed")) {
       closePopup();
@@ -338,15 +376,16 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
     elementsToDisable.forEach(el => {
       if (el) el.disabled = isLoading;
     });
-    
+
     submitButton.textContent = isLoading ? message : "Log It (Ctrl+Enter)";
     statusMessage.style.display = isLoading ? "none" : "block";
   }
-  
+
   // --- Assemble and Inject Popup ---
-  
+
   modal.appendChild(closeButton);
   modal.appendChild(title);
+  modal.appendChild(lastEntryContainer); // [NEW]
   modal.appendChild(tagGroup);
   modal.appendChild(mruTagsContainer);
   modal.appendChild(textGroup);
@@ -358,10 +397,10 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay) {
   actionsWrapper.appendChild(breakButton);
   modal.appendChild(actionsWrapper);
   modal.appendChild(statusMessage);
-  
+
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
-  
+
   textarea.focus();
 }
 

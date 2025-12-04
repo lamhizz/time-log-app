@@ -33,8 +33,8 @@
   "commands": {
     "trigger-log-popup": {
       "suggested_key": {
-        "default": "Ctrl+Shift+L",
-        "mac": "Command+Shift+L"
+        "default": "Ctrl+Shift+E",
+        "mac": "Command+Shift+E"
       },
       "description": "Open the WurkWurk log popup"
     }

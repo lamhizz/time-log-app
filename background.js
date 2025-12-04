@@ -57,25 +57,25 @@ chrome.runtime.onInstalled.addListener((details) => {
       notificationSound: "ClickUp.wav",
       isPomodoroEnabled: true
     };
-    
+
     let newSettings = {};
     for (let key in defaults) {
       if (existingSettings[key] === undefined) {
         newSettings[key] = defaults[key];
       }
     }
-    
+
     if (Object.keys(newSettings).length > 0) {
       chrome.storage.sync.set(newSettings, () => {
         console.log("Default settings saved:", newSettings);
       });
     }
   });
-  
+
   chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red for alarm state
-  
+
   checkTimerStateOnStartup();
-  
+
   // Only create an alarm if the interval is > 0
   chrome.storage.sync.get({ logInterval: 15 }, (data) => {
     if (data.logInterval > 0) {
@@ -115,7 +115,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 chrome.runtime.onStartup.addListener(() => {
   console.log("Browser starting up. Checking alarm state...");
   checkTimerStateOnStartup();
-  
+
   // Only create an alarm if the interval is > 0
   chrome.storage.sync.get({ logInterval: 15 }, (data) => {
     if (data.logInterval > 0) {
@@ -219,9 +219,9 @@ async function runDiagnostics(url) {
   } catch (error) {
     let errorMessage = error.message;
     if (error.message.includes("Failed to fetch")) {
-        errorMessage = "Fetch failed. Check URL, network, or CORS. Is the script deployed correctly?";
+      errorMessage = "Fetch failed. Check URL, network, or CORS. Is the script deployed correctly?";
     } else if (error.message.includes("Unexpected token")) {
-        errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
+      errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
     }
     report.checks.connection = { success: false, message: errorMessage };
     report.overallStatus = "error";
@@ -239,20 +239,20 @@ async function runDiagnostics(url) {
 function createWorkLogAlarm(initialDelayInMinutes = null) {
   chrome.alarms.clearAll((wasCleared) => {
     if (wasCleared) console.log("Cleared all previous alarms.");
-    
+
     chrome.storage.sync.get({ logInterval: 15 }, (data) => {
       const logInterval = parseInt(data.logInterval, 10) || 15;
-      
+
       // Do not create an alarm if the interval is 0
       if (logInterval <= 0) {
         console.log("Log interval is 0, automatic alarms disabled.");
         return;
       }
-      
+
       const firstDelay = initialDelayInMinutes !== null ? initialDelayInMinutes : logInterval;
-      
+
       console.log(`Creating 'workLogAlarm'. First run in ${firstDelay} min(s), then every ${logInterval} min(s).`);
-      
+
       chrome.alarms.create("workLogAlarm", {
         delayInMinutes: firstDelay,
         periodInMinutes: logInterval
@@ -271,7 +271,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     console.log("Work Log Alarm triggered.");
     checkDayAndTriggerPopup();
   }
-  
+
   if (alarm.name === "snoozeAlarm") {
     console.log("Snooze Alarm triggered.");
     checkDayAndTriggerPopup();
@@ -347,13 +347,13 @@ function checkDayAndTriggerPopup() {
   const today = new Date();
   const dayOfWeek = today.getDay(); // Sunday = 0, Monday = 1, etc.
   const currentHour = today.getHours();
-  
+
   chrome.storage.sync.get({
     workingDays: ["1", "2", "3", "4", "5"], // Default Mon-Fri
     workStartHour: 9,
-    workEndHour: 18 
+    workEndHour: 18
   }, (data) => {
-    
+
     const isWorkingDay = data.workingDays.includes(dayOfWeek.toString());
     const isWorkingHour = currentHour >= data.workStartHour && currentHour < data.workEndHour;
 
@@ -383,35 +383,35 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
     console.warn("Invalid tab object.", tab);
     return;
   }
-  
+
   // Don't show on other extension pages or protected chrome:// pages
   if (tab.url.startsWith("chrome-extension://") || tab.url.startsWith("chrome://")) {
     console.log("Popup skipped: Cannot inject into protected pages.");
     return;
   }
 
-  chrome.storage.sync.get({ 
+  chrome.storage.sync.get({
     blockedDomains: "",
     isDomainLogEnabled: false,
     notificationSound: "ClickUp.wav",
     notificationVolume: 0.5 // <-- Add volume
   }, (data) => {
     const domains = data.blockedDomains.split('\n').filter(Boolean);
-    
+
     let urlHostname = "";
     try {
       urlHostname = new URL(tab.url).hostname;
     } catch (e) {
       // Handles cases like chrome:// URLs that are not valid URLs
     }
-    
+
     const isBlocked = domains.some(domain => urlHostname.includes(domain.trim()));
 
     if (isBlocked && !bypassDnd) {
       console.log(`Popup skipped: Active tab (${tab.url}) is on a "Do Not Disturb" domain.`);
       return;
     }
-    
+
     console.log(`Injecting scripts into tab ${tab.id}`);
     (async () => {
       try {
@@ -419,14 +419,14 @@ async function triggerPopupOnTab(tab, bypassDnd = false) {
           target: { tabId: tab.id },
           files: ["style.css"]
         });
-        
+
         await chrome.scripting.executeScript({
           target: { tabId: tab.id },
           files: ["content.js"]
         });
-        
+
         const domainToLog = data.isDomainLogEnabled ? urlHostname : "";
-        
+
         // --- NEW: Show desktop notification first ---
         showDesktopNotification();
         logPromptTabId = tab.id; // Store the tab ID
@@ -505,7 +505,7 @@ async function testWebAppConnection(url) {
   if (!url || (!url.startsWith("http:") && !url.startsWith("https://"))) {
     return { status: "error", message: "Invalid URL. Must start with http:// or https://" };
   }
-  
+
   // MODIFIED TO USE POST
   try {
     const response = await fetch(url, {
@@ -525,16 +525,16 @@ async function testWebAppConnection(url) {
     if (json.status !== "success") {
       throw new Error(`Google Script Error: ${json.message || 'Test failed'}`);
     }
-    
-    return json; 
+
+    return json;
 
   } catch (error) {
     console.error("Test Connection error details:", error);
     let errorMessage = error.message;
     if (error.message.includes("Failed to fetch")) {
-        errorMessage = "Fetch failed. Check URL, network, or CORS. Is the script deployed correctly?";
+      errorMessage = "Fetch failed. Check URL, network, or CORS. Is the script deployed correctly?";
     } else if (error.message.includes("Unexpected token")) {
-        errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
+      errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
     }
     return { status: "error", message: errorMessage };
   }
@@ -551,7 +551,7 @@ async function testWebAppConnection(url) {
  * @returns {boolean} Returns true to indicate that the response will be sent asynchronously.
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  
+
   switch (request.action) {
     // Case 1: A new log is submitted from the content script or popup
     case "logWork":
@@ -569,7 +569,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           });
           updateMruTags(fullLogData.tag);
           updateDailyStats(fullLogData); // Pass the rich object
-          
+
           alarmBadgeActive = false;
           if (!timerBadgeActive) {
             chrome.action.setBadgeText({ text: '' });
@@ -605,7 +605,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     // Case 3: User logs and then snoozes
     case "logAndSnooze":
-	  chrome.notifications.clear("workLogNotification");
+      chrome.notifications.clear("workLogNotification");
       logPromptTabId = null;
       console.log(`Received logAndSnooze for ${request.minutes} min:`, request.data);
 
@@ -665,7 +665,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           let urlHostname = "";
           if (tabs.length > 0 && tabs[0].url) {
-            try { urlHostname = new URL(tabs[0].url).hostname; } catch (e) {}
+            try { urlHostname = new URL(tabs[0].url).hostname; } catch (e) { }
           }
           sendResponse({ domain: urlHostname });
         });
@@ -759,7 +759,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       });
       return true;
-    
+
     // --- NEW: Dashboard today data request ---
     case "getTodayData":
       chrome.storage.local.get({ recentLogs: [] }, (data) => {
@@ -767,6 +767,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // We send it in reverse order so the dashboard can display it chronologically.
         sendResponse({ status: "success", data: data.recentLogs.reverse() });
       });
+      return true;
+
+    // --- NEW: Popup requests to open the injected popup on a specific tab ---
+    case "openPopupOnTab":
+      if (request.tabId) {
+        chrome.tabs.get(request.tabId, (tab) => {
+          if (tab) {
+            triggerPopupOnTab(tab, true); // Bypass DND for manual trigger
+          }
+        });
+      }
       return true;
   }
 });
@@ -784,7 +795,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 async function logToGoogleSheet(logData) {
   // Get URL and Timezone from sync storage first
   const settings = await chrome.storage.sync.get({ webAppUrl: "", timeZone: "Europe/Vilnius" });
-  
+
   const WEB_APP_URL = settings.webAppUrl;
   if (!WEB_APP_URL) {
     throw new Error("Google Apps Script URL is not set.");
@@ -808,7 +819,7 @@ async function logToGoogleSheet(logData) {
     }
   }
   // --- End logic ---
-  
+
   const payload = {
     log: logData.logText,
     tag: logData.tag,
@@ -817,7 +828,7 @@ async function logToGoogleSheet(logData) {
     keywords: logData.keywords || "",
     domain: logData.domain || ""
   };
-  
+
   // --- NEW: Exponential Backoff Retry Logic ---
   const MAX_RETRIES = 3;
   let delay = 2000; // Start with 2 seconds
@@ -869,11 +880,11 @@ async function logToGoogleSheet(logData) {
           errorMessage = "Google Apps Script is rate limiting. Too many requests. Please wait a while before logging again.";
         }
       }
-      
+
       if (error.message.includes("Failed to fetch")) {
-          errorMessage = "Fetch failed. Check URL, network, or CORS. Did you re-deploy and update the URL?";
+        errorMessage = "Fetch failed. Check URL, network, or CORS. Did you re-deploy and update the URL?";
       } else if (error.message.includes("Unexpected token")) {
-          errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
+        errorMessage = "Google Script did not return valid JSON. Check your Apps Script code for errors.";
       }
 
       // If this is the last retry, throw the error

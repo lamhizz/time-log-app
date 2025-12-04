@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="dashboard.css">
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -44,6 +46,30 @@
             <!-- Today's Timeline (from previous step) -->
             <div class="activity-card">
                 <h2>Today's Timeline</h2>
+
+                <!-- [NEW] Legend -->
+                <details class="legend-container">
+                    <summary>Legend</summary>
+                    <div class="legend-content">
+                        <div class="legend-item">
+                            <div class="legend-box legend-normal"></div>
+                            <span>Normal Entry</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box legend-drifted"></div>
+                            <span>Drifted (Dotted Border)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box legend-reactive"></div>
+                            <span>Reactive (Yellow Badge)</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box legend-gap"></div>
+                            <span>Not Logged (Red Dashed)</span>
+                        </div>
+                    </div>
+                </details>
+
                 <div id="daily-timeline-container">
                     <p>Loading today's activity...</p>
                 </div>
@@ -53,4 +79,5 @@
     <!-- Load the new today.js script -->
     <script src="today.js"></script>
 </body>
+
 </html>

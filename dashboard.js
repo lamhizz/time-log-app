@@ -53,9 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             weeklyStatusEl.textContent = "Data refreshed successfully!";
             weeklyStatusEl.className = "status-message success";
-            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className="status-message"; }, 3000);
+            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className = "status-message"; }, 3000);
             refreshDataBtn.disabled = false;
-            
+
             // --- Defensive data handling ---
             let weeklyData = response.data;
 
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tasksCompleted: 0,
             recentLogs: [] // This now contains rich log objects
         }, (data) => {
-            
+
             const logs = data.recentLogs || [];
             const logsToday = logs.length;
             const driftedLogs = logs.filter(log => log.drifted).length;
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Update KPIs
             logsTodayEl.textContent = logsToday;
             tasksCompletedEl.textContent = data.tasksCompleted;
-            
+
             const focusScore = logsToday > 0
                 ? Math.round(((logsToday - driftedLogs) / logsToday) * 100)
                 : 100;
@@ -124,18 +124,52 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Logs are stored newest-first, so we reverse them for chronological order.
-        const chronologicalLogs = logs.slice().reverse(); 
-        
-        timelineContainerEl.innerHTML = ""; // Clear loader
-        
-        let currentHour = -1; // Initialize to -1 to force first header
+        let chronologicalLogs = logs.slice().reverse();
 
+        // [NEW] Merge "Doing Same" entries (starting with "↑ ")
+        const mergedLogs = [];
         chronologicalLogs.forEach((log) => {
+            if (mergedLogs.length > 0 && (log.logText.startsWith("↑ ") || log.logText === "Doing Same")) {
+                const prevLog = mergedLogs[mergedLogs.length - 1];
+                const currentGap = (log.gap !== "N/A" && log.gap) ? parseInt(log.gap, 10) : 0;
+                const prevGap = (prevLog.gap !== "N/A" && prevLog.gap) ? parseInt(prevLog.gap, 10) : 0;
+                prevLog.gap = prevGap + currentGap;
+            } else {
+                mergedLogs.push({ ...log });
+            }
+        });
+        chronologicalLogs = mergedLogs;
+
+        timelineContainerEl.innerHTML = ""; // Clear loader
+
+        // [NEW] Determine start hour
+        let startHour = 8; // Default
+        if (chronologicalLogs.length > 0) {
+            const firstLogTime = chronologicalLogs[0].time;
+            if (firstLogTime) {
+                startHour = parseInt(firstLogTime.split(':')[0], 10);
+            }
+        }
+
+        let currentHour = startHour - 1; // Initialize to force first header
+
+        chronologicalLogs.forEach((log, index) => {
             // 1. Get hour from log time (e.g., "09:05" -> 9)
-            const logHour = parseInt(log.time.split(':')[0], 10);
+            const logHour = log.time ? parseInt(log.time.split(':')[0], 10) : -1;
+
+            // [MOVED] Check for Gap from previous log BEFORE rendering headers
+            if (index > 0) {
+                const gapMins = (log.gap !== "N/A" && log.gap) ? parseInt(log.gap, 10) : 0;
+                if (gapMins > 60) {
+                    const gapEl = document.createElement("div");
+                    gapEl.className = "timeline-entry timeline-entry-gap";
+                    gapEl.textContent = `⚠️ Blind Spot? (${gapMins} min gap)`;
+                    timelineContainerEl.appendChild(gapEl);
+                }
+            }
 
             // 2. Check if we need to render an "Hour Header"
-            if (logHour > currentHour) {
+            if (logHour !== -1 && logHour > currentHour) {
                 currentHour = logHour;
                 const hourEl = document.createElement("div");
                 hourEl.className = "timeline-hour-header";
@@ -161,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Generate a consistent color from the tag string
             const tagColor = stringToHslColor(log.tag || "default");
             // Apply color to border
-            entryEl.style.borderColor = tagColor.bg; 
+            entryEl.style.borderColor = tagColor.bg;
             entryEl.style.borderLeftColor = tagColor.fg; // Strong left border
 
             // Badges for special logs
@@ -188,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${badgesHTML ? `<div class="timeline-badges">${badgesHTML}</div>` : ''}
                 </div>
             `;
-            
+
             timelineContainerEl.appendChild(entryEl);
         });
     }
@@ -200,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     function escapeHTML(str) {
         if (!str) return "";
-        return str.replace(/[&<>"']/g, function(match) {
+        return str.replace(/[&<>"']/g, function (match) {
             return {
                 '&': '&amp;',
                 '<': '&lt;',
@@ -289,7 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             weeklyStatusEl.textContent = "Data refreshed successfully!";
             weeklyStatusEl.className = "status-message success";
-            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className="status-message"; }, 3000);
+            setTimeout(() => { weeklyStatusEl.textContent = ""; weeklyStatusEl.className = "status-message"; }, 3000);
             refreshDataBtn.disabled = false;
 
             // --- Defensive data handling ---
@@ -373,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
             culpritEl.innerHTML = `Your most frequent reactive tag was <strong>'${topCulprit.name}'</strong> (${topCulprit.value} logs).`;
             reactiveReportEl.appendChild(culpritEl);
         }
-        
+
         const reactiveCanvas = document.createElement('canvas');
         reactiveReportEl.appendChild(reactiveCanvas);
         // Render chart based on COUNT, not time
@@ -448,9 +482,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const date = new Date(item.timestamp);
             const day = date.getDay(); // Sunday = 0, Saturday = 6
             const hour = date.getHours();
-            
+
             heatmapGrid[hour][day]++; // Increment count
-            
+
             if (heatmapGrid[hour][day] > maxCount) {
                 maxCount = heatmapGrid[hour][day]; // Find max count
             }
@@ -484,7 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const count = heatmapGrid[hour][day]; // Get count
                 if (count > 0) {
                     // Normalize intensity based on count
-                    const intensity = maxCount > 0 ? count / maxCount : 0; 
+                    const intensity = maxCount > 0 ? count / maxCount : 0;
                     cell.style.backgroundColor = `rgba(82, 162, 160, ${intensity})`; // #52A2A0 with opacity
                     cell.title = `${count} logs`; // Update title
                 }
@@ -555,13 +589,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalLogs = data.length; // AC 1: New Metric
         const reactiveCount = data.filter(row => row.reactive).length;
         const driftedCount = data.filter(row => row.drifted).length; // AC 1: Keep
-        
+
         // Calculate total minutes *only* for the avg. gap metric
         const totalMinutes = data.reduce((sum, row) => sum + (parseInt(row.minutesSinceLast, 10) || 0), 0);
-        
+
         // AC 1: New metric logic
         const reactivePercentage = totalLogs > 0 ? Math.round((reactiveCount / totalLogs) * 100) : 0;
-        
+
         // AC 1: Keep, but rename
         const avgGap = totalLogs > 0 ? Math.round(totalMinutes / totalLogs) : 0;
 
@@ -582,10 +616,10 @@ document.addEventListener("DOMContentLoaded", () => {
         renderChart(timeByDomainChartEl, 'bar', domainData, "Logs by Domain", 10); // Updated label
     }
 
-     /**
-     * @description Renders the KPI cards.
-     * @param {Object} kpiData - An object with KPI titles as keys and values as values.
-     */
+    /**
+    * @description Renders the KPI cards.
+    * @param {Object} kpiData - An object with KPI titles as keys and values as values.
+    */
     function renderKpis(kpiData) {
         kpiGridEl.innerHTML = "";
         for (const key in kpiData) {
@@ -648,9 +682,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             return;
         } else {
-             canvasEl.style.display = 'block';
-             const existingMsg = canvasEl.parentNode.querySelector('.chart-message');
-             if (existingMsg) existingMsg.remove();
+            canvasEl.style.display = 'block';
+            const existingMsg = canvasEl.parentNode.querySelector('.chart-message');
+            if (existingMsg) existingMsg.remove();
         }
 
 
@@ -686,14 +720,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function (context) {
                                 let label = context.label || '';
                                 if (label) {
                                     label += ': ';
                                 }
                                 const value = context.raw;
                                 // (Metric Overhaul) Changed tooltip to show 'logs' instead of time
-                                label += `${value} logs`; 
+                                label += `${value} logs`;
                                 return label;
                             }
                         }

@@ -1,7 +1,8 @@
 /* --- Dashboard Specific Styles --- */
 
 body {
-    background-color: #f9fafb; /* Lighter gray for the body background */
+    background-color: #f9fafb;
+    /* Lighter gray for the body background */
 }
 
 .container {
@@ -47,6 +48,7 @@ h1 {
     text-decoration: none;
     transition: color 0.2s;
 }
+
 .header-nav-link:hover {
     color: var(--wurk-primary-hover);
     text-decoration: underline;
@@ -66,32 +68,39 @@ h1 {
 }
 
 /* --- Today's Stats --- */
-#today-kpis { /* Renamed from #today */
+#today-kpis {
+    /* Renamed from #today */
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     display: grid;
     gap: 1.5rem;
 }
 
-.stat-card, .activity-card {
+.stat-card,
+.activity-card {
     background-color: #f9fafb;
     padding: 1.5rem;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
 }
 
-.stat-card h2, .activity-card h2 {
+.stat-card h2,
+.activity-card h2 {
     margin-top: 0;
     margin-bottom: 0.5rem;
-    font-size: 0.875rem; /* 14px - Adjusted */
-    color: #6b7280; /* Lighter color - Adjusted */
+    font-size: 0.875rem;
+    /* 14px - Adjusted */
+    color: #6b7280;
+    /* Lighter color - Adjusted */
     font-weight: 500;
-    text-transform: uppercase; /* Added */
+    text-transform: uppercase;
+    /* Added */
 }
 
 /* UPDATED: Changed from 'p' to '.stat-metric' */
 .stat-card .stat-metric {
     margin: 0;
-    font-size: 2.25rem; /* 36px - Adjusted */
+    font-size: 2.25rem;
+    /* 36px - Adjusted */
     font-weight: 700;
     color: var(--work-log-accent-dark);
 }
@@ -99,13 +108,17 @@ h1 {
 /* NEW: Context style for sub-metrics */
 .stat-context {
     display: block;
-    font-size: 0.875rem; /* 14px */
-    color: #6b7280; /* gray-500 */
-    margin-top: 0.25rem; /* 4px */
+    font-size: 0.875rem;
+    /* 14px */
+    color: #6b7280;
+    /* gray-500 */
+    margin-top: 0.25rem;
+    /* 4px */
 }
 
 .activity-card {
-    grid-column: 1 / -1; /* Span full width */
+    grid-column: 1 / -1;
+    /* Span full width */
 }
 
 /* --- Weekly Review --- */
@@ -146,7 +159,8 @@ h1 {
 }
 
 #weekly-charts-container {
-    display: contents; /* Inherit grid from parent */
+    display: contents;
+    /* Inherit grid from parent */
 }
 
 /* --- NEW: Dashboard Section Layout --- */
@@ -160,7 +174,8 @@ h1 {
 }
 
 .dashboard-section h2 {
-    font-size: 1.25rem; /* 20px - Adjusted */
+    font-size: 1.25rem;
+    /* 20px - Adjusted */
     margin-top: 0;
     margin-bottom: 1.5rem;
     color: var(--work-log-text);
@@ -169,7 +184,8 @@ h1 {
 }
 
 .dashboard-section h3 {
-    font-size: 1rem; /* 16px - Adjusted */
+    font-size: 1rem;
+    /* 16px - Adjusted */
     margin-top: 0;
     margin-bottom: 1rem;
     color: #374151;
@@ -206,20 +222,27 @@ h1 {
     gap: 2rem;
 }
 
-.chart-container, .table-container, .heatmap-container {
+.chart-container,
+.table-container,
+.heatmap-container {
     display: flex;
     flex-direction: column;
-    position: relative; /* Added for Chart.js */
-    height: 350px; /* Added: Fix for chart height */
+    position: relative;
+    /* Added for Chart.js */
+    height: 350px;
+    /* Added: Fix for chart height */
 }
 
 /* Specific heights for different containers */
-.table-container, .heatmap-container {
-    height: auto; /* Allow tables to grow */
+.table-container,
+.heatmap-container {
+    height: auto;
+    /* Allow tables to grow */
 }
 
 .chart-container canvas {
-    max-height: 100%; /* Ensure canvas doesn't overflow container */
+    max-height: 100%;
+    /* Ensure canvas doesn't overflow container */
 }
 
 
@@ -230,7 +253,8 @@ h1 {
     font-size: 0.9rem;
 }
 
-.dashboard-table th, .dashboard-table td {
+.dashboard-table th,
+.dashboard-table td {
     padding: 0.75rem;
     text-align: left;
     border-bottom: 1px solid #f3f4f6;
@@ -269,33 +293,44 @@ h1 {
     border-collapse: collapse;
     table-layout: fixed;
 }
-.heatmap-table th, .heatmap-table td {
+
+.heatmap-table th,
+.heatmap-table td {
     border: 1px solid #e5e7eb;
     height: 30px;
     text-align: center;
     font-size: 0.8rem;
 }
+
 .heatmap-table th {
     background-color: #f9fafb;
 }
+
 .heatmap-table .heatmap-time-label {
     font-weight: 500;
     background-color: #f9fafb;
 }
 
 /* --- NEW: Blindsides Section --- */
-#reactive-report, #drifted-report {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1; /* Make this div fill the chart-container */
-  min-height: 0; /* Important for flex-grow in a flex column */
+#reactive-report,
+#drifted-report {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* Make this div fill the chart-container */
+    min-height: 0;
+    /* Important for flex-grow in a flex column */
 }
 
-#reactive-report canvas, #drifted-report canvas {
-  flex-grow: 1; /* Make the canvas fill the remaining space */
-  position: relative; /* Chart.js needs this */
-  height: 100%; /* Fill remaining height */
-  width: 100%;
+#reactive-report canvas,
+#drifted-report canvas {
+    flex-grow: 1;
+    /* Make the canvas fill the remaining space */
+    position: relative;
+    /* Chart.js needs this */
+    height: 100%;
+    /* Fill remaining height */
+    width: 100%;
 }
 
 .kpi-standalone {
@@ -320,13 +355,14 @@ h1 {
     padding: 1.5rem;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .chart-card h3 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    font-size: 1.125rem; /* Adjusted */
+    font-size: 1.125rem;
+    /* Adjusted */
     color: #374151;
     text-align: center;
 }
@@ -337,7 +373,8 @@ h1 {
     border-radius: 6px;
     text-align: center;
     grid-column: 1 / -1;
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
 }
 
 .status-message.info {
@@ -368,15 +405,18 @@ h1 {
 .timeline-hour-header {
     font-size: 11px;
     font-weight: 600;
-    color: #9ca3af; /* Gray 400 */
+    color: #9ca3af;
+    /* Gray 400 */
     text-transform: uppercase;
     letter-spacing: 0.5px;
     padding: 16px 0 8px 0;
     border-bottom: 1px solid #e5e7eb;
     margin-bottom: 8px;
     position: sticky;
-    top: -10px; /* Stick to top when scrolling */
-    background-color: #f9fafb; /* Match card bg */
+    top: -10px;
+    /* Stick to top when scrolling */
+    background-color: #f9fafb;
+    /* Match card bg */
     z-index: 10;
 }
 
@@ -391,35 +431,44 @@ h1 {
     position: relative;
     border: 1px solid #e5e7eb;
     background-color: #fff;
-    margin-bottom: 8px; /* Space between entries */
-    border-left-width: 4px; /* Default thick border */
+    margin-bottom: 8px;
+    /* Space between entries */
+    border-left-width: 4px;
+    /* Default thick border */
 }
 
 .timeline-meta {
-    flex-basis: 70px; /* Fixed width for left column */
+    flex-basis: 70px;
+    /* Fixed width for left column */
     flex-shrink: 0;
     text-align: right;
     padding-top: 2px;
 }
+
 .timeline-time {
     font-size: 14px;
     font-weight: 600;
     color: var(--work-log-text-dark);
     display: block;
 }
+
 .timeline-gap {
     font-size: 12px;
     font-style: italic;
-    color: #9ca3af; /* Gray */
+    color: #9ca3af;
+    /* Gray */
     display: block;
     margin-top: 2px;
 }
+
 /* NEW: Warning style for large gaps */
 .timeline-gap-warning {
     font-size: 12px;
     font-style: italic;
-    font-weight: 600; /* Bold */
-    color: #D97706; /* Amber-600 */
+    font-weight: 600;
+    /* Bold */
+    color: #D97706;
+    /* Amber-600 */
     display: block;
     margin-top: 2px;
 }
@@ -427,14 +476,17 @@ h1 {
 .timeline-content {
     flex-grow: 1;
     padding-left: 12px;
-    border-left: 1px solid #f3f4f6; /* Subtle separator */
+    border-left: 1px solid #f3f4f6;
+    /* Subtle separator */
 }
+
 .timeline-text {
     font-size: 14px;
     color: var(--work-log-text-dark);
     margin: 0 0 8px 0;
     word-break: break-word;
 }
+
 .timeline-tag {
     font-size: 12px;
     font-weight: 500;
@@ -449,6 +501,7 @@ h1 {
     gap: 6px;
     margin-top: 10px;
 }
+
 .timeline-badge {
     font-size: 10px;
     font-weight: 600;
@@ -456,14 +509,20 @@ h1 {
     border-radius: 4px;
     text-transform: uppercase;
 }
+
 .timeline-badge-drifted {
-    background-color: #FEF2F2; /* Red bg */
-    color: #991B1B; /* Red text */
+    background-color: #FEF2F2;
+    /* Red bg */
+    color: #991B1B;
+    /* Red text */
     border: 1px solid #FEE2E2;
 }
+
 .timeline-badge-reactive {
-    background-color: #FFFBEB; /* Yellow bg */
-    color: #92400E; /* Yellow text */
+    background-color: #FFFBEB;
+    /* Yellow bg */
+    color: #92400E;
+    /* Yellow text */
     border: 1px solid #FEF3C7;
 }
 
@@ -473,13 +532,93 @@ h1 {
     border-style: dashed;
     border-left: 4px dashed #9ca3af;
 }
+
 .timeline-entry-break .timeline-text {
     color: #6b7280;
     font-style: italic;
 }
 
 .timeline-entry-drifted {
-    background-color: #FFFBFB; /* Very light red tint */
+    background-color: #FFFBFB;
+    /* Very light red tint */
     border-color: #FEE2E2;
     border-left-color: #EF4444;
+}
+
+/* --- [NEW] Legend Styles --- */
+.legend-container {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.5rem;
+    background-color: #fff;
+    font-size: 0.85rem;
+    color: #4b5563;
+}
+
+.legend-container summary {
+    cursor: pointer;
+    font-weight: 500;
+    outline: none;
+}
+
+.legend-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-box {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-normal {
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid var(--wurk-primary);
+    background-color: #fff;
+}
+
+.legend-drifted {
+    border: 1px dotted #EF4444;
+    border-left: 4px solid #EF4444;
+    background-color: #FFFBFB;
+}
+
+.legend-reactive {
+    border: 1px solid #FEF3C7;
+    border-left: 4px solid #D97706;
+    background-color: #FFFBEB;
+}
+
+.legend-gap {
+    border: 2px dashed #EF4444;
+    background-color: #FEF2F2;
+}
+
+/* --- [NEW] Gap Entry Styles --- */
+.timeline-entry-gap {
+    border: 2px dashed #EF4444;
+    /* Red dashed border */
+    background-color: #FEF2F2;
+    /* Light red bg */
+    border-left: none;
+    /* Remove standard left border */
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    color: #991B1B;
+    font-weight: 600;
+    font-size: 13px;
+    text-align: center;
 }

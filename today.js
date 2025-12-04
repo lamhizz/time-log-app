@@ -14,13 +14,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- (NEW) KPI Card Elements ---
     const focusScoreMetricEl = document.getElementById("focus-score-metric");
     const focusScoreContextEl = document.getElementById("focus-score-context");
-    
+
     const reactiveMetricEl = document.getElementById("reactive-metric");
     const reactiveContextEl = document.getElementById("reactive-context");
 
     const activityMetricEl = document.getElementById("activity-metric");
     const activityContextEl = document.getElementById("activity-context");
-    
+
     // Timeline Element
     const timelineContainerEl = document.getElementById("daily-timeline-container");
 
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tasksCompleted: 0,
             recentLogs: [] // This now contains rich log objects
         }, (data) => {
-            
+
             const logs = data.recentLogs || [];
             const logsToday = logs.length;
             const tasksCompleted = data.tasksCompleted;
@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const focusScore = logsToday > 0
                 ? Math.round(((logsToday - driftedCount) / logsToday) * 100)
                 : 100;
-            
+
             focusScoreMetricEl.textContent = `${focusScore}%`;
             if (driftedCount === 0) {
                 focusScoreContextEl.textContent = "No drifted logs yet.";
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const reactiveCount = reactiveLogs.length;
 
             reactiveMetricEl.textContent = reactiveCount;
-            
+
             if (reactiveCount === 0) {
                 reactiveContextEl.textContent = "No reactive logs yet.";
             } else {
@@ -71,8 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     acc[tag] = (acc[tag] || 0) + 1;
                     return acc;
                 }, {});
-                
-                const topCulprit = Object.entries(tagCounts).sort(([,a],[,b]) => b-a)[0];
+
+                const topCulprit = Object.entries(tagCounts).sort(([, a], [, b]) => b - a)[0];
                 reactiveContextEl.textContent = `Top culprit: '${topCulprit[0]}' (${topCulprit[1]} logs)`;
             }
 
@@ -98,16 +98,77 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Logs are stored newest-first, so we reverse them for chronological order.
-        const chronologicalLogs = logs.slice().reverse(); 
-        
-        timelineContainerEl.innerHTML = ""; // Clear loader
-        
-        let currentHour = -1; // Initialize to -1 to force first header
+        let chronologicalLogs = logs.slice().reverse();
 
+        // [NEW] Merge "Doing Same" entries (starting with "↑ ")
+        const mergedLogs = [];
         chronologicalLogs.forEach((log) => {
+            if (mergedLogs.length > 0 && (log.logText.startsWith("↑ ") || log.logText === "Doing Same")) {
+                // It's a "Doing Same" entry. Merge with the previous one.
+                const prevLog = mergedLogs[mergedLogs.length - 1];
+
+                // Add duration (gap) to the previous log
+                // The 'gap' of the current log represents the duration of the previous task *before* this one started?
+                // No, 'gap' in this app seems to be "minutes since last log".
+                // So if Log A is at 9:00, and Log B (Doing Same) is at 9:15 with gap 15,
+                // it means Log A continued for 15 mins.
+                // We want to visually extend Log A.
+
+                // We can append the time range or just update the "gap" displayed on the merged entry?
+                // Let's sum up the gaps.
+                const currentGap = log.gap !== "N/A" ? parseInt(log.gap, 10) : 0;
+                const prevGap = prevLog.gap !== "N/A" ? parseInt(prevLog.gap, 10) : 0;
+                prevLog.gap = prevGap + currentGap;
+
+                // Update the "end time" or similar if we were tracking it.
+                // For now, just accumulating the gap (duration) is enough to show it "lasted longer".
+                // We might want to append a note?
+                // prevLog.logText += ` (+ ${currentGap}m)`; 
+
+            } else {
+                mergedLogs.push({ ...log }); // Push a copy
+            }
+        });
+
+        chronologicalLogs = mergedLogs;
+
+        timelineContainerEl.innerHTML = ""; // Clear loader
+
+        // [NEW] Determine start hour
+        let startHour = 8; // Default
+        if (chronologicalLogs.length > 0) {
+            const firstLogTime = chronologicalLogs[0].time;
+            if (firstLogTime) {
+                startHour = parseInt(firstLogTime.split(':')[0], 10);
+            }
+        }
+
+        let currentHour = startHour - 1; // Initialize to force first header
+
+        // [NEW] Helper to parse time string "HH:MM" to minutes from midnight
+        const timeToMins = (timeStr) => {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        };
+
+        chronologicalLogs.forEach((log, index) => {
             // 1. Get hour from log time (e.g., "09:05" -> 9)
-            // Handle potential errors if log.time is not set
             const logHour = log.time ? parseInt(log.time.split(':')[0], 10) : -1;
+
+            // [MOVED] Check for Gap from previous log BEFORE rendering headers
+            if (index > 0) {
+                const prevLog = chronologicalLogs[index - 1];
+                // Gap logic: If gap > 60 mins, show tile.
+                // Note: 'gap' property in log is "duration since previous log".
+                const gapMins = log.gap !== "N/A" ? parseInt(log.gap, 10) : 0;
+
+                if (gapMins > 60) {
+                    const gapEl = document.createElement("div");
+                    gapEl.className = "timeline-entry timeline-entry-gap";
+                    gapEl.textContent = `⚠️ Blind Spot? (${gapMins} min gap)`;
+                    timelineContainerEl.appendChild(gapEl);
+                }
+            }
 
             // 2. Check if we need to render an "Hour Header"
             if (logHour !== -1 && logHour > currentHour) {
@@ -139,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Generate a consistent color from the tag string
             const tagColor = stringToHslColor(log.tag || "default");
             // Apply color to border
-            entryEl.style.borderColor = tagColor.bg; 
+            entryEl.style.borderColor = tagColor.bg;
             entryEl.style.borderLeftColor = tagColor.fg; // Strong left border
 
             // Badges for special logs
@@ -170,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${badgesHTML ? `<div class="timeline-badges">${badgesHTML}</div>` : ''}
                 </div>
             `;
-            
+
             timelineContainerEl.appendChild(entryEl);
         });
     }
@@ -182,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
      */
     function escapeHTML(str) {
         if (!str) return "";
-        return str.replace(/[&<>"']/g, function(match) {
+        return str.replace(/[&<>"']/g, function (match) {
             return {
                 '&': '&amp;',
                 '<': '&lt;',

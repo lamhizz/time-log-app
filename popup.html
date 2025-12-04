@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,17 +8,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
   <style>
     :root {
       /* New Color Palette */
-      --wurk-primary: #52A2A0; /* Big Accent - Teal */
-      --wurk-primary-hover: #428482; /* Darker Teal */
-      --wurk-secondary: #F4F4F4; /* Light Gray */
-      --wurk-secondary-hover: #EAEAEA; /* Darker Light Gray */
-      --wurk-accent: #EEBD69; /* Small Accent - Gold */
-      --wurk-text-dark: #315558; /* Main Text */
-      --wurk-text-light: #6A8A8C; /* Lighter Text */
-      
+      --wurk-primary: #52A2A0;
+      /* Big Accent - Teal */
+      --wurk-primary-hover: #428482;
+      /* Darker Teal */
+      --wurk-secondary: #F4F4F4;
+      /* Light Gray */
+      --wurk-secondary-hover: #EAEAEA;
+      /* Darker Light Gray */
+      --wurk-accent: #EEBD69;
+      /* Small Accent - Gold */
+      --wurk-text-dark: #315558;
+      /* Main Text */
+      --wurk-text-light: #6A8A8C;
+      /* Lighter Text */
+
       --work-log-primary: var(--wurk-primary);
       --work-log-primary-hover: var(--wurk-primary-hover);
       --work-log-secondary: var(--wurk-secondary);
@@ -26,21 +38,25 @@
       --work-log-text-light: var(--wurk-text-light);
 
       /* Standard Colors */
-      --work-log-error: #EF4444; /* Red */
-      --work-log-success: #10B981; /* Green */
-      --work-log-border: #D1D5DB; /* Gray 300 */
+      --work-log-error: #EF4444;
+      /* Red */
+      --work-log-success: #10B981;
+      /* Green */
+      --work-log-border: #D1D5DB;
+      /* Gray 300 */
       --work-log-radius: 4px;
       --work-log-font: 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+
     body {
       font-family: var(--work-log-font);
       font-size: 13px;
       margin: 0;
       padding: 12px;
-      width: 300px;
       color: var(--work-log-text-dark);
       background-color: #fff;
     }
+
     h3 {
       margin: 0 0 12px 0;
       text-align: center;
@@ -48,9 +64,11 @@
       font-size: 16px;
       color: var(--wurk-text-dark);
     }
+
     .form-group {
       margin-bottom: 10px;
     }
+
     .form-group label {
       display: block;
       margin-bottom: 4px;
@@ -58,7 +76,10 @@
       font-size: 13px;
       color: var(--wurk-text-light);
     }
-    textarea, select, input[type="text"] {
+
+    textarea,
+    select,
+    input[type="text"] {
       width: 100%;
       border: 1px solid var(--work-log-border);
       border-radius: var(--work-log-radius);
@@ -69,6 +90,7 @@
       background-color: #fff;
       color: var(--wurk-text-dark);
     }
+
     select {
       -webkit-appearance: none;
       -moz-appearance: none;
@@ -78,27 +100,33 @@
       background-position: right 8px center;
       background-size: 16px;
     }
+
     textarea {
       height: 60px;
       resize: vertical;
     }
-    textarea:focus, select:focus, input[type="text"]:focus {
+
+    textarea:focus,
+    select:focus,
+    input[type="text"]:focus {
       border-color: var(--work-log-primary);
       outline: none;
       box-shadow: 0 0 0 3px rgba(82, 162, 160, 0.25);
     }
-    
+
     .checkbox-container {
       display: flex;
       justify-content: space-between;
       gap: 10px;
       margin-bottom: 12px;
     }
+
     .checkbox-group {
       display: flex;
       align-items: center;
       gap: 6px;
     }
+
     .checkbox-group input[type="checkbox"] {
       width: 15px;
       height: 15px;
@@ -106,6 +134,7 @@
       flex-shrink: 0;
       cursor: pointer;
     }
+
     .checkbox-group label {
       font-weight: 500;
       margin: 0;
@@ -114,13 +143,14 @@
       color: var(--wurk-text-dark);
       cursor: pointer;
     }
-    
+
     .mru-tags-container {
       display: flex;
       gap: 6px;
       margin-top: 6px;
       margin-bottom: 10px;
     }
+
     .mru-tag-btn {
       flex: 1;
       font-size: 11px;
@@ -131,6 +161,7 @@
       font-weight: 500;
       border-radius: var(--work-log-radius);
     }
+
     .mru-tag-btn:hover {
       background-color: var(--wurk-secondary-hover);
     }
@@ -147,6 +178,7 @@
       box-sizing: border-box;
       color: var(--work-log-text-dark);
     }
+
     button#submit-log {
       width: 100%;
       background-color: var(--work-log-primary);
@@ -156,9 +188,11 @@
       padding: 9px;
       font-size: 13px;
     }
+
     button#submit-log:hover {
       background-color: var(--work-log-primary-hover);
     }
+
     button#submit-log:disabled {
       background-color: #9CA3AF;
       cursor: not-allowed;
@@ -172,12 +206,15 @@
       line-height: 1.3;
       font-weight: 500;
     }
+
     .status.error {
       color: var(--work-log-error);
     }
+
     .status.success {
       color: var(--work-log-success);
     }
+
     .footer-links {
       margin-top: 12px;
       border-top: 1px solid var(--wurk-secondary-hover);
@@ -186,18 +223,22 @@
       display: flex;
       justify-content: space-between;
     }
+
     .footer-links-group {
       display: flex;
       gap: 8px;
     }
+
     .footer-links a {
       color: var(--wurk-primary);
       text-decoration: none;
       cursor: pointer;
     }
+
     .footer-links a:hover {
       text-decoration: underline;
     }
+
     #debug-info {
       margin-top: 8px;
       background: var(--wurk-secondary);
@@ -206,51 +247,60 @@
       border-radius: 4px;
       display: none;
     }
+
     #debug-info p {
       margin: 0 0 4px 0;
       font-size: 11px;
       word-wrap: break-word;
     }
-    
+
     .divider {
       border-top: 1px solid var(--wurk-secondary-hover);
       margin: 12px 0;
     }
-    .timer-container {
-    }
+
+    .timer-container {}
+
     .start-task-form {
       display: flex;
       gap: 8px;
     }
+
     #task-name-input {
       flex-grow: 1;
     }
+
     #start-task-btn {
       flex-shrink: 0;
       background-color: var(--work-log-success);
       color: white;
       border: none;
     }
+
     .active-task-display {
       background-color: var(--wurk-secondary);
       padding: 10px;
       border-radius: var(--work-log-radius);
       text-align: center;
     }
+
     .active-task-display p {
       margin: 0 0 8px 0;
       font-weight: 500;
     }
+
     #active-task-name {
       font-weight: 600;
       color: var(--wurk-primary);
     }
+
     #active-task-timer {
       font-size: 16px;
       font-weight: 600;
       display: block;
       margin-bottom: 10px;
     }
+
     #stop-task-btn {
       width: 100%;
       background-color: var(--work-log-error);
@@ -258,81 +308,53 @@
       border: none;
       font-weight: 600;
     }
-
   </style>
 </head>
+
 <body>
 
-  <!-- [UX-12] Timer Section -->
-  <div class="timer-container" id="pomodoro-section" style="display: none;">
+  <!-- Logo -->
+  <img src="images/wurk-wurk-logo.png" alt="WurkWurk" class="menu-logo">
+
+  <!-- Primary CTA -->
+  <div class="menu-cta-container">
+    <button id="menu-add-entry-btn" class="menu-cta-btn" title="Open the log popup on the current page">Add
+      Entry</button>
+    <p class="menu-shortcut-hint">Press <span class="shortcut-key">Ctrl</span>+<span
+        class="shortcut-key">Shift</span>+<span class="shortcut-key">E</span></p>
+  </div>
+
+  <!-- Menu Links -->
+  <div class="menu-links-list">
+    <button id="menu-settings-btn" class="menu-link-btn">Settings</button>
+    <button id="menu-dashboard-btn" class="menu-link-btn">Dashboard</button>
+    <button id="menu-debug-btn" class="menu-link-btn" style="display: none;">Show Debug</button>
+    <button id="menu-about-btn" class="menu-link-btn">About</button>
+    <button id="menu-setup-btn" class="menu-link-btn">Setup</button>
+  </div>
+
+  <!-- Pomodoro Section (if enabled) -->
+  <div class="timer-container" id="pomodoro-section"
+    style="display: none; margin-top: 15px; border-top: 1px solid #E5E7EB; padding-top: 15px;">
     <div class="active-task-display" id="active-task-container" style="display: none;">
       <p>Active Task: <span id="active-task-name"></span></p>
       <span id="active-task-timer">00:00:00</span>
-      <button id="stop-task-btn" title="Stop this task and pre-fill the log form.">Stop Task & Log</button>
+      <button id="stop-task-btn" title="Stop this task and open log popup.">Stop Task & Log</button>
     </div>
     <div class="start-task-form" id="start-task-container">
-      <input type="text" id="task-name-input" placeholder="Enter task name..." title="Enter a task name and click 'Start' to begin the timer.">
+      <input type="text" id="task-name-input" placeholder="Enter task name..."
+        title="Enter a task name and click 'Start' to begin the timer.">
       <button id="start-task-btn" title="Start a new task timer.">Start</button>
     </div>
   </div>
 
-  <div class="divider" id="form-divider" style="display: none;"></div>
-
-  <!-- Main Log Form -->
-  <div class="log-form-container" id="log-form-container">
-    <img src="images/wurk-wurk-logo.png" alt="WurkWurk" style="width: 100px; display: block; margin: -5px auto 5px;">
-    <!-- <h3>Log Your Work</h3> -->
-    
-    <div class="form-group">
-      <label for="tag-select">Tag:</label>
-      <select id="tag-select" title="Select a tag to categorize your work.">
-        <!-- Tags will be injected here by popup.js -->
-      </select>
-    </div>
-    
-    <div class="mru-tags-container" id="mru-tags-container" title="Your 3 most recently used tags.">
-      <!-- MRU tags injected here -->
-    </div>
-
-    <div class="form-group">
-      <label for="log-input">Log:</label>
-      <textarea id="log-input" placeholder="What are you working on? Use [Project] for keywords." title="Enter a brief log entry. Wrap keywords in [brackets] to tag them. (Ctrl+Enter to submit)"></textarea>
-    </div>
-    
-    <div class="checkbox-container">
-      <div class="checkbox-group">
-        <input type="checkbox" id="drifted-check" title="Check this if you got distracted or were off-task.">
-        <label for="drifted-check">I drifted</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="reactive-check" title="Check this if the work was an unplanned interruption (e.g., an ad-hoc request).">
-        <label for="reactive-check">I reacted</label>
-      </div>
-    </div>
-    
-    <button id="submit-log" title="Save this log to your Google Sheet. (Ctrl+Enter)">Log It</button>
-    
-    <p class="status" id="status-message"></p>
-  </div>
-  
-  <div class="footer-links">
-    <div class="footer-links-group">
-      <a id="open-settings" title="Open settings page">Settings</a>
-      <a id="dashboard-link" title="Open Dashboard">Dashboard</a>
-      <a id="toggle-debug" title="Show/hide debug info">Show Debug</a>
-    </div>
-    <div class="footer-links-group">
-      <a id="about-link" title="About this extension">About</a>
-      <a id="setup-link" title="View setup guide">Setup</a>
-    </div>
-  </div>
-
+  <!-- Debug Info (Hidden) -->
   <div id="debug-info">
     <p><strong>URL:</strong> <span id="debug-url"></span></p>
     <p><strong>Last Error:</strong> <span id="debug-error"></span></p>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
-</html>
 
+</html>
