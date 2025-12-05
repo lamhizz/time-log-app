@@ -107,6 +107,12 @@ chrome.runtime.onInstalled.addListener((details) => {
     when: new Date().setHours(24, 0, 0, 0), // Next midnight
     periodInMinutes: 24 * 60 // Repeat every 24 hours
   });
+
+  // --- NEW: Badge Timer Alarm ---
+  chrome.alarms.create("badgeUpdateAlarm", {
+    periodInMinutes: 5 // Update badge every 5 minutes
+  });
+  updateBadgeTimer(); // Initial update
 });
 
 /**
@@ -287,7 +293,53 @@ chrome.alarms.onAlarm.addListener((alarm) => {
       recentLogs: []
     });
   }
+
+  // --- NEW: Badge Timer Alarm ---
+  if (alarm.name === "badgeUpdateAlarm") {
+    updateBadgeTimer();
+  }
 });
+
+/**
+ * @description Updates the extension badge with the time since the last log.
+ */
+function updateBadgeTimer() {
+  // Don't overwrite if the "ON" timer badge or "!" alarm badge is active
+  if (timerBadgeActive || alarmBadgeActive) return;
+
+  chrome.storage.local.get({ recentLogs: [] }, (data) => {
+    const logs = data.recentLogs || [];
+    if (logs.length === 0) {
+      chrome.action.setBadgeText({ text: '' });
+      return;
+    }
+
+    const lastLog = logs[0]; // Newest is first
+    if (!lastLog || !lastLog.time) return;
+
+    const now = new Date();
+    const [hours, minutes] = lastLog.time.split(':').map(Number);
+    const lastTimeDate = new Date();
+    lastTimeDate.setHours(hours, minutes, 0, 0);
+
+    // Handle day rollover (if last log was yesterday, diff will be huge, which is correct)
+    // But if lastTimeDate is in the future (e.g. slight clock skew), fix it.
+    if (lastTimeDate > now) {
+      lastTimeDate.setDate(lastTimeDate.getDate() - 1);
+    }
+
+    const diffMs = now - lastTimeDate;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins > 60) {
+      chrome.action.setBadgeText({ text: 'Ouch' }); // "Ouch" fits in 4 chars
+      chrome.action.setBadgeBackgroundColor({ color: '#EF4444' }); // Red
+    } else {
+      chrome.action.setBadgeText({ text: diffMins.toString() + 'm' });
+      chrome.action.setBadgeBackgroundColor({ color: '#52A2A0' }); // Primary Teal
+    }
+  });
+}
 
 // --- User Interaction Handlers ---
 

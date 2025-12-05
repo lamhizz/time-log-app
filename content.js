@@ -93,6 +93,9 @@ function createPopup(domainToLog, soundToPlay, volumeToPlay, prefillData) {
 
         if (timeSpan) timeSpan.textContent = lastLog.time;
 
+        // [NEW] Add tooltip with full log text
+        lastEntryContainer.title = lastLog.logText || "";
+
         if (sinceSpan) {
           const now = new Date();
           const [hours, minutes] = lastLog.time.split(':').map(Number);
